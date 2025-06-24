@@ -673,14 +673,13 @@ class HTTPClient:
                                     _log.debug(fmt, route_key, bucket_hash, discord_hash)
 
                                     self._bucket_hashes[route_key] = discord_hash
-                                    recalculated_key = discord_hash + route.major_parameters
-                                    self._buckets[recalculated_key] = ratelimit
+                                    self._buckets[f'{discord_hash}:{route.major_parameters}'] = ratelimit
                                     self._buckets.pop(key, None)
                                 elif route_key not in self._bucket_hashes:
                                     fmt = '%s has found its initial rate limit bucket hash (%s).'
                                     _log.debug(fmt, route_key, discord_hash)
                                     self._bucket_hashes[route_key] = discord_hash
-                                    self._buckets[discord_hash + route.major_parameters] = ratelimit
+                                    self._buckets[f'{discord_hash}:{route.major_parameters}'] = ratelimit
 
                         if has_ratelimit_headers:
                             if response.status != 429:
