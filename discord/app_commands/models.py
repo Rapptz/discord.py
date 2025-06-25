@@ -394,6 +394,39 @@ class AppCommand(Hashable):
             )
         return AppCommand(data=data, state=state)
 
+    async def sync(
+        self,
+    ) -> AppCommand:
+        """|coro|
+
+        Syncs the application command to Discord.
+
+        Raises
+        -------
+        HTTPException
+            Syncing the commands failed.
+        Forbidden
+            The client does not have the ``applications.commands`` scope in the guild.
+        MissingApplicationID
+            The client does not have an application ID.
+
+        Returns
+        --------
+        :class:`AppCommand`
+            The application command that got synced.
+        """
+        state = self._state
+        if not state.application_id:
+            raise MissingApplicationID
+
+        payload = self.to_dict()
+        if self.guild_id:
+            data = await state.http.upsert_guild_command(state.application_id, self.guild_id, payload=payload)
+        else:
+            data = await state.http.upsert_global_command(state.application_id, payload=payload)
+
+        return AppCommand(data=data, state=state)
+
     async def fetch_permissions(self, guild: Snowflake) -> GuildAppCommandPermissions:
         """|coro|
 
