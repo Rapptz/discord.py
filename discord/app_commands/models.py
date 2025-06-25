@@ -246,7 +246,7 @@ class AppCommand(Hashable):
         self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
 
     def to_dict(self) -> ApplicationCommandPayload:
-        return {
+        res = {
             'id': self.id,
             'type': self.type.value,
             'application_id': self.application_id,
@@ -254,10 +254,16 @@ class AppCommand(Hashable):
             'description': self.description,
             'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
             'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
-            'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
-            'integration_types': self.allowed_installs.to_array() if self.allowed_installs is not None else None,
             'options': [opt.to_dict() for opt in self.options],
-        }  # type: ignore # Type checker does not understand this literal.
+        }
+        contexts = self.allowed_contexts.to_array() if self.allowed_contexts is not None else None
+        integration_types = self.allowed_installs.to_array() if self.allowed_installs is not None else None
+        if contexts:
+            res['contexts'] = contexts
+        if integration_types:
+            res['integration_types'] = integration_types
+
+        return res  # type: ignore # Type checker does not understand this literal.
 
     def __str__(self) -> str:
         return self.name
@@ -400,6 +406,8 @@ class AppCommand(Hashable):
         """|coro|
 
         Syncs the application command to Discord.
+
+        .. versionadded:: 2.6
 
         Raises
         -------
