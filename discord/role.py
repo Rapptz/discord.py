@@ -287,8 +287,8 @@ class Role(Hashable):
         self.tags: Optional[RoleTags]
         self._flags: int = data.get('flags', 0)
         colors = data.get('colors', {})
-        self._secondary_colour = colors.get('secondary_colour', None)
-        self._tertiary_colour = colors.get('tertiary_colour', None)
+        self._secondary_colour = colors.get('secondary_color', None)
+        self._tertiary_colour = colors.get('tertiary_color', None)
 
         try:
             self.tags = RoleTags(data['tags'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
@@ -450,10 +450,10 @@ class Role(Hashable):
         mentionable: bool = MISSING,
         position: int = MISSING,
         reason: Optional[str] = MISSING,
-        secondary_color: Union[Colour, int, None] = MISSING,
-        tertiary_color: Union[Colour, int, None] = MISSING,
-        secondary_colour: Union[Colour, int, None] = MISSING,
-        tertiary_colour: Union[Colour, int, None] = MISSING,
+        secondary_color: Optional[Union[Colour, int]] = MISSING,
+        tertiary_color: Optional[Union[Colour, int]] = MISSING,
+        secondary_colour: Optional[Union[Colour, int]] = MISSING,
+        tertiary_colour: Optional[Union[Colour, int]] = MISSING,
     ) -> Optional[Role]:
         """|coro|
 
@@ -484,9 +484,9 @@ class Role(Hashable):
             The new permissions to change to.
         colour: Union[:class:`Colour`, :class:`int`]
             The new colour to change to. (aliased to color as well)
-        secondary_colour: Union[:class:`Colour`, :class:`int`, None]
+        secondary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
             The new secondary colour for the role.
-        tertiary_colour: Union[:class:`Colour`, :class:`int`, None]
+        tertiary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
             The new tertiary colour for the role. Can only be used for the holographic role preset,
             which is ``(11127295, 16759788, 16761760)``
         hoist: :class:`bool`
@@ -553,7 +553,7 @@ class Role(Hashable):
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable
 
-        colours = {
+        colours: Dict[str, Any] = {
             'primary_color': payload['color'],
         }
 
