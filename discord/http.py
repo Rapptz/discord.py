@@ -833,7 +833,7 @@ class HTTPClient:
         except HTTPException as exc:
             self.token = old_token
             if exc.status == 401:
-                raise LoginFailure('Improper token has been passed.') from exc
+                raise LoginFailure('An improper token has been provided.') from exc
             raise
 
         return data
