@@ -1291,8 +1291,9 @@ class InteractionResponse(Generic[ClientT]):
         """|coro|
 
         Responds to this interaction by launching the activity associated with the app.
-
         Only available for apps with activities enabled.
+
+        .. versionadded:: 2.6
 
         Raises
         -------
