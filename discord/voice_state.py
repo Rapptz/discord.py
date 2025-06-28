@@ -607,6 +607,8 @@ class VoiceConnectionState:
                     # 1000 - normal closure (obviously)
                     # 4014 - we were externally disconnected (voice channel deleted, we were moved, etc)
                     # 4015 - voice server has crashed, we should resume
+                    # 4021 - rate limited, we should not reconnect
+                    # 4022 - call terminated, similar to 4014
                     if exc.code == 1000:
                         # Don't call disconnect a second time if the websocket closed from a disconnect call
                         if not self._expecting_disconnect:
@@ -614,7 +616,7 @@ class VoiceConnectionState:
                             await self.disconnect()
                         break
 
-                    if exc.code == 4014:
+                    if exc.code in (4014, 4022):
                         # We were disconnected by discord
                         # This condition is a race between the main ws event and the voice ws closing
                         if self._disconnected.is_set():
@@ -633,6 +635,12 @@ class VoiceConnectionState:
                             break
                         else:
                             continue
+
+                    if exc.code == 4021:
+                        _log.warning('We are being ratelimited while trying to connect to voice. Disconnecting...')
+                        if self.state is not ConnectionFlowState.disconnected:
+                            await self.disconnect()
+                        break
 
                     if exc.code == 4015:
                         _log.info('Disconnected from voice, attempting a resume...')
