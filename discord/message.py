@@ -1405,6 +1405,12 @@ class PartialMessage(Hashable):
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
 
+            .. note::
+
+                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
+                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
+                ``embeds``, and ``attachments`` parameters.
+
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
 
@@ -2990,6 +2996,12 @@ class Message(PartialMessage, Hashable):
         view: Optional[:class:`~discord.ui.View`]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. note::
+
+                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
+                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
+                ``embeds``, and ``attachments`` parameters.
 
         Raises
         -------

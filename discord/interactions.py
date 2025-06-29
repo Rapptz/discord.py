@@ -1494,6 +1494,12 @@ class InteractionMessage(Message):
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
 
+            .. note::
+
+                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
+                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
+                ``embeds``, and ``attachments`` parameters.
+
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
         delete_after: Optional[:class:`float`]
