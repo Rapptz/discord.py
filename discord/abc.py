@@ -60,6 +60,7 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
+from .flags import GuildInviteFlags
 
 __all__ = (
     'Snowflake',
@@ -1257,6 +1258,7 @@ class GuildChannel:
         target_type: Optional[InviteTarget] = None,
         target_user: Optional[User] = None,
         target_application_id: Optional[int] = None,
+        guest_invite: bool = False,
     ) -> Invite:
         """|coro|
 
@@ -1295,6 +1297,12 @@ class GuildChannel:
             The id of the embedded application for the invite, required if ``target_type`` is :attr:`.InviteTarget.embedded_application`.
 
             .. versionadded:: 2.0
+        guest_invite: :class:`bool`
+            Whether the invite is a guest invite.
+
+            This is only available to guilds that contain ``GUESTS_ENABLED`` in :attr:`.Guild.features`.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1312,6 +1320,10 @@ class GuildChannel:
         if target_type is InviteTarget.unknown:
             raise ValueError('Cannot create invite with an unknown target type')
 
+        flags = GuildInviteFlags._from_value(0)
+        if guest_invite:
+            flags.is_guest_invite = True
+
         data = await self._state.http.create_invite(
             self.id,
             reason=reason,
@@ -1322,6 +1334,7 @@ class GuildChannel:
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
+            flags=flags.value,
         )
         return Invite.from_incomplete(data=data, state=self._state)
 

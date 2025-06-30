@@ -5734,6 +5734,14 @@ EmbedFlags
 .. autoclass:: EmbedFlags()
     :members:
 
+GuildInviteFlags
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: GuildInviteFlags
+
+.. autoclass:: GuildInviteFlags(
+    :members:
+
 ForumTag
 ~~~~~~~~~
 

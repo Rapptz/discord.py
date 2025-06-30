@@ -64,6 +64,7 @@ __all__ = (
     'AppInstallationType',
     'SKUFlags',
     'EmbedFlags',
+    'GuildInviteFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -2397,3 +2398,59 @@ class EmbedFlags(BaseFlags):
         longer displayed.
         """
         return 1 << 5
+
+
+class GuildInviteFlags(BaseFlags):
+    r"""Wraps up the Discord Guild Invite flags
+
+    .. versionadded:: 2.6
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two GuildInviteFlags are equal.
+
+        .. describe:: x != y
+
+            Checks if two GuildInviteFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a GuildInviteFlags instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a GuildInviteFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns a GuildInviteFlags instance with all flags inverted from x.
+
+        .. describe:: hash(x)
+
+            Returns the flag's hash.
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    Attributes
+    ----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def is_guest_invite(self):
+        """:class:`bool`: Returns ``True`` if this is a guest invite for a voice channel."""
+        return 1 << 0
