@@ -1853,7 +1853,7 @@ class HTTPClient:
         if target_application_id:
             payload['target_application_id'] = str(target_application_id)
 
-        if flags is not None:
+        if flags:
             payload['flags'] = flags
 
         return self.request(r, reason=reason, json=payload)

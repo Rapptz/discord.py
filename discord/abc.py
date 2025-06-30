@@ -1320,8 +1320,9 @@ class GuildChannel:
         if target_type is InviteTarget.unknown:
             raise ValueError('Cannot create invite with an unknown target type')
 
-        flags = GuildInviteFlags._from_value(0)
+        flags: Optional[GuildInviteFlags] = None
         if guest_invite:
+            flags = GuildInviteFlags._from_value(0)
             flags.is_guest_invite = True
 
         data = await self._state.http.create_invite(
@@ -1334,7 +1335,7 @@ class GuildChannel:
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
-            flags=flags.value,
+            flags=flags.value if flags else None,
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
