@@ -136,7 +136,7 @@ class Item(Generic[V]):
 
     @property
     def view(self) -> Optional[V]:
-        """Optional[:class:`View`]: The underlying view for this item."""
+        """Optional[Union[:class:`View`, :class:`LayoutView`]]: The underlying view for this item."""
         return self._view
 
     @property
