@@ -408,29 +408,43 @@ Enumerations
 
         Represents a component which holds different components in a section.
 
+        .. versionadded:: 2.6
+
     .. attribute:: text_display
 
         Represents a text display component.
+
+        .. versionadded:: 2.6
 
     .. attribute:: thumbnail
 
         Represents a thumbnail component.
 
+        .. versionadded:: 2.6
+
     .. attribute:: media_gallery
 
         Represents a media gallery component.
+        
+        .. versionadded:: 2.6
 
     .. attribute:: file
 
         Represents a file component.
 
+        .. versionadded:: 2.6
+
     .. attribute:: separator
 
         Represents a separator component.
 
+        .. versionadded:: 2.6
+
     .. attribute:: container
 
         Represents a component which holds different components in a container.
+
+        .. versionadded:: 2.6
 
 .. class:: ButtonStyle
 
@@ -596,21 +610,21 @@ View
     :members:
     :inherited-members:
 
-Modal
-~~~~~~
-
-.. attributetable:: discord.ui.Modal
-
-.. autoclass:: discord.ui.Modal
-    :members:
-    :inherited-members:
-
 LayoutView
 ~~~~~~~~~~
 
 .. attributetable:: discord.ui.LayoutView
 
 .. autoclass:: discord.ui.LayoutView
+    :members:
+    :inherited-members:
+
+Modal
+~~~~~~
+
+.. attributetable:: discord.ui.Modal
+
+.. autoclass:: discord.ui.Modal
     :members:
     :inherited-members:
 
