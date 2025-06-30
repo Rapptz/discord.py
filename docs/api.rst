@@ -5739,7 +5739,7 @@ GuildInviteFlags
 
 .. attributetable:: GuildInviteFlags
 
-.. autoclass:: GuildInviteFlags(
+.. autoclass:: GuildInviteFlags()
     :members:
 
 ForumTag
