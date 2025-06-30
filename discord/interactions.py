@@ -540,9 +540,18 @@ class Interaction(Generic[ClientT]):
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
-        view: Optional[:class:`~discord.ui.View`]
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`~discord.ui.LayoutView` instances.
         poll: :class:`Poll`
             The poll to create when editing the message.
 
@@ -1178,6 +1187,12 @@ class InteractionResponse(Generic[ClientT]):
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
 
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
@@ -1496,9 +1511,9 @@ class InteractionMessage(Message):
 
             .. note::
 
-                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
-                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
-                ``embeds``, and ``attachments`` parameters.
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
 
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.

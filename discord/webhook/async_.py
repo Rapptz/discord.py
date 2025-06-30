@@ -2059,6 +2059,12 @@ class Webhook(BaseWebhook):
             the view is removed. The webhook must have state attached, similar to
             :meth:`send`.
 
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+
             .. versionadded:: 2.0
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
