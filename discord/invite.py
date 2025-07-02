@@ -32,7 +32,7 @@ from .mixins import Hashable
 from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, InviteType, try_enum
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
-from .flags import GuildInviteFlags
+from .flags import InviteFlags
 
 __all__ = (
     'PartialInviteChannel',
@@ -527,12 +527,12 @@ class Invite(Hashable):
         return url
 
     @property
-    def flags(self) -> GuildInviteFlags:
-        """:class:`GuildInviteFlags`: Returns the flags for this guild invite.
+    def flags(self) -> InviteFlags:
+        """:class:`InviteFlags`: Returns the flags for this guild invite.
 
         .. versionadded:: 2.6
         """
-        return GuildInviteFlags._from_value(self._flags)
+        return InviteFlags._from_value(self._flags)
 
     def set_scheduled_event(self, scheduled_event: Snowflake, /) -> Self:
         """Sets the scheduled event for this invite.

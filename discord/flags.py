@@ -64,7 +64,7 @@ __all__ = (
     'AppInstallationType',
     'SKUFlags',
     'EmbedFlags',
-    'GuildInviteFlags',
+    'InviteFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -2400,8 +2400,8 @@ class EmbedFlags(BaseFlags):
         return 1 << 5
 
 
-class GuildInviteFlags(BaseFlags):
-    r"""Wraps up the Discord Guild Invite flags
+class InviteFlags(BaseFlags):
+    r"""Wraps up the Discord Invite flags
 
     .. versionadded:: 2.6
 
@@ -2409,25 +2409,25 @@ class GuildInviteFlags(BaseFlags):
 
         .. describe:: x == y
 
-            Checks if two GuildInviteFlags are equal.
+            Checks if two InviteFlags are equal.
 
         .. describe:: x != y
 
-            Checks if two GuildInviteFlags are not equal.
+            Checks if two InviteFlags are not equal.
 
         .. describe:: x | y, x |= y
 
-            Returns a GuildInviteFlags instance with all enabled flags from
+            Returns a InviteFlags instance with all enabled flags from
             both x and y.
 
         .. describe:: x ^ y, x ^= y
 
-            Returns a GuildInviteFlags instance with only flags enabled on
+            Returns a InviteFlags instance with only flags enabled on
             only one of x or y, not on both.
 
         .. describe:: ~x
 
-            Returns a GuildInviteFlags instance with all flags inverted from x.
+            Returns a InviteFlags instance with all flags inverted from x.
 
         .. describe:: hash(x)
 
@@ -2451,6 +2451,6 @@ class GuildInviteFlags(BaseFlags):
     """
 
     @flag_value
-    def is_guest_invite(self):
+    def guest(self):
         """:class:`bool`: Returns ``True`` if this is a guest invite for a voice channel."""
         return 1 << 0
