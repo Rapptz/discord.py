@@ -2517,6 +2517,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.uses`
         - :attr:`~AuditLogDiff.max_uses`
+        - :attr:`~AuditLogDiff.flags`
 
     .. attribute:: invite_update
 
@@ -2541,6 +2542,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.uses`
         - :attr:`~AuditLogDiff.max_uses`
+        - :attr:`~AuditLogDiff.flags`
 
     .. attribute:: webhook_create
 
@@ -4552,11 +4554,11 @@ AuditLogDiff
 
     .. attribute:: flags
 
-        The channel flags associated with this thread or forum post.
+        The flags associated with this thread, forum post or invite.
 
-        See also :attr:`ForumChannel.flags` and :attr:`Thread.flags`
+        See also :attr:`ForumChannel.flags`, :attr:`Thread.flags` and :attr:`Invite.flags`
 
-        :type: :class:`ChannelFlags`
+        :type: Union[:class:`ChannelFlags`, :class:`InviteFlags`]
 
     .. attribute:: default_thread_slowmode_delay
 
