@@ -1834,6 +1834,7 @@ class HTTPClient:
         target_type: Optional[invite.InviteTargetType] = None,
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
+        flags: Optional[int] = None,
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -1851,6 +1852,9 @@ class HTTPClient:
 
         if target_application_id:
             payload['target_application_id'] = str(target_application_id)
+
+        if flags:
+            payload['flags'] = flags
 
         return self.request(r, reason=reason, json=payload)
 

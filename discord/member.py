@@ -238,7 +238,8 @@ class Member(discord.abc.Messageable, _UserTag):
     ----------
     joined_at: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC that the member joined the guild.
-        If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
+        If the member left and rejoined the guild, this will be the latest date.
+        This can be ``None``, such as when the member is a guest.
     activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities that the user is currently doing.
 
