@@ -528,7 +528,7 @@ class Invite(Hashable):
 
     @property
     def flags(self) -> InviteFlags:
-        """:class:`InviteFlags`: Returns the flags for this guild invite.
+        """:class:`InviteFlags`: Returns the flags for this invite.
 
         .. versionadded:: 2.6
         """
