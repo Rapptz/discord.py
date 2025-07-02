@@ -145,8 +145,8 @@ def _transform_applied_forum_tags(entry: AuditLogEntry, data: List[Snowflake]) -
     return [Object(id=tag_id, type=ForumTag) for tag_id in data]
 
 
-def _transform_overloaded_flags(entry: AuditLogEntry, data: int) -> Union[int, flags.ChannelFlags]:
-    # The `flags` key is definitely overloaded. Right now it's for channels and threads but
+def _transform_overloaded_flags(entry: AuditLogEntry, data: int) -> Union[int, flags.ChannelFlags, flags.InviteFlags]:
+    # The `flags` key is definitely overloaded. Right now it's for channels, threads and invites but
     # I am aware of `member.flags` and `user.flags` existing. However, this does not impact audit logs
     # at the moment but better safe than sorry.
     channel_audit_log_types = (
@@ -157,9 +157,16 @@ def _transform_overloaded_flags(entry: AuditLogEntry, data: int) -> Union[int, f
         enums.AuditLogAction.thread_update,
         enums.AuditLogAction.thread_delete,
     )
+    invite_audit_log_types = (
+        enums.AuditLogAction.invite_create,
+        enums.AuditLogAction.invite_update,
+        enums.AuditLogAction.invite_delete,
+    )
 
     if entry.action in channel_audit_log_types:
         return flags.ChannelFlags._from_value(data)
+    elif entry.action in invite_audit_log_types:
+        return flags.InviteFlags._from_value(data)
     return data
 
 
