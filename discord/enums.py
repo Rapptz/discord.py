@@ -772,7 +772,7 @@ class Locale(Enum):
     def language_code(self) -> str:
         """Returns the locale's language code in the format of ``language-COUNTRY``.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.6
         """
         return _UNICODE_LANG_MAP.get(self.value, self.value)
 
