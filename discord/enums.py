@@ -694,6 +694,42 @@ class MFALevel(Enum, comparable=True):
     require_2fa = 1
 
 
+_UNICODE_LANG_MAP: Dict[str, str] = {
+    'bg': 'bg-BG',
+    'zh-CN': 'zh-CN',
+    'zh-TW': 'zh-TW',
+    'hr': 'hr-HR',
+    'cs': 'cs-CZ',
+    'da': 'da-DK',
+    'nl': 'nl-NL',
+    'en-US': 'en-US',
+    'en-GB': 'en-GB',
+    'fi': 'fi-FI',
+    'fr': 'fr-FR',
+    'de': 'de-DE',
+    'el': 'el-GR',
+    'hi': 'hi-IN',
+    'hu': 'hu-HU',
+    'id': 'id-ID',
+    'it': 'it-IT',
+    'ja': 'ja-JP',
+    'ko': 'ko-KR',
+    'lt': 'lt-LT',
+    'no': 'no-NO',
+    'pl': 'pl-PL',
+    'pt-BR': 'pt-BR',
+    'ro': 'ro-RO',
+    'ru': 'ru-RU',
+    'es-ES': 'es-ES',
+    'es-419': 'es-419',
+    'sv-SE': 'sv-SE',
+    'th': 'th-TH',
+    'tr': 'tr-TR',
+    'uk': 'uk-UA',
+    'vi': 'vi-VN',
+}
+
+
 class Locale(Enum):
     american_english = 'en-US'
     british_english = 'en-GB'
@@ -730,6 +766,14 @@ class Locale(Enum):
 
     def __str__(self) -> str:
         return self.value
+
+    @property
+    def language_code(self) -> str:
+        """Returns the locale's language code in the format of ``language-COUNTRY``.
+        
+        .. versionadded:: 2.5
+        """
+        return _UNICODE_LANG_MAP.get(self.value, self.value)
 
 
 E = TypeVar('E', bound='Enum')
