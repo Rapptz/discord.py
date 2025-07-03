@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import types
@@ -770,7 +771,7 @@ class Locale(Enum):
     @property
     def language_code(self) -> str:
         """Returns the locale's language code in the format of ``language-COUNTRY``.
-        
+
         .. versionadded:: 2.5
         """
         return _UNICODE_LANG_MAP.get(self.value, self.value)
