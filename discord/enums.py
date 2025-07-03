@@ -770,7 +770,7 @@ class Locale(Enum):
 
     @property
     def language_code(self) -> str:
-        """Returns the locale's language code in the format of ``language-COUNTRY``.
+        """:class:`str`: Returns the locale's BCP 47 language code in the format of ``language-COUNTRY``.
 
         .. versionadded:: 2.6
         """
