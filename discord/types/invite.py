@@ -65,6 +65,7 @@ class Invite(IncompleteInvite, total=False):
     target_application: PartialAppInfo
     guild_scheduled_event: GuildScheduledEvent
     type: InviteType
+    flags: NotRequired[int]
 
 
 class InviteWithCounts(Invite, _GuildPreviewUnique):
@@ -84,6 +85,7 @@ class GatewayInviteCreate(TypedDict):
     target_type: NotRequired[InviteTargetType]
     target_user: NotRequired[PartialUser]
     target_application: NotRequired[PartialAppInfo]
+    flags: NotRequired[int]
 
 
 class GatewayInviteDelete(TypedDict):
