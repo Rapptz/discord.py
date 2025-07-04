@@ -208,7 +208,7 @@ class VoiceConnectionState:
         self.mode: SupportedModes = MISSING
         self.socket: socket.socket = MISSING
         self.ws: DiscordVoiceWebSocket = MISSING
-        self.loop: asyncio.AbstractEventLoop = None
+        self.loop: asyncio.AbstractEventLoop = MISSING
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
         self._expecting_disconnect: bool = False
