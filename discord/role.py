@@ -275,10 +275,11 @@ class Role(Hashable):
         return not r
 
     def _update(self, data: RolePayload):
+        colors = data.get('colors', {})
         self.name: str = data['name']
         self._permissions: int = int(data.get('permissions', 0))
         self.position: int = data.get('position', 0)
-        self._colour: int = data.get('color', 0)
+        self._colour: int = colors.get('primary_color', 0)
         self.hoist: bool = data.get('hoist', False)
         self._icon: Optional[str] = data.get('icon')
         self.unicode_emoji: Optional[str] = data.get('unicode_emoji')
@@ -286,7 +287,6 @@ class Role(Hashable):
         self.mentionable: bool = data.get('mentionable', False)
         self.tags: Optional[RoleTags]
         self._flags: int = data.get('flags', 0)
-        colors = data.get('colors', {})
         self._secondary_colour = colors.get('secondary_color', None)
         self._tertiary_colour = colors.get('tertiary_color', None)
 
@@ -330,22 +330,30 @@ class Role(Hashable):
 
     @property
     def secondary_colour(self) -> Optional[Colour]:
-        """Optional[:class:`Colour`]: The role's secondary colour."""
+        """Optional[:class:`Colour`]: The role's secondary colour.
+        .. versionadded:: 2.6
+        """
         return Colour(self._secondary_colour) if self._secondary_colour is not None else None
 
     @property
     def secondary_color(self) -> Optional[Colour]:
-        """Optional[:class:`Colour`]: Alias for :attr:`secondary_colour`."""
+        """Optional[:class:`Colour`]: Alias for :attr:`secondary_colour`.
+        .. versionadded:: 2.6
+        """
         return self.secondary_colour
 
     @property
     def tertiary_colour(self) -> Optional[Colour]:
-        """Optional[:class:`Colour`]: The role's tertiary colour."""
+        """Optional[:class:`Colour`]: The role's tertiary colour.
+        .. versionadded:: 2.6
+        """
         return Colour(self._tertiary_colour) if self._tertiary_colour is not None else None
 
     @property
     def tertiary_color(self) -> Optional[Colour]:
-        """Optional[:class:`Colour`]: Alias for :attr:`tertiary_colour`."""
+        """Optional[:class:`Colour`]: Alias for :attr:`tertiary_colour`.
+        .. versionadded:: 2.6
+        """
         return self.tertiary_colour
 
     @property
@@ -355,12 +363,12 @@ class Role(Hashable):
 
     @property
     def colour(self) -> Colour:
-        """:class:`Colour`: Returns the role colour. An alias exists under ``color``."""
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``color``."""
         return Colour(self._colour)
 
     @property
     def color(self) -> Colour:
-        """:class:`Colour`: Returns the role color. An alias exists under ``colour``."""
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``colour``."""
         return self.colour
 
     @property
@@ -476,6 +484,12 @@ class Role(Hashable):
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
 
+        .. versionadded:: 2.6
+            The ``secondary_color``, ``tertiary_color``, ``secondary_colour``, and ``tertiary_colour`` keyword-only parameters were added.
+
+        .. versionchanged:: 2.6
+            The ``colour`` and ``color`` parameters now set the role's primary color.
+
         Parameters
         -----------
         name: :class:`str`
@@ -524,14 +538,17 @@ class Role(Hashable):
             await self._move(position, reason=reason)
 
         payload: Dict[str, Any] = {}
+
+        colours: Dict[str, Any] = {}
+
         if color is not MISSING:
             colour = color
 
         if colour is not MISSING:
             if isinstance(colour, int):
-                payload['color'] = colour
+                colours['primary_color'] = colour
             else:
-                payload['color'] = colour.value
+                colours['primary_color'] = colour.value
 
         if name is not MISSING:
             payload['name'] = name
@@ -552,10 +569,6 @@ class Role(Hashable):
 
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable
-
-        colours: Dict[str, Any] = {
-            'primary_color': payload['color'],
-        }
 
         actual_secondary_colour = secondary_colour or secondary_color
         actual_tertiary_colour = tertiary_colour or tertiary_color

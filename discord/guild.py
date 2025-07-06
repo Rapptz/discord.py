@@ -3703,6 +3703,13 @@ class Guild(Hashable):
             This function will now raise :exc:`TypeError` instead of
             ``InvalidArgument``.
 
+        .. versionadded:: 2.6
+            The ``secondary_color``, ``tertiary_color``, ``secondary_colour``, and ``tertiary_colour`` keyword-only parameters were added.
+
+        .. versionchanged:: 2.6
+            The ``colour`` and ``color`` parameters now set the role's primary color.
+
+
         Parameters
         -----------
         name: :class:`str`
@@ -3751,18 +3758,16 @@ class Guild(Hashable):
         else:
             fields['permissions'] = '0'
 
+        colours: Dict[str, Any] = {}
+
         actual_colour = colour or color or Colour.default()
         if isinstance(actual_colour, int):
-            fields['color'] = actual_colour
+            colours['primary_color'] = actual_colour
         else:
-            fields['color'] = actual_colour.value
+            colours['primary_color'] = actual_colour.value
 
         actual_secondary_colour = secondary_colour or secondary_color
         actual_tertiary_colour = tertiary_colour or tertiary_color
-
-        colours: Dict[str, Any] = {
-            'primary_color': fields['color'],
-        }
 
         if actual_secondary_colour is not MISSING:
             if actual_secondary_colour is None:
