@@ -3703,9 +3703,6 @@ class Guild(Hashable):
             This function will now raise :exc:`TypeError` instead of
             ``InvalidArgument``.
 
-        .. versionadded:: 2.6
-            The ``secondary_color``, ``tertiary_color``, ``secondary_colour``, and ``tertiary_colour`` keyword-only parameters were added.
-
         .. versionchanged:: 2.6
             The ``colour`` and ``color`` parameters now set the role's primary color.
 
@@ -3721,9 +3718,13 @@ class Guild(Hashable):
             This is aliased to ``color`` as well.
         secondary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
             The secondary colour for the role.
+
+            .. versionadded:: 2.6
         tertiary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
             The tertiary colour for the role. Can only be used for the holographic role preset,
             which is ``(11127295, 16759788, 16761760)``
+
+            .. versionadded:: 2.6
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to ``False``.

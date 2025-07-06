@@ -484,9 +484,6 @@ class Role(Hashable):
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
 
-        .. versionadded:: 2.6
-            The ``secondary_color``, ``tertiary_color``, ``secondary_colour``, and ``tertiary_colour`` keyword-only parameters were added.
-
         .. versionchanged:: 2.6
             The ``colour`` and ``color`` parameters now set the role's primary color.
 
@@ -500,9 +497,13 @@ class Role(Hashable):
             The new colour to change to. (aliased to color as well)
         secondary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
             The new secondary colour for the role.
+
+            .. versionadded:: 2.6
         tertiary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
             The new tertiary colour for the role. Can only be used for the holographic role preset,
             which is ``(11127295, 16759788, 16761760)``
+
+            .. versionadded:: 2.6
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
         display_icon: Optional[Union[:class:`bytes`, :class:`str`]]
