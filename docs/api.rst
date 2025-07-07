@@ -3097,6 +3097,48 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.5
 
+    .. attribute:: onboarding_question_create
+
+        A guild onboarding prompt was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.title`
+        - :attr:`~AuditLogDiff.options`
+        - :attr:`~AuditLogDiff.single_select`
+        - :attr:`~AuditLogDiff.required`
+        - :attr:`~AuditLogDiff.in_onboarding`
+
+        .. versionadded:: 2.4
+
+    .. attribute:: onboarding_question_update
+
+        A guild onboarding prompt was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.title`
+        - :attr:`~AuditLogDiff.options`
+        - :attr:`~AuditLogDiff.single_select`
+        - :attr:`~AuditLogDiff.required`
+        - :attr:`~AuditLogDiff.in_onboarding`
+
+        .. versionadded:: 2.4
+
+    .. attribute:: onboarding_update
+
+        The guild's onboarding configuration was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.default_channels`
+        - :attr:`~AuditLogDiff.prompts`
+
+        .. versionadded:: 2.4
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -3770,110 +3812,34 @@ of :class:`enum.Enum`.
             The entitlement owner is a user.
 
 
-.. class:: PollLayoutType
+.. class:: OnboardingPromptType
 
-    Represents how a poll answers are shown.
+    Represents the type of onboarding prompt.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: multiple_choice
+
+        Prompt options are multiple choice.
+
+    .. attribute:: dropdown
+
+        Prompt options are displayed as a drop-down.
+
+.. class:: OnboardingMode
+
+    Represents the onboarding constriant mode.
 
     .. versionadded:: 2.4
 
     .. attribute:: default
 
-        The default layout.
+        Only default channels count towards onboarding constraints.
 
+    .. attribute:: advanced
 
-.. class:: InviteType
+        Default channels and questions count towards onboarding constraints.
 
-    Represents the type of an invite.
-
-    .. versionadded:: 2.4
-
-    .. attribute:: guild
-
-        The invite is a guild invite.
-
-    .. attribute:: group_dm
-
-        The invite is a group DM invite.
-
-    .. attribute:: friend
-
-        The invite is a friend invite.
-
-
-.. class:: ReactionType
-
-    Represents the type of a reaction.
-
-    .. versionadded:: 2.4
-
-    .. attribute:: normal
-
-        A normal reaction.
-
-    .. attribute:: burst
-
-        A burst reaction, also known as a "super reaction".
-
-
-.. class:: VoiceChannelEffectAnimationType
-
-    Represents the animation type of a voice channel effect.
-
-    .. versionadded:: 2.5
-
-    .. attribute:: premium
-
-        A fun animation, sent by a Nitro subscriber.
-
-    .. attribute:: basic
-
-        The standard animation.
-
-
-.. class:: SubscriptionStatus
-
-    Represents the status of an subscription.
-
-    .. versionadded:: 2.5
-
-    .. attribute:: active
-
-        The subscription is active.
-
-    .. attribute:: ending
-
-        The subscription is active but will not renew.
-
-    .. attribute:: inactive
-
-        The subscription is inactive and not being charged.
-
-
-.. class:: MessageReferenceType
-
-    Represents the type of a message reference.
-
-    .. versionadded:: 2.5
-
-    .. attribute:: default
-
-        A standard reference used by message replies (:attr:`MessageType.reply`),
-        crossposted messaged created by a followed channel integration, and messages of type:
-
-        - :attr:`MessageType.pins_add`
-        - :attr:`MessageType.channel_follow_add`
-        - :attr:`MessageType.thread_created`
-        - :attr:`MessageType.thread_starter_message`
-        - :attr:`MessageType.poll_result`
-        - :attr:`MessageType.context_menu_command`
-
-    .. attribute:: forward
-
-        A forwarded message.
-
-    .. attribute:: reply
-
-        An alias for :attr:`.default`.
 
 .. _discord-api-audit-logs:
 
@@ -4121,9 +4087,9 @@ AuditLogDiff
 
     .. attribute:: type
 
-        The type of channel, sticker, webhook or integration.
+        The type of channel, sticker, webhook, integration or onboarding prompt.
 
-        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`]
+        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`, :class:`OnboardingPromptType`]
 
     .. attribute:: topic
 
@@ -4478,7 +4444,7 @@ AuditLogDiff
 
     .. attribute:: enabled
 
-        Whether the automod rule is active or not.
+        Whether guild onboarding or the automod rule is active or not.
 
         :type: :class:`bool`
 
@@ -4607,6 +4573,118 @@ AuditLogDiff
         See also :attr:`SoundboardSound.volume`
 
         :type: :class:`float`
+
+    .. attribute:: options
+
+        The onboarding prompt options associated with this onboarding prompt.
+
+        See also :attr:`OnboardingPrompt.options`
+
+        :type: List[:class:`OnboardingPromptOption`]
+    
+    .. attribute:: default_channels
+
+        The default channels associated with the onboarding in this guild.
+
+        See also :attr:`Onboarding.default_channels`
+
+        :type: List[:class:`abc.GuildChannel`, :class:`Object`]
+
+    .. attribute:: prompts
+
+        The onboarding prompts associated with the onboarding in this guild.
+
+        See also :attr:`Onboarding.prompts`
+
+        :type: List[:class:`OnboardingPrompt`]
+
+    .. attribute:: title
+
+        The title of the onboarding prompt.
+
+        See also :attr:`OnboardingPrompt.title`
+
+        :type: :class:`str`
+
+    .. attribute:: single_select
+
+        Whether only one prompt option can be selected.
+
+        See also :attr:`OnboardingPrompt.single_select`
+
+        :type: :class:`bool`
+
+    .. attribute:: required
+
+        Whether the onboarding prompt is required to complete the onboarding.
+
+        See also :attr:`OnboardingPrompt.required`
+
+        :type: :class:`bool`
+
+    .. attribute:: in_onboarding
+
+        Whether this prompt is currently part of the onboarding flow.
+
+        See also :attr:`OnboardingPrompt.in_onboarding`
+
+        :type: :class:`bool`
+
+    .. attribute:: options
+
+        The onboarding prompt options associated with this onboarding prompt.
+
+        See also :attr:`OnboardingPrompt.options`
+
+        :type: List[:class:`OnboardingPromptOption`]
+    
+    .. attribute:: default_channels
+
+        The default channels associated with the onboarding in this guild.
+
+        See also :attr:`Onboarding.default_channels`
+
+        :type: List[:class:`abc.GuildChannel`, :class:`Object`]
+
+    .. attribute:: prompts
+
+        The onboarding prompts associated with the onboarding in this guild.
+
+        See also :attr:`Onboarding.prompts`
+
+        :type: List[:class:`OnboardingPrompt`]
+
+    .. attribute:: title
+
+        The title of the onboarding prompt.
+
+        See also :attr:`OnboardingPrompt.title`
+
+        :type: :class:`str`
+
+    .. attribute:: single_select
+
+        Whether only one prompt option can be selected.
+
+        See also :attr:`OnboardingPrompt.single_select`
+
+        :type: :class:`bool`
+
+    .. attribute:: required
+
+        Whether the onboarding prompt is required to complete the onboarding.
+
+        See also :attr:`OnboardingPrompt.required`
+
+        :type: :class:`bool`
+
+    .. attribute:: in_onboarding
+
+        Whether this prompt is currently part of the onboarding flow.
+
+        See also :attr:`OnboardingPrompt.in_onboarding`
+
+        :type: :class:`bool`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
@@ -5229,6 +5307,46 @@ GuildSticker
 .. attributetable:: GuildSticker
 
 .. autoclass:: GuildSticker()
+    :members:
+
+Onboarding
+~~~~~~~~~~~
+
+.. attributetable:: Onboarding
+
+.. autoclass:: Onboarding()
+    :members:
+
+PartialOnboardingPrompt
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialOnboardingPrompt
+
+.. autoclass:: PartialOnboardingPrompt
+    :members:
+
+OnboardingPrompt
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: OnboardingPrompt
+
+.. autoclass:: OnboardingPrompt()
+    :members:
+
+PartialOnboardingPromptOption
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialOnboardingPromptOption
+
+.. autoclass:: PartialOnboardingPromptOption
+    :members:
+
+OnboardingPromptOption
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: OnboardingPromptOption
+
+.. autoclass:: OnboardingPromptOption()
     :members:
 
 BaseSoundboardSound

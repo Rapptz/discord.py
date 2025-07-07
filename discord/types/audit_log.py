@@ -38,6 +38,7 @@ from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMod
 from .threads import Thread
 from .command import ApplicationCommand, ApplicationCommandPermissions
 from .automod import AutoModerationTriggerMetadata
+from .onboarding import PromptOption, Prompt
 
 AuditLogEvent = Literal[
     1,
@@ -99,6 +100,9 @@ AuditLogEvent = Literal[
     145,
     150,
     151,
+    163,
+    164,
+    167,
 ]
 
 
@@ -116,6 +120,7 @@ class _AuditLogChange_Str(TypedDict):
         'tags',
         'unicode_emoji',
         'emoji_name',
+        'title',
     ]
     new_value: str
     old_value: str
@@ -163,6 +168,10 @@ class _AuditLogChange_Bool(TypedDict):
         'available',
         'archived',
         'locked',
+        'enabled',
+        'single_select',
+        'required',
+        'in_onboarding',
     ]
     new_value: bool
     old_value: bool
@@ -273,8 +282,8 @@ class _AuditLogChange_AppCommandPermissions(TypedDict):
     old_value: ApplicationCommandPermissions
 
 
-class _AuditLogChange_AppliedTags(TypedDict):
-    key: Literal['applied_tags']
+class _AuditLogChange_SnowflakeList(TypedDict):
+    key: Literal['applied_tags', 'default_channel_ids']
     new_value: List[Snowflake]
     old_value: List[Snowflake]
 
@@ -297,6 +306,18 @@ class _AuditLogChange_TriggerMetadata(TypedDict):
     old_value: Optional[AutoModerationTriggerMetadata]
 
 
+class _AuditLogChange_Prompts(TypedDict):
+    key: Literal['prompts']
+    new_value: List[Prompt]
+    old_value: List[Prompt]
+
+
+class _AuditLogChange_Options(TypedDict):
+    key: Literal['options']
+    new_value: List[PromptOption]
+    old_value: List[PromptOption]
+
+
 AuditLogChange = Union[
     _AuditLogChange_Str,
     _AuditLogChange_AssetHash,
@@ -317,10 +338,12 @@ AuditLogChange = Union[
     _AuditLogChange_Status,
     _AuditLogChange_EntityType,
     _AuditLogChange_AppCommandPermissions,
-    _AuditLogChange_AppliedTags,
+    _AuditLogChange_SnowflakeList,
     _AuditLogChange_AvailableTags,
     _AuditLogChange_DefaultReactionEmoji,
     _AuditLogChange_TriggerMetadata,
+    _AuditLogChange_Prompts,
+    _AuditLogChange_Options,
 ]
 
 

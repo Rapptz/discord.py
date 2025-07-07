@@ -24,37 +24,38 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, TypedDict, TYPE_CHECKING
+from typing import Literal, Optional, TypedDict
+
+from .emoji import PartialEmoji
 from .snowflake import Snowflake
 
-if TYPE_CHECKING:
-    from .emoji import PartialEmoji
+
+PromptType = Literal[0, 1]
+OnboardingMode = Literal[0, 1]
 
 
-OnboardingPromptType = Literal[0, 1]
-
-
-class OnboardingPromptOption(TypedDict):
+class PromptOption(TypedDict):
     id: Snowflake
-    channel_ids: List[Snowflake]
-    role_ids: List[Snowflake]
+    channel_ids: list[Snowflake]
+    role_ids: list[Snowflake]
     emoji: PartialEmoji
     title: str
-    description: str
+    description: Optional[str]
 
 
-class OnboardingPrompt(TypedDict):
+class Prompt(TypedDict):
     id: Snowflake
-    options: List[OnboardingPromptOption]
+    options: list[PromptOption]
     title: str
     single_select: bool
     required: bool
     in_onboarding: bool
-    type: OnboardingPromptType
+    type: PromptType
 
 
 class Onboarding(TypedDict):
     guild_id: Snowflake
-    prompts: List[OnboardingPrompt]
-    default_channel_ids: List[Snowflake]
+    prompts: list[Prompt]
+    default_channel_ids: list[Snowflake]
     enabled: bool
+    mode: OnboardingMode

@@ -22,238 +22,326 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union
 
+import os
+from typing import TYPE_CHECKING, Iterable, Optional, Set, List, Union
+
+from discord.utils import MISSING
+
+from . import utils
 from .mixins import Hashable
-from .object import Object
-from .role import Role
-from .enums import OnboardingPromptType, try_enum
-from .partial_emoji import PartialEmoji
-from .utils import SequenceProxy
+from .enums import OnboardingMode, OnboardingPromptType, try_enum
+from .utils import cached_slot_property, MISSING
+
+__all__ = (
+    'Onboarding',
+    'PartialOnboardingPrompt',
+    'OnboardingPrompt',
+    'OnboardingPromptOption',
+    'PartialOnboardingPromptOption',
+)
+
 
 if TYPE_CHECKING:
-    from .abc import GuildChannel, PartialMessageable
+    from .abc import GuildChannel
+    from .emoji import Emoji
     from .guild import Guild
+    from .partial_emoji import PartialEmoji
+    from .role import Role
     from .threads import Thread
     from .types.onboarding import (
+        Prompt as PromptPayload,
+        PromptOption as PromptOptionPayload,
         Onboarding as OnboardingPayload,
-        OnboardingPrompt as OnboardingPromptPayload,
-        OnboardingPromptOption as OnboardingPromptOptionPayload,
+    )
+    from .state import ConnectionState
+
+
+class PartialOnboardingPromptOption:
+    """Represents a partial onboarding prompt option, these are used in the creation
+    of an :class:`OnboardingPrompt` via :meth:`Guild.edit_onboarding`.
+
+    .. versionadded:: 2.4
+
+    Attributes
+    -----------
+    title: :class:`str`
+        The title of this prompt option.
+    description: Optional[:class:`str`]
+        The description of this prompt option.
+    emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+        The emoji tied to this option. May be a custom emoji, or a unicode emoji.
+    channel_ids: Set[:class:`int`]
+        The IDs of the channels that will be made visible if this option is selected.
+    role_ids: Set[:class:`int`]
+        The IDs of the roles given to the user if this option is selected.
+    """
+
+    __slots__ = (
+        'title',
+        'emoji',
+        'description',
+        'channel_ids',
+        'role_ids',
     )
 
+    def __init__(
+        self,
+        title: str,
+        emoji: Union[Emoji, PartialEmoji, str],
+        description: Optional[str] = None,
+        channel_ids: Iterable[int] = MISSING,
+        role_ids: Iterable[int] = MISSING,
+    ) -> None:
+        self.title: str = title
+        self.description: Optional[str] = description
+        self.emoji: Union[PartialEmoji, Emoji, str] = emoji
+        self.channel_ids: Set[int] = set(channel_ids or [])
+        self.role_ids: Set[int] = set(role_ids or [])
 
-class OnboardingPromptOption(Hashable):
-    """Represents a guild's onboarding prompt's option.
+    def to_dict(self, *, id: int = MISSING) -> PromptOptionPayload:
+        if isinstance(self.emoji, str):
+            emoji_payload = {"emoji_name": self.emoji}
+        else:
+            emoji_payload = {
+                "emoji_id": self.emoji.id,
+                "emoji_name": self.emoji.name,
+                "emoji_animated": self.emoji.animated,
+            }
 
-    .. container:: operations
+        return {
+            'id': id or os.urandom(16).hex(),
+            'title': self.title,
+            'description': self.description,
+            'channel_ids': list(self.channel_ids),
+            'role_ids': list(self.role_ids),
+            **emoji_payload,
+        }  # type: ignore
 
-        .. describe:: x == y
 
-            Checks if two guilds are equal.
+class OnboardingPromptOption(PartialOnboardingPromptOption, Hashable):
+    """Represents an onboarding prompt option.
 
-        .. describe:: x != y
-
-            Checks if two guilds are not equal.
-
-        .. describe:: hash(x)
-
-            Returns the guild's hash.
-
-        .. describe:: str(x)
-
-            Returns the guild's name.
-
-    .. versionadded:: 2.2
+    .. versionadded:: 2.4
 
     Attributes
     -----------
     id: :class:`int`
-        The ID of the option.
+        The ID of this prompt option.
+    guild: :class:`Guild`
+        The guild the onboarding prompt option is related to.
     title: :class:`str`
-        The title of the option.
-    description: :class:`str`
-        The description of the option.
-    emoji: :class:`PartialEmoji`
-        The emoji of the option.
+        The title of this prompt option.
+    description: Optional[:class:`str`]
+        The description of this prompt option.
+    emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+        The emoji tied to this option. May be a custom emoji, or a unicode emoji.
+    channel_ids: Set[:class:`int`]
+        The IDs of the channels that will be made visible if this option is selected.
+    role_ids: Set[:class:`int`]
+        The IDs of the roles given to the user if this option is selected.
     """
 
-    __slots__ = ('id', 'title', 'description', 'emoji', '_channels', '_roles', '_onboarding')
+    __slots__ = (
+        '_state',
+        '_cs_channels',
+        '_cs_roles',
+        'guild',
+        'id',
+    )
 
-    def __init__(self, *, onboarding: Onboarding, data: OnboardingPromptOptionPayload) -> None:
-        self._onboarding: Onboarding = onboarding
-
-        self._channels: Dict[int, Union[GuildChannel, Thread, PartialMessageable, Object]] = {}
-        self._roles: Dict[int, Union[Role, Object]] = {}
-        self._from_data(data)
-
-    def _from_data(self, data: OnboardingPromptOptionPayload) -> None:
-        guild = self._onboarding._guild
-        state = guild._state
-
+    def __init__(self, *, data: PromptOptionPayload, state: ConnectionState, guild: Guild) -> None:
+        self._state: ConnectionState = state
+        self.guild: Guild = guild
         self.id: int = int(data['id'])
-        self.title: str = data['title']
-        self.description: str = data['description']
-
-        emoji = PartialEmoji.from_dict(data['emoji'])
-        emoji._state = state
-        self.emoji: PartialEmoji = emoji
-
-        channel_ids = data.get('channel_ids', [])
-        for channel_id in channel_ids:
-            channel = guild.get_channel_or_thread(int(channel_id)) or state.get_channel(int(channel_id))
-            self._channels[int(channel_id)] = channel or Object(id=channel_id)  # type: ignore # can't be PrivateChannel
-
-        role_ids = data.get('role_ids', [])
-        for role_id in role_ids:
-            role = guild.get_role(int(role_id))
-
-            self._roles[int(role_id)] = role or Object(id=role_id, type=Role)
+        super().__init__(
+            title=data['title'],
+            description=data['description'],
+            emoji=self._state.get_emoji_from_partial_payload(data['emoji']),
+            channel_ids=[int(id) for id in data['channel_ids']],
+            role_ids=[int(id) for id in data['role_ids']],
+        )
 
     def __repr__(self) -> str:
-        return f'<OnboardingPromptOption id={self.id} title={self.title!r} description={self.description!r} emoji={self.emoji!r}>'
+        return f'<OnboardingPromptOption id={self.id} title={self.title}>'
 
-    @property
-    def channels(self) -> SequenceProxy[Union[GuildChannel, Thread, PartialMessageable, Object]]:
-        """List[:class:`Union[GuildChannel, Thread, PartialMessageable, Object]`]: A list of channels that are opted into when this option is selected."""
-        return SequenceProxy(self._channels.values())
+    @cached_slot_property('_cs_channels')
+    def channels(self) -> List[Union[GuildChannel, Thread]]:
+        """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The list of channels which will be made visible if this option is selected."""
+        it = filter(None, map(self.guild._resolve_channel, self.channel_ids))
+        return utils._unique(it)
 
-    @property
-    def roles(self) -> SequenceProxy[Union[Role, Object]]:
-        """List[:class:`Union[Role, Object]`]: A list of roles that are assigned when this option is selected."""
-        return SequenceProxy(self._roles.values())
+    @cached_slot_property('_cs_roles')
+    def roles(self) -> List[Role]:
+        """List[:class:`Role`]: The list of roles given to the user if this option is selected."""
+        it = filter(None, map(self.guild.get_role, self.role_ids))
+        return utils._unique(it)
+
+    def to_dict(self) -> PromptOptionPayload:
+        return super().to_dict(id=self.id)
 
 
-class OnboardingPrompt(Hashable):
-    """Represents a guild's onboarding prompt.
+class PartialOnboardingPrompt:
+    """Represents a partial onboarding prompt, these are used in the creation
+    of an :class:`Onboarding` via :meth:`Guild.edit_onboarding`.
 
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two guilds are equal.
-
-        .. describe:: x != y
-
-            Checks if two guilds are not equal.
-
-        .. describe:: hash(x)
-
-            Returns the guild's hash.
-
-        .. describe:: str(x)
-
-            Returns the guild's name.
-
-    .. versionadded:: 2.2
-
+    .. versionadded:: 2.4
 
     Attributes
     -----------
-    id: :class:`int`
-        The ID of the prompt.
+    type: :class:`OnboardingPromptType`
+        The type of this prompt.
     title: :class:`str`
-        The title of the prompt.
+        The title of this prompt.
+    options: List[:class:`PartialOnboardingPromptOption`]
+        The options of this prompt.
     single_select: :class:`bool`
-        Whether only one option can be selected at a time.
+        Whether this prompt is single select.
     required: :class:`bool`
-        Whether the prompt is required in the onboarding flow.
+        Whether this prompt is required.
     in_onboarding: :class:`bool`
-        Whether the prompt is in the onboarding flow.
+        Whether this prompt is in the onboarding flow.
     """
 
-    __slots__ = ('id', 'title', 'single_select', 'required', 'in_onboarding', '_oboarding', '_options', '_type')
+    __slots__ = (
+        'type',
+        'title',
+        'options',
+        'single_select',
+        'required',
+        'in_onboarding',
+    )
 
-    def __init__(self, *, onboarding: Onboarding, data: OnboardingPromptPayload) -> None:
-        self._oboarding: Onboarding = onboarding
-        self._from_data(data)
+    def __init__(
+        self,
+        *,
+        type: OnboardingPromptType,
+        title: str,
+        options: List[PartialOnboardingPromptOption],
+        single_select: bool = True,
+        required: bool = True,
+        in_onboarding: bool = True,
+    ) -> None:
+        self.type: OnboardingPromptType = try_enum(OnboardingPromptType, type)
+        self.title: str = title
+        self.options: List[PartialOnboardingPromptOption] = options
+        self.single_select: bool = single_select
+        self.required: bool = required
+        self.in_onboarding: bool = in_onboarding
 
-    def _from_data(self, data: OnboardingPromptPayload) -> None:
+    def to_dict(self, *, id: int) -> PromptPayload:
+        return {
+            'id': id,
+            'type': self.type.value,
+            'title': self.title,
+            'options': [option.to_dict() for option in self.options],
+            'single_select': self.single_select,
+            'required': self.required,
+            'in_onboarding': self.in_onboarding,
+        }
+
+
+class OnboardingPrompt(PartialOnboardingPrompt, Hashable):
+    """Represents an onboarding prompt.
+
+    .. versionadded:: 2.4
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The ID of this prompt.
+    guild: :class:`Guild`
+        The guild the onboarding prompt is related to.
+    type: :class:`OnboardingPromptType`
+        The type of onboarding prompt.
+    title: :class:`str`
+        The title of this prompt.
+    options: List[:class:`OnboardingPromptOption`]
+        The list of options the user can select from.
+    single_select: :class:`bool`
+        Whether only one option can be selected.
+    required: :class:`bool`
+        Whether this prompt is required to complete the onboarding flow.
+    in_onboarding: :class:`bool`
+        Whether this prompt is part of the onboarding flow.
+    """
+
+    options: List[OnboardingPromptOption]
+
+    __slots__ = (
+        '_state',
+        'guild',
+        'id',
+        'title',
+        'options',
+        'single_select',
+        'required',
+        'in_onboarding',
+        'type',
+    )
+
+    def __init__(self, *, data: PromptPayload, state: ConnectionState, guild: Guild):
+        self._state: ConnectionState = state
+        self.guild: Guild = guild
         self.id: int = int(data['id'])
-        self.title: str = data['title']
-        self.single_select: bool = data['single_select']
-        self.required: bool = data['required']
-        self._type: OnboardingPromptType = try_enum(OnboardingPromptType, data['type'])
-        self.in_onboarding: bool = data['in_onboarding']
-        self._options: List[OnboardingPromptOption] = [
-            OnboardingPromptOption(onboarding=self._oboarding, data=option) for option in data['options']
-        ]
+        super().__init__(
+            type=try_enum(OnboardingPromptType, data['type']),
+            title=data['title'],
+            options=[OnboardingPromptOption(data=option_data, state=state, guild=guild) for option_data in data['options']],
+            single_select=data['single_select'],
+            required=data['required'],
+            in_onboarding=data['in_onboarding'],
+        )
 
     def __repr__(self) -> str:
-        return f'<OnboardingPrompt id={self.id} title={self.title!r} single_select={self.single_select} required={self.required} in_onboarding={self.in_onboarding} type={self.type!r}>'
-
-    @property
-    def type(self) -> OnboardingPromptType:
-        """Optional[:class:`OnboardingPromptType`]: The type of the prompt."""
-        return self._type
-
-    @property
-    def options(self) -> SequenceProxy[OnboardingPromptOption]:
-        """List[:class:`OnboardingPromptOption`]: The options available to the prompt."""
-        return SequenceProxy(self._options)
+        return f'<OnboardingPrompt id={self.id} title={self.title}, type={self.type}>'
 
 
 class Onboarding:
-    """Represents a guild's onboarding.
+    """Represents a guild's onboarding configuration.
 
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two guilds are equal.
-
-        .. describe:: x != y
-
-            Checks if two guilds are not equal.
-
-        .. describe:: hash(x)
-
-            Returns the guild's hash.
-
-        .. describe:: str(x)
-
-            Returns the guild's name.
-
-    .. versionadded:: 2.2
+    .. versionadded:: 2.4
 
     Attributes
     -----------
-    enabled: :class:`bool`
-        Whether guild onboarding is enabled.
+    guild: :class:`Guild`
+        The guild the onboarding configuration is for.
+    prompts: List[:class:`OnboardingPrompt`]
+        The list of prompts shown during the onboarding and customize community flows.
+    default_channel_ids: Set[:class:`int`]
+        The IDs of the channels exposed to a new user by default.
+    enabled: :class:`bool`:
+        Whether onboarding is enabled in this guild.
+    mode: :class:`OnboardingMode`
+        The mode of onboarding for this guild.
     """
 
-    __slots__ = ('enabled', '_guild', '_default_channel_ids', '_default_channels', '_prompts', '_guild_id')
+    __slots__ = (
+        '_state',
+        '_cs_default_channels',
+        'guild',
+        'prompts',
+        'default_channel_ids',
+        'enabled',
+        'mode',
+    )
 
-    def __init__(self, *, guild: Guild, data: OnboardingPayload) -> None:
-        self._guild = guild
-
-        self._default_channels: Dict[int, Union[GuildChannel, Thread, PartialMessageable, Object]] = {}
-        self._from_data(data)
-
-    def _from_data(self, data: OnboardingPayload) -> None:
-        guild = self._guild
-        state = guild._state
-
+    def __init__(self, *, data: OnboardingPayload, guild: Guild, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self.guild: Guild = guild
+        self.default_channel_ids: Set[int] = {int(channel_id) for channel_id in data['default_channel_ids']}
+        self.prompts: List[OnboardingPrompt] = [
+            OnboardingPrompt(data=prompt_data, state=state, guild=guild) for prompt_data in data['prompts']
+        ]
         self.enabled: bool = data['enabled']
-        self._guild_id: int = int(data['guild_id'])
-
-        prompts = data.get('prompts', [])
-        self._prompts: List[OnboardingPrompt] = [OnboardingPrompt(onboarding=self, data=prompt) for prompt in prompts]
-        default_channel_ids = data.get('default_channel_ids', [])
-        for channel_id in default_channel_ids:
-            channel = guild.get_channel_or_thread(int(channel_id)) or state.get_channel(int(channel_id))
-            self._default_channels[int(channel_id)] = channel or Object(id=channel_id)  # type: ignore # can't be a private channel
+        self.mode: OnboardingMode = try_enum(OnboardingMode, data.get('mode', 0))
 
     def __repr__(self) -> str:
-        return f'<Onboarding enabled={self.enabled}>'
+        return f'<Onboarding guild={self.guild!r} enabled={self.enabled}>'
 
-    @property
-    def default_channels(self) -> SequenceProxy[Union[GuildChannel, Thread, PartialMessageable, Object]]:
-        """List[Union[:class:`GuildChannel`, :class:`Thread`, :class:`Object`]: The channels that new members get opted into automatically."""
-        return SequenceProxy(self._default_channels.values())
-
-    @property
-    def prompts(self) -> SequenceProxy[OnboardingPrompt]:
-        """List[:class:`GuildOnboardingPrompt`]: The prompts shown during onboarding and in costomize community."""
-        return SequenceProxy(self._prompts)
+    @cached_slot_property('_cs_default_channels')
+    def default_channels(self) -> List[Union[GuildChannel, Thread]]:
+        """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The list of channels exposed to a new user by default."""
+        it = filter(None, map(self.guild._resolve_channel, self.default_channel_ids))
+        return utils._unique(it)

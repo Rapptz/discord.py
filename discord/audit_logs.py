@@ -44,6 +44,7 @@ from .sticker import GuildSticker
 from .threads import Thread
 from .integrations import PartialIntegration
 from .channel import ForumChannel, StageChannel, ForumTag
+from .onboarding import OnboardingPrompt, OnboardingPromptOption
 
 __all__ = (
     'AuditLogDiff',
@@ -73,6 +74,7 @@ if TYPE_CHECKING:
     from .types.snowflake import Snowflake
     from .types.command import ApplicationCommandPermissions
     from .types.automod import AutoModerationAction
+    from .types.onboarding import Prompt as PromptPayload, PromptOption as PromptOptionPayload
     from .user import User
     from .app_commands import AppCommand
     from .webhook import Webhook
@@ -246,6 +248,16 @@ def _transform_default_emoji(entry: AuditLogEntry, data: str) -> PartialEmoji:
     return PartialEmoji(name=data)
 
 
+def _transform_onboarding_prompts(entry: AuditLogEntry, data: List[PromptPayload]) -> List[OnboardingPrompt]:
+    return [OnboardingPrompt(data=prompt, state=entry._state, guild=entry.guild) for prompt in data]
+
+
+def _transform_onboarding_prompt_options(
+    entry: AuditLogEntry, data: List[PromptOptionPayload]
+) -> List[OnboardingPromptOption]:
+    return [OnboardingPromptOption(data=option, state=entry._state, guild=entry.guild) for option in data]
+
+
 E = TypeVar('E', bound=enums.Enum)
 
 
@@ -268,13 +280,15 @@ def _flag_transformer(cls: Type[F]) -> Callable[[AuditLogEntry, Union[int, str]]
 
 def _transform_type(
     entry: AuditLogEntry, data: Union[int, str]
-) -> Union[enums.ChannelType, enums.StickerType, enums.WebhookType, str]:
+) -> Union[enums.ChannelType, enums.StickerType, enums.WebhookType, str, enums.OnboardingPromptType]:
     if entry.action.name.startswith('sticker_'):
         return enums.try_enum(enums.StickerType, data)
     elif entry.action.name.startswith('integration_'):
         return data  # type: ignore  # integration type is str
     elif entry.action.name.startswith('webhook_'):
         return enums.try_enum(enums.WebhookType, data)
+    elif entry.action.name.startswith('onboarding_question_'):
+        return enums.try_enum(enums.OnboardingPromptType, data)
     else:
         return enums.try_enum(enums.ChannelType, data)
 
@@ -353,7 +367,10 @@ class AuditLogChanges:
         'flags':                                 (None, _transform_overloaded_flags),
         'default_reaction_emoji':                (None, _transform_default_reaction),
         'emoji_name':                            ('emoji', _transform_default_emoji),
-        'user_id':                               ('user', _transform_member_id)
+        'user_id':                               ('user', _transform_member_id),
+        'options':                               (None, _transform_onboarding_prompt_options),
+        'prompts':                               (None, _transform_onboarding_prompts),
+        'default_channel_ids':                   ('default_channels', _transform_channels_or_threads),
     }
     # fmt: on
 
