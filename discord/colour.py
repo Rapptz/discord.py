@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import colorsys
@@ -104,6 +105,11 @@ class Colour:
 
              Returns the raw colour value.
 
+    .. note::
+
+        The colour values in the classmethods are mostly provided as-is and can change between
+        versions should the Discord client's representation of that colour also change.
+
     Attributes
     ------------
     value: :class:`int`
@@ -170,7 +176,7 @@ class Colour:
         return cls.from_rgb(*(int(x * 255) for x in rgb))
 
     @classmethod
-    def from_str(cls, value: str) -> Self:
+    def from_str(cls, value: str) -> Colour:
         """Constructs a :class:`Colour` from a string.
 
         The following formats are accepted:
@@ -190,6 +196,9 @@ class Colour:
         ValueError
             The string could not be converted into a colour.
         """
+
+        if not value:
+            raise ValueError('unknown colour format given')
 
         if value[0] == '#':
             return parse_hex_number(value[1:])
@@ -450,19 +459,58 @@ class Colour:
         return cls(0x99AAB5)
 
     @classmethod
+    def ash_theme(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0x2E2E34``.
+
+        This will appear transparent on Discord's ash theme.
+
+        .. colour:: #2E2E34
+
+        .. versionadded:: 2.6
+        """
+        return cls(0x2E2E34)
+
+    @classmethod
     def dark_theme(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x313338``.
+        """A factory method that returns a :class:`Colour` with a value of ``0x1A1A1E``.
 
         This will appear transparent on Discord's dark theme.
 
-        .. colour:: #313338
+        .. colour:: #1A1A1E
 
         .. versionadded:: 1.5
 
         .. versionchanged:: 2.2
             Updated colour from previous ``0x36393F`` to reflect discord theme changes.
+
+        .. versionchanged:: 2.6
+            Updated colour from previous ``0x313338`` to reflect discord theme changes.
         """
-        return cls(0x313338)
+        return cls(0x1A1A1E)
+
+    @classmethod
+    def onyx_theme(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0x070709``.
+
+        This will appear transparent on Discord's onyx theme.
+
+        .. colour:: #070709
+
+        .. versionadded:: 2.6
+        """
+        return cls(0x070709)
+
+    @classmethod
+    def light_theme(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0xFBFBFB``.
+
+        This will appear transparent on Discord's light theme.
+
+        .. colour:: #FBFBFB
+
+        .. versionadded:: 2.6
+        """
+        return cls(0xFBFBFB)
 
     @classmethod
     def fuchsia(cls) -> Self:
@@ -485,24 +533,61 @@ class Colour:
         return cls(0xFEE75C)
 
     @classmethod
-    def dark_embed(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x2B2D31``.
+    def ash_embed(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0x37373E``.
 
-        .. colour:: #2B2D31
+        .. colour:: #37373E
+
+        .. versionadded:: 2.6
+
+        """
+        return cls(0x37373E)
+
+    @classmethod
+    def dark_embed(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0x242429``.
+
+        .. colour:: #242429
 
         .. versionadded:: 2.2
+
+        .. versionchanged:: 2.6
+            Updated colour from previous ``0x2B2D31`` to reflect discord theme changes.
         """
-        return cls(0x2B2D31)
+        return cls(0x242429)
+
+    @classmethod
+    def onyx_embed(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0x131416``.
+
+        .. colour:: #131416
+
+        .. versionadded:: 2.6
+        """
+        return cls(0x131416)
 
     @classmethod
     def light_embed(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xEEEFF1``.
+        """A factory method that returns a :class:`Colour` with a value of ``0xFFFFFF``.
 
         .. colour:: #EEEFF1
 
         .. versionadded:: 2.2
+
+        .. versionchanged:: 2.6
+            Updated colour from previous ``0xEEEFF1`` to reflect discord theme changes.
         """
-        return cls(0xEEEFF1)
+        return cls(0xFFFFFF)
+
+    @classmethod
+    def pink(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0xEB459F``.
+
+        .. colour:: #EB459F
+
+        .. versionadded:: 2.3
+        """
+        return cls(0xEB459F)
 
 
 Color = Colour

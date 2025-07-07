@@ -31,8 +31,9 @@ from .emoji import PartialEmoji
 from .channel import ChannelType
 
 ComponentType = Literal[1, 2, 3, 4]
-ButtonStyle = Literal[1, 2, 3, 4, 5]
+ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
+DefaultValueType = Literal['user', 'role', 'channel']
 
 
 class ActionRow(TypedDict):
@@ -48,6 +49,7 @@ class ButtonComponent(TypedDict):
     disabled: NotRequired[bool]
     emoji: NotRequired[PartialEmoji]
     label: NotRequired[str]
+    sku_id: NotRequired[str]
 
 
 class SelectOption(TypedDict):
@@ -66,6 +68,11 @@ class SelectComponent(TypedDict):
     disabled: NotRequired[bool]
 
 
+class SelectDefaultValues(TypedDict):
+    id: int
+    type: DefaultValueType
+
+
 class StringSelectComponent(SelectComponent):
     type: Literal[3]
     options: NotRequired[List[SelectOption]]
@@ -73,19 +80,23 @@ class StringSelectComponent(SelectComponent):
 
 class UserSelectComponent(SelectComponent):
     type: Literal[5]
+    default_values: NotRequired[List[SelectDefaultValues]]
 
 
 class RoleSelectComponent(SelectComponent):
     type: Literal[6]
+    default_values: NotRequired[List[SelectDefaultValues]]
 
 
 class MentionableSelectComponent(SelectComponent):
     type: Literal[7]
+    default_values: NotRequired[List[SelectDefaultValues]]
 
 
 class ChannelSelectComponent(SelectComponent):
     type: Literal[8]
     channel_types: NotRequired[List[ChannelType]]
+    default_values: NotRequired[List[SelectDefaultValues]]
 
 
 class TextInput(TypedDict):
@@ -104,6 +115,7 @@ class SelectMenu(SelectComponent):
     type: Literal[3, 5, 6, 7, 8]
     options: NotRequired[List[SelectOption]]
     channel_types: NotRequired[List[ChannelType]]
+    default_values: NotRequired[List[SelectDefaultValues]]
 
 
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]

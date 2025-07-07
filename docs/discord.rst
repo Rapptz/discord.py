@@ -21,12 +21,7 @@ Creating a Bot account is a pretty straightforward process.
     .. image:: /images/discord_create_app_form.png
         :alt: The new application form filled in.
 
-5. Create a Bot User by navigating to the "Bot" tab and clicking "Add Bot".
-
-    - Click "Yes, do it!" to continue.
-
-    .. image:: /images/discord_create_bot_user.png
-        :alt: The Add Bot button.
+5. Navigate to the "Bot" tab to configure it.
 6. Make sure that **Public Bot** is ticked if you want others to invite your bot.
 
     - You should also make sure that **Require OAuth2 Code Grant** is unchecked unless you
@@ -66,7 +61,7 @@ If you want to invite your bot you must create an invite URL for it.
 1. Make sure you're logged on to the `Discord website <https://discord.com>`_.
 2. Navigate to the `application page <https://discord.com/developers/applications>`_
 3. Click on your bot's page.
-4. Go to the "OAuth2" tab.
+4. Go to the "OAuth2 > URL Generator" tab.
 
     .. image:: /images/discord_oauth2.png
         :alt: How the OAuth2 page should look like.

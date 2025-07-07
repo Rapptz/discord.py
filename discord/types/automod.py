@@ -45,9 +45,13 @@ class _AutoModerationActionMetadataTimeout(TypedDict):
     duration_seconds: int
 
 
+class _AutoModerationActionMetadataCustomMessage(TypedDict):
+    custom_message: str
+
+
 class _AutoModerationActionBlockMessage(TypedDict):
     type: Literal[1]
-    metadata: NotRequired[Empty]
+    metadata: NotRequired[_AutoModerationActionMetadataCustomMessage]
 
 
 class _AutoModerationActionAlert(TypedDict):
@@ -75,6 +79,7 @@ class _AutoModerationTriggerMetadataKeywordPreset(TypedDict):
 
 class _AutoModerationTriggerMetadataMentionLimit(TypedDict):
     mention_total_limit: int
+    mention_raid_protection_enabled: bool
 
 
 AutoModerationTriggerMetadata = Union[

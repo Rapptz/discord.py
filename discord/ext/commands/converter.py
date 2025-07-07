@@ -82,6 +82,7 @@ __all__ = (
     'GuildChannelConverter',
     'GuildStickerConverter',
     'ScheduledEventConverter',
+    'SoundboardSoundConverter',
     'clean_content',
     'Greedy',
     'Range',
@@ -125,6 +126,10 @@ class Converter(Protocol[T_co]):
         If an error is found while converting, it is recommended to
         raise a :exc:`.CommandError` derived exception as it will
         properly propagate to the error handlers.
+
+        Note that if this method is called manually, :exc:`Exception`
+        should be caught to handle the cases where a subclass does
+        not explicitly inherit from :exc:`.CommandError`.
 
         Parameters
         -----------
@@ -186,9 +191,11 @@ class MemberConverter(IDConverter[discord.Member]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
-    5. Lookup by nickname
+    3. Lookup by username#discriminator (deprecated).
+    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    5. Lookup by user name.
+    6. Lookup by global name.
+    7. Lookup by guild nickname.
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
@@ -196,17 +203,29 @@ class MemberConverter(IDConverter[discord.Member]):
     .. versionchanged:: 1.5.1
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
+
+    .. deprecated:: 2.3
+        Looking up users by discriminator will be removed in a future version due to
+        the removal of discriminators in an API change.
     """
 
     async def query_member_named(self, guild: discord.Guild, argument: str) -> Optional[discord.Member]:
         cache = guild._state.member_cache_flags.joined
-        if len(argument) > 5 and argument[-5] == '#':
-            username, _, discriminator = argument.rpartition('#')
-            members = await guild.query_members(username, limit=100, cache=cache)
-            return discord.utils.get(members, name=username, discriminator=discriminator)
+        username, _, discriminator = argument.rpartition('#')
+
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
+
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            lookup = username
+            predicate = lambda m: m.name == username and m.discriminator == discriminator
         else:
-            members = await guild.query_members(argument, limit=100, cache=cache)
-            return discord.utils.find(lambda m: m.name == argument or m.nick == argument, members)
+            lookup = argument
+            predicate = lambda m: m.name == argument or m.global_name == argument or m.nick == argument
+
+        members = await guild.query_members(lookup, limit=100, cache=cache)
+        return discord.utils.find(predicate, members)
 
     async def query_member_by_id(self, bot: _Bot, guild: discord.Guild, user_id: int) -> Optional[discord.Member]:
         ws = bot._get_websocket(shard_id=guild.shard_id)
@@ -273,8 +292,10 @@ class UserConverter(IDConverter[discord.User]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
+    3. Lookup by username#discriminator (deprecated).
+    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    5. Lookup by user name.
+    6. Lookup by global name.
 
     .. versionchanged:: 1.5
          Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
@@ -282,6 +303,10 @@ class UserConverter(IDConverter[discord.User]):
     .. versionchanged:: 1.6
         This converter now lazily fetches users from the HTTP APIs if an ID is passed
         and it's not available in cache.
+
+    .. deprecated:: 2.3
+        Looking up users by discriminator will be removed in a future version due to
+        the removal of discriminators in an API change.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.User:
@@ -300,25 +325,18 @@ class UserConverter(IDConverter[discord.User]):
 
             return result  # type: ignore
 
-        arg = argument
+        username, _, discriminator = argument.rpartition('#')
 
-        # Remove the '@' character if this is the first character from the argument
-        if arg[0] == '@':
-            # Remove first character
-            arg = arg[1:]
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
 
-        # check for discriminator if it exists,
-        if len(arg) > 5 and arg[-5] == '#':
-            discrim = arg[-4:]
-            name = arg[:-5]
-            predicate = lambda u: u.name == name and u.discriminator == discrim
-            result = discord.utils.find(predicate, state._users.values())
-            if result is not None:
-                return result
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            predicate = lambda u: u.name == username and u.discriminator == discriminator
+        else:
+            predicate = lambda u: u.name == argument or u.global_name == argument
 
-        predicate = lambda u: u.name == arg
         result = discord.utils.find(predicate, state._users.values())
-
         if result is None:
             raise UserNotFound(argument)
 
@@ -425,19 +443,36 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name.
+    3. Lookup by channel URL.
+    4. Lookup by name.
 
     .. versionadded:: 2.0
+
+    .. versionchanged:: 2.4
+        Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.abc.GuildChannel:
         return self._resolve_channel(ctx, argument, 'channels', discord.abc.GuildChannel)
 
     @staticmethod
+    def _parse_from_url(argument: str) -> Optional[re.Match[str]]:
+        link_regex = re.compile(
+            r'https?://(?:(?:ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
+            r'(?:[0-9]{15,20}|@me)'
+            r'/([0-9]{15,20})(?:/(?:[0-9]{15,20})/?)?$'
+        )
+        return link_regex.match(argument)
+
+    @staticmethod
     def _resolve_channel(ctx: Context[BotT], argument: str, attribute: str, type: Type[CT]) -> CT:
         bot = ctx.bot
 
-        match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
+        match = (
+            IDConverter._get_id_match(argument)
+            or re.match(r'<#([0-9]{15,20})>$', argument)
+            or GuildChannelConverter._parse_from_url(argument)
+        )
         result = None
         guild = ctx.guild
 
@@ -467,7 +502,11 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
 
     @staticmethod
     def _resolve_thread(ctx: Context[BotT], argument: str, attribute: str, type: Type[TT]) -> TT:
-        match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
+        match = (
+            IDConverter._get_id_match(argument)
+            or re.match(r'<#([0-9]{15,20})>$', argument)
+            or GuildChannelConverter._parse_from_url(argument)
+        )
         result = None
         guild = ctx.guild
 
@@ -497,10 +536,14 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by channel URL.
+    4. Lookup by name
 
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
+
+    .. versionchanged:: 2.4
+        Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.TextChannel:
@@ -517,10 +560,14 @@ class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by channel URL.
+    4. Lookup by name
 
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
+
+    .. versionchanged:: 2.4
+        Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.VoiceChannel:
@@ -539,7 +586,11 @@ class StageChannelConverter(IDConverter[discord.StageChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by channel URL.
+    4. Lookup by name
+
+    .. versionchanged:: 2.4
+        Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.StageChannel:
@@ -556,7 +607,11 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by channel URL.
+    4. Lookup by name
+
+    .. versionchanged:: 2.4
+        Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
 
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
@@ -575,9 +630,13 @@ class ThreadConverter(IDConverter[discord.Thread]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name.
+    3. Lookup by channel URL.
+    4. Lookup by name.
 
     .. versionadded: 2.0
+
+    .. versionchanged:: 2.4
+        Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.Thread:
@@ -594,9 +653,13 @@ class ForumChannelConverter(IDConverter[discord.ForumChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by channel URL.
+    4. Lookup by name
 
     .. versionadded:: 2.0
+
+    .. versionchanged:: 2.4
+        Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.ForumChannel:
@@ -889,6 +952,44 @@ class ScheduledEventConverter(IDConverter[discord.ScheduledEvent]):
         return result
 
 
+class SoundboardSoundConverter(IDConverter[discord.SoundboardSound]):
+    """Converts to a :class:`~discord.SoundboardSound`.
+
+    Lookups are done for the local guild if available. Otherwise, for a DM context,
+    lookup is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by name.
+
+    .. versionadded:: 2.5
+    """
+
+    async def convert(self, ctx: Context[BotT], argument: str) -> discord.SoundboardSound:
+        guild = ctx.guild
+        match = self._get_id_match(argument)
+        result = None
+
+        if match:
+            # ID match
+            sound_id = int(match.group(1))
+            if guild:
+                result = guild.get_soundboard_sound(sound_id)
+            else:
+                result = ctx.bot.get_soundboard_sound(sound_id)
+        else:
+            # lookup by name
+            if guild:
+                result = discord.utils.get(guild.soundboard_sounds, name=argument)
+            else:
+                result = discord.utils.get(ctx.bot.soundboard_sounds, name=argument)
+        if result is None:
+            raise SoundboardSoundNotFound(argument)
+
+        return result
+
+
 class clean_content(Converter[str]):
     """Converts the argument to mention scrubbed version of
     said content.
@@ -1024,7 +1125,7 @@ class Greedy(List[T]):
 
         args = getattr(converter, '__args__', ())
         if discord.utils.PY_310 and converter.__class__ is types.UnionType:  # type: ignore
-            converter = Union[args]  # type: ignore
+            converter = Union[args]
 
         origin = getattr(converter, '__origin__', None)
 
@@ -1037,7 +1138,7 @@ class Greedy(List[T]):
         if origin is Union and type(None) in args:
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
-        return cls(converter=converter)
+        return cls(converter=converter)  # type: ignore
 
     @property
     def constructed_converter(self) -> Any:
@@ -1172,7 +1273,7 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-_GenericAlias = type(List[T])
+_GenericAlias = type(List[T])  # type: ignore
 
 
 def is_generic_type(tp: Any, *, _GenericAlias: type = _GenericAlias) -> bool:
@@ -1201,6 +1302,7 @@ CONVERTER_MAPPING: Dict[type, Any] = {
     discord.GuildSticker: GuildStickerConverter,
     discord.ScheduledEvent: ScheduledEventConverter,
     discord.ForumChannel: ForumChannelConverter,
+    discord.SoundboardSound: SoundboardSoundConverter,
 }
 
 
@@ -1223,7 +1325,7 @@ async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, 
             else:
                 return await converter().convert(ctx, argument)
         elif isinstance(converter, Converter):
-            return await converter.convert(ctx, argument)  # type: ignore
+            return await converter.convert(ctx, argument)
     except CommandError:
         raise
     except Exception as exc:
@@ -1330,7 +1432,7 @@ async def run_converters(ctx: Context[BotT], converter: Any, argument: str, para
                 return value
 
         # if we're here, then we failed to match all the literals
-        raise BadLiteralArgument(param, literal_args, errors)
+        raise BadLiteralArgument(param, literal_args, errors, argument)
 
     # This must be the last if-clause in the chain of origin checking
     # Nearly every type is a generic type within the typing library

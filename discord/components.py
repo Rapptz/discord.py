@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType, SelectDefaultValueType
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -40,8 +40,10 @@ if TYPE_CHECKING:
         ActionRow as ActionRowPayload,
         TextInput as TextInputPayload,
         ActionRowChildComponent as ActionRowChildComponentPayload,
+        SelectDefaultValues as SelectDefaultValuesPayload,
     )
     from .emoji import Emoji
+    from .abc import Snowflake
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
 
@@ -53,6 +55,7 @@ __all__ = (
     'SelectMenu',
     'SelectOption',
     'TextInput',
+    'SelectDefaultValue',
 )
 
 
@@ -167,6 +170,10 @@ class Button(Component):
         The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
+    sku_id: Optional[:class:`int`]
+        The SKU ID this button sends you to, if available.
+
+        .. versionadded:: 2.4
     """
 
     __slots__: Tuple[str, ...] = (
@@ -176,6 +183,7 @@ class Button(Component):
         'disabled',
         'label',
         'emoji',
+        'sku_id',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -188,9 +196,14 @@ class Button(Component):
         self.label: Optional[str] = data.get('label')
         self.emoji: Optional[PartialEmoji]
         try:
-            self.emoji = PartialEmoji.from_dict(data['emoji'])
+            self.emoji = PartialEmoji.from_dict(data['emoji'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.emoji = None
+
+        try:
+            self.sku_id: Optional[int] = int(data['sku_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        except KeyError:
+            self.sku_id = None
 
     @property
     def type(self) -> Literal[ComponentType.button]:
@@ -203,6 +216,9 @@ class Button(Component):
             'style': self.style.value,
             'disabled': self.disabled,
         }
+
+        if self.sku_id:
+            payload['sku_id'] = str(self.sku_id)
 
         if self.label:
             payload['label'] = self.label
@@ -263,6 +279,7 @@ class SelectMenu(Component):
         'options',
         'disabled',
         'channel_types',
+        'default_values',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -276,10 +293,13 @@ class SelectMenu(Component):
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
+        self.default_values: List[SelectDefaultValue] = [
+            SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])
+        ]
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
-            'type': self.type.value,
+            'type': self.type.value,  # type: ignore # we know this is a select menu.
             'custom_id': self.custom_id,
             'min_values': self.min_values,
             'max_values': self.max_values,
@@ -291,6 +311,8 @@ class SelectMenu(Component):
             payload['options'] = [op.to_dict() for op in self.options]
         if self.channel_types:
             payload['channel_types'] = [t.value for t in self.channel_types]
+        if self.default_values:
+            payload["default_values"] = [v.to_dict() for v in self.default_values]
 
         return payload
 
@@ -309,8 +331,8 @@ class SelectOption:
         Can only be up to 100 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
-        If not provided when constructed then it defaults to the
-        label. Can only be up to 100 characters.
+        If not provided when constructed then it defaults to the label.
+        Can only be up to 100 characters.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
         Can only be up to 100 characters.
@@ -323,14 +345,12 @@ class SelectOption:
     -----------
     label: :class:`str`
         The label of the option. This is displayed to users.
-        Can only be up to 100 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
         If not provided when constructed then it defaults to the
-        label. Can only be up to 100 characters.
+        label.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
-        Can only be up to 100 characters.
     default: :class:`bool`
         Whether this option is selected by default.
     """
@@ -395,7 +415,7 @@ class SelectOption:
     @classmethod
     def from_dict(cls, data: SelectOptionPayload) -> SelectOption:
         try:
-            emoji = PartialEmoji.from_dict(data['emoji'])
+            emoji = PartialEmoji.from_dict(data['emoji'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             emoji = None
 
@@ -421,6 +441,9 @@ class SelectOption:
             payload['description'] = self.description
 
         return payload
+
+    def copy(self) -> SelectOption:
+        return self.__class__.from_dict(self.to_dict())
 
 
 class TextInput(Component):
@@ -512,6 +535,116 @@ class TextInput(Component):
         return self.value
 
 
+class SelectDefaultValue:
+    """Represents a select menu's default value.
+
+    These can be created by users.
+
+    .. versionadded:: 2.4
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The id of a role, user, or channel.
+    type: :class:`SelectDefaultValueType`
+        The type of value that ``id`` represents.
+    """
+
+    def __init__(
+        self,
+        *,
+        id: int,
+        type: SelectDefaultValueType,
+    ) -> None:
+        self.id: int = id
+        self._type: SelectDefaultValueType = type
+
+    @property
+    def type(self) -> SelectDefaultValueType:
+        """:class:`SelectDefaultValueType`: The type of value that ``id`` represents."""
+        return self._type
+
+    @type.setter
+    def type(self, value: SelectDefaultValueType) -> None:
+        if not isinstance(value, SelectDefaultValueType):
+            raise TypeError(f'expected SelectDefaultValueType, received {value.__class__.__name__} instead')
+
+        self._type = value
+
+    def __repr__(self) -> str:
+        return f'<SelectDefaultValue id={self.id!r} type={self.type!r}>'
+
+    @classmethod
+    def from_dict(cls, data: SelectDefaultValuesPayload) -> SelectDefaultValue:
+        return cls(
+            id=data['id'],
+            type=try_enum(SelectDefaultValueType, data['type']),
+        )
+
+    def to_dict(self) -> SelectDefaultValuesPayload:
+        return {
+            'id': self.id,
+            'type': self._type.value,
+        }
+
+    @classmethod
+    def from_channel(cls, channel: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.channel`.
+
+        Parameters
+        -----------
+        channel: :class:`~discord.abc.Snowflake`
+            The channel to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the channel.
+        """
+        return cls(
+            id=channel.id,
+            type=SelectDefaultValueType.channel,
+        )
+
+    @classmethod
+    def from_role(cls, role: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.role`.
+
+        Parameters
+        -----------
+        role: :class:`~discord.abc.Snowflake`
+            The role to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the role.
+        """
+        return cls(
+            id=role.id,
+            type=SelectDefaultValueType.role,
+        )
+
+    @classmethod
+    def from_user(cls, user: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.user`.
+
+        Parameters
+        -----------
+        user: :class:`~discord.abc.Snowflake`
+            The user to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the user.
+        """
+        return cls(
+            id=user.id,
+            type=SelectDefaultValueType.user,
+        )
+
+
 @overload
 def _component_factory(data: ActionRowChildComponentPayload) -> Optional[ActionRowChildComponentType]:
     ...
@@ -527,7 +660,7 @@ def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, Acti
         return ActionRow(data)
     elif data['type'] == 2:
         return Button(data)
-    elif data['type'] == 3:
-        return SelectMenu(data)
     elif data['type'] == 4:
         return TextInput(data)
+    elif data['type'] in (3, 5, 6, 7, 8):
+        return SelectMenu(data)

@@ -256,7 +256,7 @@ GroupCog
 .. attributetable:: discord.ext.commands.GroupCog
 
 .. autoclass:: discord.ext.commands.GroupCog
-    :members:
+    :members: interaction_check
 
 
 CogMeta
@@ -531,6 +531,11 @@ Converters
 .. autoclass:: discord.ext.commands.ScheduledEventConverter
     :members:
 
+.. attributetable:: discord.ext.commands.SoundboardSoundConverter
+
+.. autoclass:: discord.ext.commands.SoundboardSoundConverter
+    :members:
+
 .. attributetable:: discord.ext.commands.clean_content
 
 .. autoclass:: discord.ext.commands.clean_content
@@ -708,6 +713,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.ScheduledEventNotFound
     :members:
 
+.. autoexception:: discord.ext.commands.SoundboardSoundNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadBoolArgument
     :members:
 
@@ -800,6 +808,7 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.GuildStickerNotFound`
                     - :exc:`~.commands.ScheduledEventNotFound`
+                    - :exc:`~.commands.SoundboardSoundNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
                     - :exc:`~.commands.RangeError`

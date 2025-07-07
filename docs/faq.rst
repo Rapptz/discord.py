@@ -439,7 +439,7 @@ How can I disable all items on timeout?
 
 This requires three steps.
 
-1. Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :meth:`Interaction.original_response`.
+1. Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :attr:`InteractionCallbackResponse.resource`.
 2. Inside :meth:`~ui.View.on_timeout`, loop over all items inside the view and mark them disabled.
 3. Edit the message we retrieved in step 1 with the newly modified view.
 
@@ -467,7 +467,7 @@ Putting it all together, we can do this in a text command:
         # Step 1
         view.message = await ctx.send('Press me!', view=view)
 
-Application commands do not return a message when you respond with :meth:`InteractionResponse.send_message`, therefore in order to reliably do this we should retrieve the message using :meth:`Interaction.original_response`.
+Application commands, when you respond with :meth:`InteractionResponse.send_message`, return an instance of :class:`InteractionCallbackResponse` which contains the message you sent. This is the message you should attach to the view.
 
 Putting it all together, using the previous view definition:
 
@@ -477,10 +477,13 @@ Putting it all together, using the previous view definition:
     async def more_timeout_example(interaction):
         """Another example to showcase disabling buttons on timing out"""
         view = MyView()
-        await interaction.response.send_message('Press me!', view=view)
+        callback = await interaction.response.send_message('Press me!', view=view)
 
         # Step 1
-        view.message = await interaction.original_response()
+        resource = callback.resource
+        # making sure it's an interaction response message
+        if isinstance(resource, discord.InteractionMessage):
+            view.message = resource
 
 
 Application Commands

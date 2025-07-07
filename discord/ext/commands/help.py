@@ -294,6 +294,14 @@ class _HelpCommandImpl(Command):
         cog.walk_commands = cog.walk_commands.__wrapped__
         self.cog = None
 
+        # Revert `on_error` to use the original one in case of race conditions
+        self.on_error = self._injected.on_help_command_error
+
+    def update(self, **kwargs: Any) -> None:
+        cog = self.cog
+        self.__init__(self._original, **dict(self.__original_kwargs__, **kwargs))
+        self.cog = cog
+
 
 class HelpCommand:
     r"""The base implementation for help command formatting.
@@ -374,9 +382,8 @@ class HelpCommand:
         return obj
 
     def _add_to_bot(self, bot: BotBase) -> None:
-        command = _HelpCommandImpl(self, **self.command_attrs)
-        bot.add_command(command)
-        self._command_impl = command
+        self._command_impl.update(**self.command_attrs)
+        bot.add_command(self._command_impl)
 
     def _remove_from_bot(self, bot: BotBase) -> None:
         bot.remove_command(self._command_impl.name)
@@ -1166,7 +1173,7 @@ class DefaultHelpCommand(HelpCommand):
 
         get_width = discord.utils._string_width
         for argument in arguments:
-            name = argument.name
+            name = argument.displayed_name or argument.name
             width = max_size - (get_width(name) - len(name))
             entry = f'{self.indent * " "}{name:<{width}} {argument.description or self.default_argument_description}'
             # we do not want to shorten the default value, if any.

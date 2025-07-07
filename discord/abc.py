@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import copy
 import time
+import secrets
 import asyncio
 from datetime import datetime
 from typing import (
@@ -48,8 +49,8 @@ from typing import (
 
 from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
-from .enums import ChannelType
-from .errors import ClientException
+from .enums import ChannelType, InviteTarget
+from .errors import ClientException, NotFound
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
@@ -59,6 +60,7 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
+from .flags import InviteFlags
 
 __all__ = (
     'Snowflake',
@@ -83,9 +85,17 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel
+    from .channel import (
+        TextChannel,
+        DMChannel,
+        GroupChannel,
+        PartialMessageable,
+        VocalGuildChannel,
+        VoiceChannel,
+        StageChannel,
+    )
+    from .poll import Poll
     from .threads import Thread
-    from .enums import InviteTarget
     from .ui.view import View
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
@@ -93,11 +103,14 @@ if TYPE_CHECKING:
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
+    from .types.guild import (
+        ChannelPositionUpdate,
+    )
     from .types.snowflake import (
         SnowflakeList,
     )
 
-    PartialMessageableChannel = Union[TextChannel, VoiceChannel, Thread, DMChannel, PartialMessageable]
+    PartialMessageableChannel = Union[TextChannel, VoiceChannel, StageChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -114,11 +127,18 @@ _undefined: Any = _Undefined()
 
 async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
     for m in messages:
-        await m.delete()
+        try:
+            await m.delete()
+        except NotFound as exc:
+            if exc.code == 10008:
+                continue  # bulk deletion ignores not found messages, single deletion does not.
+            # several other race conditions with deletion should fail without continuing,
+            # such as the channel being deleted and not found.
+            raise
 
 
 async def _purge_helper(
-    channel: Union[Thread, TextChannel, VoiceChannel],
+    channel: Union[Thread, TextChannel, VocalGuildChannel],
     *,
     limit: Optional[int] = 100,
     check: Callable[[Message], bool] = MISSING,
@@ -211,7 +231,9 @@ class User(Snowflake, Protocol):
     name: :class:`str`
         The user's username.
     discriminator: :class:`str`
-        The user's discriminator.
+        The user's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The user's global nickname.
     bot: :class:`bool`
         If the user is a bot account.
     system: :class:`bool`
@@ -220,6 +242,7 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
+    global_name: Optional[str]
     bot: bool
     system: bool
 
@@ -239,8 +262,24 @@ class User(Snowflake, Protocol):
         raise NotImplementedError
 
     @property
+    def avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar decoration, if present.
+
+        .. versionadded:: 2.4
+        """
+        raise NotImplementedError
+
+    @property
+    def avatar_decoration_sku_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns an integer that represents the user's avatar decoration SKU ID, if present.
+
+        .. versionadded:: 2.4
+        """
+        raise NotImplementedError
+
+    @property
     def default_avatar(self) -> Asset:
-        """:class:`~discord.Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
+        """:class:`~discord.Asset`: Returns the default avatar for a given user."""
         raise NotImplementedError
 
     @property
@@ -490,6 +529,13 @@ class GuildChannel:
                 raise TypeError('type field must be of type ChannelType')
             options['type'] = ch_type.value
 
+        try:
+            status = options.pop('status')
+        except KeyError:
+            pass
+        else:
+            await self._state.http.edit_voice_channel_status(status, channel_id=self.id, reason=reason)
+
         if options:
             return await self._state.http.edit_channel(self.id, reason=reason, **options)
 
@@ -665,6 +711,7 @@ class GuildChannel:
         - Member overrides
         - Implicit permissions
         - Member timeout
+        - User installed app
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
         someone with that role would have, which is essentially:
@@ -679,6 +726,12 @@ class GuildChannel:
 
         .. versionchanged:: 2.0
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.4
+            User installed apps are now taken into account.
+            The permissions returned for a user installed app mirrors the
+            permissions Discord returns in :attr:`~discord.Interaction.app_permissions`,
+            though it is recommended to use that attribute instead.
 
         Parameters
         ----------
@@ -711,6 +764,13 @@ class GuildChannel:
             return Permissions.all()
 
         default = self.guild.default_role
+        if default is None:
+
+            if self._state.self_id == obj.id:
+                return Permissions._user_installed_permissions(in_guild=True)
+            else:
+                return Permissions.none()
+
         base = Permissions(default.permissions.value)
 
         # Handle the role case first
@@ -935,8 +995,6 @@ class GuildChannel:
             if len(permissions) > 0:
                 raise TypeError('Cannot mix overwrite and keyword arguments.')
 
-        # TODO: wait for event
-
         if overwrite is None:
             await http.delete_channel_permissions(self.id, target.id, reason=reason)
         elif isinstance(overwrite, PermissionOverwrite):
@@ -952,11 +1010,15 @@ class GuildChannel:
         base_attrs: Dict[str, Any],
         *,
         name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
         reason: Optional[str] = None,
     ) -> Self:
         base_attrs['permission_overwrites'] = [x._asdict() for x in self._overwrites]
         base_attrs['parent_id'] = self.category_id
         base_attrs['name'] = name or self.name
+        if category is not None:
+            base_attrs['parent_id'] = category.id
+
         guild_id = self.guild.id
         cls = self.__class__
         data = await self._state.http.create_channel(guild_id, self.type.value, reason=reason, **base_attrs)
@@ -966,7 +1028,13 @@ class GuildChannel:
         self.guild._channels[obj.id] = obj  # type: ignore # obj is a GuildChannel
         return obj
 
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> Self:
         """|coro|
 
         Clones this channel. This creates a channel with the same properties
@@ -981,6 +1049,11 @@ class GuildChannel:
         name: Optional[:class:`str`]
             The name of the new channel. If not provided, defaults to this
             channel name.
+        category: Optional[:class:`~discord.CategoryChannel`]
+            The category the new channel belongs to.
+            This parameter is ignored if cloning a category channel.
+
+            .. versionadded:: 2.5
         reason: Optional[:class:`str`]
             The reason for cloning this channel. Shows up on the audit log.
 
@@ -1077,10 +1150,10 @@ class GuildChannel:
             channel list (or category if given).
             This is mutually exclusive with ``beginning``, ``before``, and ``after``.
         before: :class:`~discord.abc.Snowflake`
-            The channel that should be before our current channel.
+            Whether to move the channel before the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``after``.
         after: :class:`~discord.abc.Snowflake`
-            The channel that should be after our current channel.
+            Whether to move the channel after the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``before``.
         offset: :class:`int`
             The number of channels to offset the move by. For example,
@@ -1163,11 +1236,11 @@ class GuildChannel:
             raise ValueError('Could not resolve appropriate move position')
 
         channels.insert(max((index + offset), 0), self)
-        payload = []
+        payload: List[ChannelPositionUpdate] = []
         lock_permissions = kwargs.get('sync_permissions', False)
         reason = kwargs.get('reason')
         for index, channel in enumerate(channels):
-            d = {'id': channel.id, 'position': index}
+            d: ChannelPositionUpdate = {'id': channel.id, 'position': index}
             if parent_id is not MISSING and channel.id == self.id:
                 d.update(parent_id=parent_id, lock_permissions=lock_permissions)
             payload.append(d)
@@ -1185,6 +1258,7 @@ class GuildChannel:
         target_type: Optional[InviteTarget] = None,
         target_user: Optional[User] = None,
         target_application_id: Optional[int] = None,
+        guest: bool = False,
     ) -> Invite:
         """|coro|
 
@@ -1223,6 +1297,10 @@ class GuildChannel:
             The id of the embedded application for the invite, required if ``target_type`` is :attr:`.InviteTarget.embedded_application`.
 
             .. versionadded:: 2.0
+        guest: :class:`bool`
+            Whether the invite is a guest invite.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1237,6 +1315,13 @@ class GuildChannel:
         :class:`~discord.Invite`
             The invite that was created.
         """
+        if target_type is InviteTarget.unknown:
+            raise ValueError('Cannot create invite with an unknown target type')
+
+        flags: Optional[InviteFlags] = None
+        if guest:
+            flags = InviteFlags._from_value(0)
+            flags.guest = True
 
         data = await self._state.http.create_invite(
             self.id,
@@ -1248,6 +1333,7 @@ class GuildChannel:
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
+            flags=flags.value if flags else None,
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
@@ -1284,6 +1370,7 @@ class Messageable:
 
     - :class:`~discord.TextChannel`
     - :class:`~discord.VoiceChannel`
+    - :class:`~discord.StageChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
     - :class:`~discord.PartialMessageable`
@@ -1316,6 +1403,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1336,6 +1424,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1356,6 +1445,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1376,6 +1466,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1397,6 +1488,7 @@ class Messageable:
         view: Optional[View] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
+        poll: Optional[Poll] = None,
     ) -> Message:
         """|coro|
 
@@ -1454,10 +1546,11 @@ class Messageable:
             .. versionadded:: 1.4
 
         reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`, :class:`~discord.PartialMessage`]
-            A reference to the :class:`~discord.Message` to which you are replying, this can be created using
-            :meth:`~discord.Message.to_reference` or passed directly as a :class:`~discord.Message`. You can control
-            whether this mentions the author of the referenced message using the :attr:`~discord.AllowedMentions.replied_user`
-            attribute of ``allowed_mentions`` or by setting ``mention_author``.
+            A reference to the :class:`~discord.Message` to which you are referencing, this can be created using
+            :meth:`~discord.Message.to_reference` or passed directly as a :class:`~discord.Message`.
+            In the event of a replying reference, you can control whether this mentions the author of the referenced
+            message using the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions`` or by
+            setting ``mention_author``.
 
             .. versionadded:: 1.6
 
@@ -1482,6 +1575,10 @@ class Messageable:
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
+        poll: :class:`~discord.Poll`
+            The poll to send with this message.
+
+            .. versionadded:: 2.4
 
         Raises
         --------
@@ -1489,6 +1586,9 @@ class Messageable:
             Sending the message failed.
         ~discord.Forbidden
             You do not have the proper permissions to send the message.
+        ~discord.NotFound
+            You sent a message with the same nonce as one that has been explicitly
+            deleted shortly earlier.
         ValueError
             The ``files`` or ``embeds`` list is not of the appropriate size.
         TypeError
@@ -1533,6 +1633,9 @@ class Messageable:
         else:
             flags = MISSING
 
+        if nonce is None:
+            nonce = secrets.randbits(64)
+
         with handle_message_parameters(
             content=content,
             tts=tts,
@@ -1548,12 +1651,16 @@ class Messageable:
             stickers=sticker_ids,
             view=view,
             flags=flags,
+            poll=poll,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
         if view and not view.is_finished():
             state.store_view(view, ret.id)
+
+        if poll:
+            poll._update(ret)
 
         if delete_after is not None:
             await ret.delete(delay=delete_after)
@@ -1713,12 +1820,12 @@ class Messageable:
 
         async def _around_strategy(retrieve: int, around: Optional[Snowflake], limit: Optional[int]):
             if not around:
-                return []
+                return [], None, 0
 
             around_id = around.id if around else None
             data = await self._state.http.logs_from(channel.id, retrieve, around=around_id)
 
-            return data, None, limit
+            return data, None, 0
 
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
@@ -1831,7 +1938,7 @@ class Connectable(Protocol):
     async def connect(
         self,
         *,
-        timeout: float = 60.0,
+        timeout: float = 30.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], T] = VoiceClient,
         self_deaf: bool = False,
@@ -1847,7 +1954,7 @@ class Connectable(Protocol):
         Parameters
         -----------
         timeout: :class:`float`
-            The timeout in seconds to wait for the voice endpoint.
+            The timeout in seconds to wait the connection to complete.
         reconnect: :class:`bool`
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails

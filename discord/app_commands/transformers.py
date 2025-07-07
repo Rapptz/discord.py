@@ -34,6 +34,7 @@ from typing import (
     ClassVar,
     Coroutine,
     Dict,
+    Generic,
     List,
     Literal,
     Optional,
@@ -51,11 +52,12 @@ from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, 
 from ..abc import GuildChannel
 from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
-from ..utils import MISSING, maybe_coroutine
+from ..utils import MISSING, maybe_coroutine, _human_join
 from ..user import User
 from ..role import Role
 from ..member import Member
 from ..message import Attachment
+from .._types import ClientT
 
 __all__ = (
     'Transformer',
@@ -177,8 +179,7 @@ class CommandParameter:
                 return choice
 
             try:
-                # ParamSpec doesn't understand that transform is a callable since it's unbound
-                return await maybe_coroutine(self._annotation.transform, interaction, value)  # type: ignore
+                return await maybe_coroutine(self._annotation.transform, interaction, value)
             except AppCommandError:
                 raise
             except Exception as e:
@@ -192,7 +193,7 @@ class CommandParameter:
         return self.name if self._rename is MISSING else str(self._rename)
 
 
-class Transformer:
+class Transformer(Generic[ClientT]):
     """The base class that allows a type annotation in an application command parameter
     to map into a :class:`~discord.AppCommandOptionType` and transform the raw value into one
     from this type.
@@ -234,7 +235,7 @@ class Transformer:
         pass
 
     def __or__(self, rhs: Any) -> Any:
-        return Union[self, rhs]  # type: ignore
+        return Union[self, rhs]
 
     @property
     def type(self) -> AppCommandOptionType:
@@ -305,7 +306,7 @@ class Transformer:
         else:
             return name
 
-    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /) -> Any:
         """|maybecoro|
 
         Transforms the converted option value into another value.
@@ -325,7 +326,7 @@ class Transformer:
         raise NotImplementedError('Derived classes need to implement this.')
 
     async def autocomplete(
-        self, interaction: Interaction, value: Union[int, float, str], /
+        self, interaction: Interaction[ClientT], value: Union[int, float, str], /
     ) -> List[Choice[Union[int, float, str]]]:
         """|coro|
 
@@ -353,7 +354,7 @@ class Transformer:
         raise NotImplementedError('Derived classes can implement this.')
 
 
-class IdentityTransformer(Transformer):
+class IdentityTransformer(Transformer[ClientT]):
     def __init__(self, type: AppCommandOptionType) -> None:
         self._type = type
 
@@ -361,7 +362,7 @@ class IdentityTransformer(Transformer):
     def type(self) -> AppCommandOptionType:
         return self._type
 
-    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /) -> Any:
         return value
 
 
@@ -490,7 +491,7 @@ class EnumNameTransformer(Transformer):
         return self._enum[value]
 
 
-class InlineTransformer(Transformer):
+class InlineTransformer(Transformer[ClientT]):
     def __init__(self, annotation: Any) -> None:
         super().__init__()
         self.annotation: Any = annotation
@@ -503,7 +504,7 @@ class InlineTransformer(Transformer):
     def type(self) -> AppCommandOptionType:
         return AppCommandOptionType.string
 
-    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /) -> Any:
         return await self.annotation.transform(interaction, value)
 
 
@@ -526,7 +527,7 @@ else:
         .. versionadded:: 2.0
         """
 
-        def __class_getitem__(cls, items) -> _TransformMetadata:
+        def __class_getitem__(cls, items) -> Transformer:
             if not isinstance(items, tuple):
                 raise TypeError(f'expected tuple for arguments, received {items.__class__.__name__} instead')
 
@@ -571,7 +572,7 @@ else:
                 await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
         """
 
-        def __class_getitem__(cls, obj) -> _TransformMetadata:
+        def __class_getitem__(cls, obj) -> RangeTransformer:
             if not isinstance(obj, tuple):
                 raise TypeError(f'expected tuple for arguments, received {obj.__class__.__name__} instead')
 
@@ -612,25 +613,25 @@ else:
             return transformer
 
 
-class MemberTransformer(Transformer):
+class MemberTransformer(Transformer[ClientT]):
     @property
     def type(self) -> AppCommandOptionType:
         return AppCommandOptionType.user
 
-    async def transform(self, interaction: Interaction, value: Any, /) -> Member:
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /) -> Member:
         if not isinstance(value, Member):
             raise TransformerError(value, self.type, self)
         return value
 
 
-class BaseChannelTransformer(Transformer):
+class BaseChannelTransformer(Transformer[ClientT]):
     def __init__(self, *channel_types: Type[Any]) -> None:
         super().__init__()
         if len(channel_types) == 1:
             display_name = channel_types[0].__name__
             types = CHANNEL_TO_TYPES[channel_types[0]]
         else:
-            display_name = '{}, and {}'.format(', '.join(t.__name__ for t in channel_types[:-1]), channel_types[-1].__name__)
+            display_name = _human_join([t.__name__ for t in channel_types])
             types = []
 
             for t in channel_types:
@@ -639,7 +640,7 @@ class BaseChannelTransformer(Transformer):
                 except KeyError:
                     raise TypeError('Union type of channels must be entirely made up of channels') from None
 
-        self._types: Tuple[Type[Any]] = channel_types
+        self._types: Tuple[Type[Any], ...] = channel_types
         self._channel_types: List[ChannelType] = types
         self._display_name = display_name
 
@@ -655,22 +656,22 @@ class BaseChannelTransformer(Transformer):
     def channel_types(self) -> List[ChannelType]:
         return self._channel_types
 
-    async def transform(self, interaction: Interaction, value: Any, /):
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /):
         resolved = value.resolve()
         if resolved is None or not isinstance(resolved, self._types):
             raise TransformerError(value, AppCommandOptionType.channel, self)
         return resolved
 
 
-class RawChannelTransformer(BaseChannelTransformer):
-    async def transform(self, interaction: Interaction, value: Any, /):
+class RawChannelTransformer(BaseChannelTransformer[ClientT]):
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /):
         if not isinstance(value, self._types):
             raise TransformerError(value, AppCommandOptionType.channel, self)
         return value
 
 
-class UnionChannelTransformer(BaseChannelTransformer):
-    async def transform(self, interaction: Interaction, value: Any, /):
+class UnionChannelTransformer(BaseChannelTransformer[ClientT]):
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /):
         if isinstance(value, self._types):
             return value
 
@@ -688,6 +689,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.news,
         ChannelType.category,
         ChannelType.forum,
+        ChannelType.media,
     ],
     GuildChannel: [
         ChannelType.stage_voice,
@@ -696,6 +698,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.news,
         ChannelType.category,
         ChannelType.forum,
+        ChannelType.media,
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     Thread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
@@ -703,7 +706,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     VoiceChannel: [ChannelType.voice],
     TextChannel: [ChannelType.text, ChannelType.news],
     CategoryChannel: [ChannelType.category],
-    ForumChannel: [ChannelType.forum],
+    ForumChannel: [ChannelType.forum, ChannelType.media],
 }
 
 BUILT_IN_TRANSFORMERS: Dict[Any, Transformer] = {
@@ -750,7 +753,7 @@ def get_supported_annotation(
 
     try:
         return (_mapping[annotation], MISSING, True)
-    except KeyError:
+    except (KeyError, TypeError):
         pass
 
     if isinstance(annotation, Transformer):
@@ -781,11 +784,11 @@ def get_supported_annotation(
     # Check if there's an origin
     origin = getattr(annotation, '__origin__', None)
     if origin is Literal:
-        args = annotation.__args__  # type: ignore
+        args = annotation.__args__
         return (LiteralTransformer(args), MISSING, True)
 
     if origin is Choice:
-        arg = annotation.__args__[0]  # type: ignore
+        arg = annotation.__args__[0]
         return (ChoiceTransformer(arg), MISSING, True)
 
     if origin is not Union:
@@ -793,7 +796,7 @@ def get_supported_annotation(
         raise TypeError(f'unsupported type annotation {annotation!r}')
 
     default = MISSING
-    args = annotation.__args__  # type: ignore
+    args = annotation.__args__
     if args[-1] is _none:
         if len(args) == 2:
             underlying = args[0]

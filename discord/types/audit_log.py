@@ -37,6 +37,7 @@ from .role import Role
 from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
 from .threads import Thread
 from .command import ApplicationCommand, ApplicationCommandPermissions
+from .automod import AutoModerationTriggerMetadata
 
 AuditLogEvent = Literal[
     1,
@@ -87,12 +88,17 @@ AuditLogEvent = Literal[
     111,
     112,
     121,
+    130,
+    131,
+    132,
     140,
     141,
     142,
     143,
     144,
     145,
+    150,
+    151,
 ]
 
 
@@ -109,6 +115,7 @@ class _AuditLogChange_Str(TypedDict):
         'permissions',
         'tags',
         'unicode_emoji',
+        'emoji_name',
     ]
     new_value: str
     old_value: str
@@ -133,6 +140,8 @@ class _AuditLogChange_Snowflake(TypedDict):
         'channel_id',
         'inviter_id',
         'guild_id',
+        'user_id',
+        'sound_id',
     ]
     new_value: Snowflake
     old_value: Snowflake
@@ -178,6 +187,12 @@ class _AuditLogChange_Int(TypedDict):
     ]
     new_value: int
     old_value: int
+
+
+class _AuditLogChange_Float(TypedDict):
+    key: Literal['volume']
+    new_value: float
+    old_value: float
 
 
 class _AuditLogChange_ListRole(TypedDict):
@@ -276,11 +291,18 @@ class _AuditLogChange_DefaultReactionEmoji(TypedDict):
     old_value: Optional[DefaultReaction]
 
 
+class _AuditLogChange_TriggerMetadata(TypedDict):
+    key: Literal['trigger_metadata']
+    new_value: Optional[AutoModerationTriggerMetadata]
+    old_value: Optional[AutoModerationTriggerMetadata]
+
+
 AuditLogChange = Union[
     _AuditLogChange_Str,
     _AuditLogChange_AssetHash,
     _AuditLogChange_Snowflake,
     _AuditLogChange_Int,
+    _AuditLogChange_Float,
     _AuditLogChange_Bool,
     _AuditLogChange_ListRole,
     _AuditLogChange_MFALevel,
@@ -298,6 +320,7 @@ AuditLogChange = Union[
     _AuditLogChange_AppliedTags,
     _AuditLogChange_AvailableTags,
     _AuditLogChange_DefaultReactionEmoji,
+    _AuditLogChange_TriggerMetadata,
 ]
 
 
@@ -314,6 +337,7 @@ class AuditEntryInfo(TypedDict):
     guild_id: Snowflake
     auto_moderation_rule_name: str
     auto_moderation_rule_trigger_type: str
+    integration_type: str
 
 
 class AuditLogEntry(TypedDict):

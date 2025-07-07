@@ -47,13 +47,16 @@ from .enums import Status
 from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
+    from typing_extensions import Unpack
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .flags import Intents
+    from .types.gateway import SessionStartLimit
 
 __all__ = (
     'AutoShardedClient',
     'ShardInfo',
+    'SessionStartLimits',
 )
 
 _log = logging.getLogger(__name__)
@@ -192,6 +195,10 @@ class Shard:
             self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
+        except ReconnectWebSocket as e:
+            _log.debug('Somehow got a signal to %s while trying to %s shard ID %s.', e.op, exc.op, self.id)
+            op = EventType.resume if e.resume else EventType.identify
+            self._queue_put(EventItem(op, self, e))
         except asyncio.CancelledError:
             return
         except Exception as e:
@@ -289,6 +296,32 @@ class ShardInfo:
         return self._parent.ws.is_ratelimited()
 
 
+class SessionStartLimits:
+    """A class that holds info about session start limits
+
+    .. versionadded:: 2.5
+
+    Attributes
+    ----------
+    total: :class:`int`
+        The total number of session starts the current user is allowed
+    remaining: :class:`int`
+        Remaining remaining number of session starts the current user is allowed
+    reset_after: :class:`int`
+        The number of milliseconds until the limit resets
+    max_concurrency: :class:`int`
+        The number of identify requests allowed per 5 seconds
+    """
+
+    __slots__ = ("total", "remaining", "reset_after", "max_concurrency")
+
+    def __init__(self, **kwargs: Unpack[SessionStartLimit]):
+        self.total: int = kwargs['total']
+        self.remaining: int = kwargs['remaining']
+        self.reset_after: int = kwargs['reset_after']
+        self.max_concurrency: int = kwargs['max_concurrency']
+
+
 class AutoShardedClient(Client):
     """A client similar to :class:`Client` except it handles the complications
     of sharding for the user into a more manageable and transparent single
@@ -322,6 +355,11 @@ class AutoShardedClient(Client):
     ------------
     shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
+    shard_connect_timeout: Optional[:class:`float`]
+        The maximum number of seconds to wait before timing out when launching a shard.
+        Defaults to 180 seconds.
+
+        .. versionadded:: 2.4
     """
 
     if TYPE_CHECKING:
@@ -330,6 +368,8 @@ class AutoShardedClient(Client):
     def __init__(self, *args: Any, intents: Intents, **kwargs: Any) -> None:
         kwargs.pop('shard_id', None)
         self.shard_ids: Optional[List[int]] = kwargs.pop('shard_ids', None)
+        self.shard_connect_timeout: Optional[float] = kwargs.pop('shard_connect_timeout', 180.0)
+
         super().__init__(*args, intents=intents, **kwargs)
 
         if self.shard_ids is not None:
@@ -404,10 +444,37 @@ class AutoShardedClient(Client):
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
         return {shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items()}
 
+    async def fetch_session_start_limits(self) -> SessionStartLimits:
+        """|coro|
+
+        Get the session start limits.
+
+        This is not typically needed, and will be handled for you by default.
+
+        At the point where you are launching multiple instances
+        with manual shard ranges and are considered required to use large bot
+        sharding by Discord, this function when used along IPC and a
+        before_identity_hook can speed up session start.
+
+        .. versionadded:: 2.5
+
+        Returns
+        -------
+        :class:`SessionStartLimits`
+            A class containing the session start limits
+
+        Raises
+        ------
+        GatewayNotFound
+            The gateway was unreachable
+        """
+        _, _, limits = await self.http.get_bot_gateway()
+        return SessionStartLimits(**limits)
+
     async def launch_shard(self, gateway: yarl.URL, shard_id: int, *, initial: bool = False) -> None:
         try:
             coro = DiscordWebSocket.from_client(self, initial=initial, gateway=gateway, shard_id=shard_id)
-            ws = await asyncio.wait_for(coro, timeout=180.0)
+            ws = await asyncio.wait_for(coro, timeout=self.shard_connect_timeout)
         except Exception:
             _log.exception('Failed to connect for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0)
@@ -423,7 +490,7 @@ class AutoShardedClient(Client):
 
         if self.shard_count is None:
             self.shard_count: int
-            self.shard_count, gateway_url = await self.http.get_bot_gateway()
+            self.shard_count, gateway_url, _session_start_limit = await self.http.get_bot_gateway()
             gateway = yarl.URL(gateway_url)
         else:
             gateway = DiscordWebSocket.DEFAULT_GATEWAY
@@ -450,10 +517,10 @@ class AutoShardedClient(Client):
             if item.type == EventType.close:
                 await self.close()
                 if isinstance(item.error, ConnectionClosed):
-                    if item.error.code != 1000:
-                        raise item.error
                     if item.error.code == 4014:
                         raise PrivilegedIntentsRequired(item.shard.id) from None
+                    if item.error.code != 1000:
+                        raise item.error
                 return
             elif item.type in (EventType.identify, EventType.resume):
                 await item.shard.reidentify(item.error)
@@ -470,18 +537,21 @@ class AutoShardedClient(Client):
 
         Closes the connection to Discord.
         """
-        if self.is_closed():
-            return
+        if self._closing_task:
+            return await self._closing_task
 
-        self._closed = True
-        await self._connection.close()
+        async def _close():
+            await self._connection.close()
 
-        to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
-        if to_close:
-            await asyncio.wait(to_close)
+            to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
+            if to_close:
+                await asyncio.wait(to_close)
 
-        await self.http.close()
-        self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
+            await self.http.close()
+            self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
+
+        self._closing_task = asyncio.create_task(_close())
+        await self._closing_task
 
     async def change_presence(
         self,

@@ -27,7 +27,8 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING, List, Optional, Sequence, Union
 
 from ..enums import AppCommandOptionType, AppCommandType, Locale
-from ..errors import DiscordException, HTTPException, _flatten_error_dict
+from ..errors import DiscordException, HTTPException, _flatten_error_dict, MissingApplicationID as MissingApplicationID
+from ..utils import _human_join
 
 __all__ = (
     'AppCommandError',
@@ -57,11 +58,6 @@ if TYPE_CHECKING:
     from .checks import Cooldown
 
     CommandTypes = Union[Command[Any, ..., Any], Group, ContextMenu]
-
-APP_ID_NOT_FOUND = (
-    'Client does not have an application_id set. Either the function was called before on_ready '
-    'was called or application_id was not passed to the Client constructor.'
-)
 
 
 class AppCommandError(DiscordException):
@@ -242,13 +238,7 @@ class MissingAnyRole(CheckFailure):
     def __init__(self, missing_roles: SnowflakeList) -> None:
         self.missing_roles: SnowflakeList = missing_roles
 
-        missing = [f"'{role}'" for role in missing_roles]
-
-        if len(missing) > 2:
-            fmt = '{}, or {}'.format(', '.join(missing[:-1]), missing[-1])
-        else:
-            fmt = ' or '.join(missing)
-
+        fmt = _human_join([f"'{role}'" for role in missing_roles])
         message = f'You are missing at least one of the required roles: {fmt}'
         super().__init__(message)
 
@@ -271,11 +261,7 @@ class MissingPermissions(CheckFailure):
         self.missing_permissions: List[str] = missing_permissions
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
-
-        if len(missing) > 2:
-            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
-        else:
-            fmt = ' and '.join(missing)
+        fmt = _human_join(missing, final='and')
         message = f'You are missing {fmt} permission(s) to run this command.'
         super().__init__(message, *args)
 
@@ -298,11 +284,7 @@ class BotMissingPermissions(CheckFailure):
         self.missing_permissions: List[str] = missing_permissions
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
-
-        if len(missing) > 2:
-            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
-        else:
-            fmt = ' and '.join(missing)
+        fmt = _human_join(missing, final='and')
         message = f'Bot requires {fmt} permission(s) to run this command.'
         super().__init__(message, *args)
 
@@ -435,19 +417,6 @@ class CommandSignatureMismatch(AppCommandError):
         super().__init__(msg)
 
 
-class MissingApplicationID(AppCommandError):
-    """An exception raised when the client does not have an application ID set.
-    An application ID is required for syncing application commands.
-
-    This inherits from :exc:`~discord.app_commands.AppCommandError`.
-
-    .. versionadded:: 2.0
-    """
-
-    def __init__(self, message: Optional[str] = None):
-        super().__init__(message or APP_ID_NOT_FOUND)
-
-
 def _get_command_error(
     index: str,
     inner: Any,
@@ -498,6 +467,10 @@ def _get_command_error(
         if key == 'options':
             for index, d in remaining.items():
                 _get_command_error(index, d, children, messages, indent=indent + 2)
+        elif key == '_errors':
+            errors = [x.get('message', '') for x in remaining]
+
+            messages.extend(f'{indentation}  {message}' for message in errors)
         else:
             if isinstance(remaining, dict):
                 try:
@@ -506,10 +479,9 @@ def _get_command_error(
                     errors = _flatten_error_dict(remaining, key=key)
                 else:
                     errors = {key: ' '.join(x.get('message', '') for x in inner_errors)}
-            else:
-                errors = _flatten_error_dict(remaining, key=key)
 
-            messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
+            if isinstance(errors, dict):
+                messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
 
 
 class CommandSyncFailure(AppCommandError, HTTPException):
@@ -530,8 +502,18 @@ class CommandSyncFailure(AppCommandError, HTTPException):
         messages = [f'Failed to upload commands to Discord (HTTP status {self.status}, error code {self.code})']
 
         if self._errors:
-            for index, inner in self._errors.items():
-                _get_command_error(index, inner, commands, messages)
+            # Handle case where the errors dict has no actual chain such as APPLICATION_COMMAND_TOO_LARGE
+            if len(self._errors) == 1 and '_errors' in self._errors:
+                errors = self._errors['_errors']
+                if len(errors) == 1:
+                    extra = errors[0].get('message')
+                    if extra:
+                        messages[0] += f': {extra}'
+                else:
+                    messages.extend(f'Error {e.get("code", "")}: {e.get("message", "")}' for e in errors)
+            else:
+                for index, inner in self._errors.items():
+                    _get_command_error(index, inner, commands, messages)
 
         # Equivalent to super().__init__(...) but skips other constructors
         self.args = ('\n'.join(messages),)

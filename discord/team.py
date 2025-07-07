@@ -27,7 +27,7 @@ from __future__ import annotations
 from . import utils
 from .user import BaseUser
 from .asset import Asset
-from .enums import TeamMembershipState, try_enum
+from .enums import TeamMemberRole, TeamMembershipState, try_enum
 
 from typing import TYPE_CHECKING, Optional, List
 
@@ -108,7 +108,7 @@ class TeamMember(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the team member's name with discriminator.
+            Returns the team member's handle (e.g. ``name`` or ``name#discriminator``).
 
     .. versionadded:: 1.3
 
@@ -119,25 +119,34 @@ class TeamMember(BaseUser):
     id: :class:`int`
         The team member's unique ID.
     discriminator: :class:`str`
-        The team member's discriminator. This is given when the username has conflicts.
+        The team member's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The team member's global nickname, taking precedence over the username in display.
+
+        .. versionadded:: 2.3
     bot: :class:`bool`
         Specifies if the user is a bot account.
     team: :class:`Team`
         The team that the member is from.
     membership_state: :class:`TeamMembershipState`
         The membership state of the member (e.g. invited or accepted)
+    role: :class:`TeamMemberRole`
+        The role of the member within the team.
+
+        .. versionadded:: 2.4
     """
 
-    __slots__ = ('team', 'membership_state', 'permissions')
+    __slots__ = ('team', 'membership_state', 'permissions', 'role')
 
     def __init__(self, team: Team, state: ConnectionState, data: TeamMemberPayload) -> None:
         self.team: Team = team
         self.membership_state: TeamMembershipState = try_enum(TeamMembershipState, data['membership_state'])
-        self.permissions: List[str] = data['permissions']
+        self.permissions: List[str] = data.get('permissions', [])
+        self.role: TeamMemberRole = try_enum(TeamMemberRole, data['role'])
         super().__init__(state=state, data=data['user'])
 
     def __repr__(self) -> str:
         return (
             f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
-            f'discriminator={self.discriminator!r} membership_state={self.membership_state!r}>'
+            f'global_name={self.global_name!r} membership_state={self.membership_state!r}>'
         )

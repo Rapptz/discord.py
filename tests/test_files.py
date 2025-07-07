@@ -27,6 +27,7 @@ from __future__ import annotations
 from io import BytesIO
 
 import discord
+import pytest
 
 
 FILE = BytesIO()
@@ -127,3 +128,58 @@ def test_file_not_spoiler_with_overriding_name_double_spoiler():
     f.filename = 'SPOILER_SPOILER_.gitignore'
     assert f.filename == 'SPOILER_.gitignore'
     assert f.spoiler == True
+
+
+def test_file_reset():
+    f = discord.File('.gitignore')
+
+    f.reset(seek=True)
+    assert f.fp.tell() == 0
+
+    f.reset(seek=False)
+    assert f.fp.tell() == 0
+
+
+def test_io_reset():
+    f = discord.File(FILE)
+
+    f.reset(seek=True)
+    assert f.fp.tell() == 0
+
+    f.reset(seek=False)
+    assert f.fp.tell() == 0
+
+
+def test_io_failure():
+    class NonSeekableReadable(BytesIO):
+        def seekable(self):
+            return False
+
+        def readable(self):
+            return False
+
+    f = NonSeekableReadable()
+
+    with pytest.raises(ValueError) as excinfo:
+        discord.File(f)
+
+    assert str(excinfo.value) == f"File buffer {f!r} must be seekable and readable"
+
+
+def test_io_to_dict():
+    buffer = BytesIO(b"test content")
+    file = discord.File(buffer, filename="test.txt", description="test description")
+
+    data = file.to_dict(0)
+    assert data["id"] == 0
+    assert data["filename"] == "test.txt"
+    assert data["description"] == "test description"
+
+
+def test_file_to_dict():
+    f = discord.File('.gitignore', description="test description")
+
+    data = f.to_dict(0)
+    assert data["id"] == 0
+    assert data["filename"] == ".gitignore"
+    assert data["description"] == "test description"

@@ -162,6 +162,10 @@ class Activity(BaseActivity):
         The user's current state. For example, "In Game".
     details: Optional[:class:`str`]
         The detail of the user's current activity.
+    platform: Optional[:class:`str`]
+        The user's current platform.
+
+        .. versionadded:: 2.4
     timestamps: :class:`dict`
         A dictionary of timestamps. It contains the following optional keys:
 
@@ -197,6 +201,7 @@ class Activity(BaseActivity):
         'state',
         'details',
         'timestamps',
+        'platform',
         'assets',
         'party',
         'flags',
@@ -215,6 +220,7 @@ class Activity(BaseActivity):
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
         self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})
+        self.platform: Optional[str] = kwargs.pop('platform', None)
         self.assets: ActivityAssets = kwargs.pop('assets', {})
         self.party: ActivityParty = kwargs.pop('party', {})
         self.application_id: Optional[int] = _get_as_snowflake(kwargs, 'application_id')
@@ -238,6 +244,7 @@ class Activity(BaseActivity):
             ('type', self.type),
             ('name', self.name),
             ('url', self.url),
+            ('platform', self.platform),
             ('details', self.details),
             ('application_id', self.application_id),
             ('session_id', self.session_id),
@@ -266,7 +273,7 @@ class Activity(BaseActivity):
     def start(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC, if applicable."""
         try:
-            timestamp = self.timestamps['start'] / 1000
+            timestamp = self.timestamps['start'] / 1000  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -276,7 +283,7 @@ class Activity(BaseActivity):
     def end(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: When the user will stop doing this activity in UTC, if applicable."""
         try:
-            timestamp = self.timestamps['end'] / 1000
+            timestamp = self.timestamps['end'] / 1000  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -286,7 +293,7 @@ class Activity(BaseActivity):
     def large_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity, if applicable."""
         try:
-            large_image = self.assets['large_image']
+            large_image = self.assets['large_image']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -296,7 +303,7 @@ class Activity(BaseActivity):
     def small_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity, if applicable."""
         try:
-            small_image = self.assets['small_image']
+            small_image = self.assets['small_image']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -351,13 +358,30 @@ class Game(BaseActivity):
     -----------
     name: :class:`str`
         The game's name.
+    platform: Optional[:class:`str`]
+        Where the user is playing from (ie. PS5, Xbox).
+
+        .. versionadded:: 2.4
+
+    assets: :class:`dict`
+        A dictionary representing the images and their hover text of a game.
+        It contains the following optional keys:
+
+        - ``large_image``: A string representing the ID for the large image asset.
+        - ``large_text``: A string representing the text when hovering over the large image asset.
+        - ``small_image``: A string representing the ID for the small image asset.
+        - ``small_text``: A string representing the text when hovering over the small image asset.
+
+        .. versionadded:: 2.4
     """
 
-    __slots__ = ('name', '_end', '_start')
+    __slots__ = ('name', '_end', '_start', 'platform', 'assets')
 
     def __init__(self, name: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: str = name
+        self.platform: Optional[str] = extra.get('platform')
+        self.assets: ActivityAssets = extra.get('assets', {}) or {}
 
         try:
             timestamps: ActivityTimestamps = extra['timestamps']
@@ -394,7 +418,7 @@ class Game(BaseActivity):
         return str(self.name)
 
     def __repr__(self) -> str:
-        return f'<Game name={self.name!r}>'
+        return f'<Game name={self.name!r} platform={self.platform!r}>'
 
     def to_dict(self) -> Dict[str, Any]:
         timestamps: Dict[str, Any] = {}
@@ -408,6 +432,8 @@ class Game(BaseActivity):
             'type': ActivityType.playing.value,
             'name': str(self.name),
             'timestamps': timestamps,
+            'platform': str(self.platform) if self.platform else None,
+            'assets': self.assets,
         }
 
     def __eq__(self, other: object) -> bool:
@@ -488,7 +514,7 @@ class Streaming(BaseActivity):
         return str(self.name)
 
     def __repr__(self) -> str:
-        return f'<Streaming name={self.name!r}>'
+        return f'<Streaming name={self.name!r} platform={self.platform!r}>'
 
     @property
     def twitch_name(self) -> Optional[str]:
@@ -499,7 +525,7 @@ class Streaming(BaseActivity):
         """
 
         try:
-            name = self.assets['large_image']
+            name = self.assets['large_image']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -732,10 +758,12 @@ class CustomActivity(BaseActivity):
 
     __slots__ = ('name', 'emoji', 'state')
 
-    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any) -> None:
+    def __init__(
+        self, name: Optional[str], *, emoji: Optional[Union[PartialEmoji, Dict[str, Any], str]] = None, **extra: Any
+    ) -> None:
         super().__init__(**extra)
         self.name: Optional[str] = name
-        self.state: Optional[str] = extra.pop('state', None)
+        self.state: Optional[str] = extra.pop('state', name)
         if self.name == 'Custom Status':
             self.name = self.state
 

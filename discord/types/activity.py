@@ -93,6 +93,7 @@ class Activity(_BaseActivity, total=False):
     state: Optional[str]
     details: Optional[str]
     timestamps: ActivityTimestamps
+    platform: Optional[str]
     assets: ActivityAssets
     party: ActivityParty
     application_id: Snowflake

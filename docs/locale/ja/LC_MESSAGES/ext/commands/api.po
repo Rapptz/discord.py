@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-29 20:45+0000\n"
-"PO-Revision-Date: 2023-01-30 13:38\n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -581,8 +581,8 @@ msgid "A view was not passed."
 msgstr "Viewが渡されなかった"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.add_view:16
-msgid "The view is not persistent. A persistent view has no timeout     and all their components have an explicitly provided custom_id."
-msgstr "Viewは永続的ではありません。永続的なViewにはタイムアウトがなく、すべてのコンポーネントには明示的に渡された custom_id があります"
+msgid "The view is not persistent or is already finished. A persistent view has no timeout     and all their components have an explicitly provided custom_id."
+msgstr ""
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.Bot.allowed_mentions:1
 msgid "The allowed mention configuration."
@@ -932,14 +932,14 @@ msgid "Retrieves an :term:`asynchronous iterator` that enables receiving your gu
 msgstr "Botが所属するGuildを取得できる、 :term:`asynchronous iterator` を取得します。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:5
-msgid "Using this, you will only receive :attr:`.Guild.owner`, :attr:`.Guild.icon`, :attr:`.Guild.id`, and :attr:`.Guild.name` per :class:`.Guild`."
-msgstr "これを使った場合、各 :class:`Guild` の :attr:`Guild.owner` 、 :attr:`Guild.icon` 、 :attr:`Guild.id` 、 :attr:`Guild.name` のみ取得できます。"
+msgid "Using this, you will only receive :attr:`.Guild.owner`, :attr:`.Guild.icon`, :attr:`.Guild.id`, :attr:`.Guild.name`, :attr:`.Guild.approximate_member_count`, and :attr:`.Guild.approximate_presence_count` per :class:`.Guild`."
+msgstr ""
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:10
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:11
 msgid "This method is an API call. For general usage, consider :attr:`guilds` instead."
 msgstr "これはAPIを呼び出します。通常は :attr:`guilds` を代わりに使用してください。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:13
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:14
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.wait_for:22
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.check:37
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.check_any:20
@@ -947,37 +947,41 @@ msgstr "これはAPIを呼び出します。通常は :attr:`guilds` を代わ�
 msgid "Examples"
 msgstr "例"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:14
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:15
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.history:7
 msgid "Usage ::"
 msgstr "使い方 ::"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:19
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:20
 msgid "Flattening into a list ::"
 msgstr "リストへフラット化 ::"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:24
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:25
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.history:19
 msgid "All parameters are optional."
 msgstr "すべてのパラメータがオプションです。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:26
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:27
 msgid "The number of guilds to retrieve. If ``None``, it retrieves every guild you have access to. Note, however, that this would make it a slow operation. Defaults to ``200``."
 msgstr "取得するギルドの数。 ``None`` の場合、Botがアクセスできるギルドすべてを取得します。ただし、これには時間が掛かることに注意してください。デフォルトは200です。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:33
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:34
 msgid "The default has been changed to 200."
 msgstr "デフォルトが200に変更されました。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:35
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:36
 msgid "Retrieves guilds before this date or object. If a datetime is provided, it is recommended to use a UTC aware datetime. If the datetime is naive, it is assumed to be local time."
 msgstr "渡された日付、またはギルドより前のギルドを取得します。日付を指定する場合、UTC aware datetimeを利用することを推奨します。naive datetimeである場合、これはローカル時間であるとみなされます。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:39
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:40
 msgid "Retrieve guilds after this date or object. If a datetime is provided, it is recommended to use a UTC aware datetime. If the datetime is naive, it is assumed to be local time."
 msgstr "渡された日付、またはオブジェクトより後のギルドを取得します。日付を指定する場合、UTC対応の「aware」を利用することを推奨します。日付が「naive」である場合、これは地域時間であるとみなされます。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:44
+msgid "Whether to include count information in the guilds. This fills the :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count` attributes without needing any privileged intents. Defaults to ``True``."
+msgstr ""
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:51
 msgid "Getting the guilds failed."
 msgstr "Guildの取得に失敗した場合。"
 
@@ -989,7 +993,7 @@ msgstr "Guildの取得に失敗した場合。"
 msgid "Yields"
 msgstr "Yieldする値"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:46
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_guilds:53
 msgid ":class:`.Guild` -- The guild with the guild data parsed."
 msgstr ":class:`.Guild` -- データを解析したGuild。"
 
@@ -2171,7 +2175,7 @@ msgstr "``cls`` で指定されたクラスの構築時に渡すキーワード�
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.command:21
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_command:29
-#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_group:9
+#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_group:12
 msgid "If the function is not a coroutine or is already a command."
 msgstr "関数がコルーチンでない場合、またはすでにコマンドが登録されている場合。"
 
@@ -2204,7 +2208,7 @@ msgid "Checks and error handlers are dispatched and called as-if they were comma
 msgstr "チェックとエラーハンドラは、 :class:`.Command` のようなコマンドであるかのように呼び出されます。つまり、パラメータには :class:`discord.Interaction` ではなく :class:`Context` を取ります。"
 
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_command:24
-#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_group:6
+#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_group:9
 msgid "Whether to register the command also as an application command."
 msgstr "アプリケーションコマンドとしてもコマンドを登録するかどうか。"
 
@@ -2219,6 +2223,10 @@ msgstr "関数を :class:`.HybridGroup` に変換するデコレータ。"
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_group:3
 msgid "This is similar to the :func:`~discord.ext.commands.group` decorator except it creates a hybrid group instead."
 msgstr "これは :func:`~discord.ext.commands.group` デコレータに似ていますが、代わりにハイブリッドグループを作成します。"
+
+#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_group:6
+msgid "The name to create the group with. By default this uses the function name unchanged."
+msgstr ""
 
 #: ../../ext/commands/api.rst:131
 msgid "Command"
@@ -2925,7 +2933,11 @@ msgstr "コグが削除された際に呼び出される特別なメソッド。
 msgid "Subclasses must replace this if they want special unloading behaviour."
 msgstr "サブクラスは特別なアンロード動作が必要な場合にこれを置き換えなければなりません。"
 
-#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_unload:9
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_unload:7
+msgid "Exceptions raised in this method are ignored during extension unloading."
+msgstr ""
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_unload:11
 msgid "This method can now be a :term:`coroutine`."
 msgstr "このメソッドは現在 :term:`coroutine` になりました。"
 
@@ -2946,6 +2958,16 @@ msgstr ":meth:`.Bot.check` チェックとして登録する特別なメソッ�
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_check:1
 msgid "A special method that registers as a :func:`~discord.ext.commands.check` for every command and subcommand in this cog."
 msgstr "このコグのすべてのコマンドとサブコマンドに対して :func:`~discord.ext.commands.check` として登録する特別なメソッド。"
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.interaction_check:1
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.interaction_check:1
+msgid "A special method that registers as a :func:`discord.app_commands.check` for every app command and subcommand in this cog."
+msgstr ""
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.interaction_check:4
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.interaction_check:4
+msgid "This function **can** be a coroutine and must take a sole parameter, ``interaction``, to represent the :class:`~discord.Interaction`."
+msgstr ""
 
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_command_error:3
 msgid "A special method that is called whenever an error is dispatched inside this cog."
@@ -3019,8 +3041,8 @@ msgid "Decorators such as :func:`~discord.app_commands.guild_only`, :func:`~disc
 msgstr ":func:`~discord.app_commands.guild_only` 、 :func:`~discord.app_commands.guilds` 、 :func:`~discord.app_commands.default_permissions` のようなデコレータはコグの上に使用されている場合、グループに適用されます。"
 
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.GroupCog:11
-msgid "Hybrid commands will also be added to the Group, giving the ability categorize slash commands into groups, while keeping the prefix-style command as a root-level command."
-msgstr "グループにもハイブリッドコマンドが追加され、プレフィックス形式のコマンドをルートレベルのコマンドとして保持しながら、スラッシュコマンドをグループに分類できるようになります。"
+msgid "Hybrid commands will also be added to the Group, giving the ability to categorize slash commands into groups, while keeping the prefix-style command as a root-level command."
+msgstr ""
 
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.GroupCog:14
 msgid "For example:"
@@ -3311,7 +3333,7 @@ msgstr "コマンドの最大の幅。"
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:12
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:42
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.Paginator:25
-#: ../../../discord/ext/commands/flags.py:docstring of discord.ext.commands.flags.Flag:42
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.Context.filesize_limit:5
 msgid ":class:`int`"
 msgstr ":class:`int`"
 
@@ -4423,6 +4445,10 @@ msgstr "「クリーンアップ」されたプレフィックスを返します
 msgid "Returns the cog associated with this context's command. None if it does not exist."
 msgstr "このコンテキストのコマンドに関連付けられたコグを返します。存在しない場合はNoneを返します。"
 
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.Context.filesize_limit:1
+msgid "Returns the maximum number of bytes files can have when uploaded to this guild or DM channel associated with this context."
+msgstr ""
+
 #: ../../docstring of discord.ext.commands.Context.guild:1
 msgid "Returns the guild associated with this context's command. None if not available."
 msgstr "このコンテキストのコマンドに関連付けられているギルドを返します。利用できない場合はNoneを返します。"
@@ -4496,72 +4522,6 @@ msgstr "ヘルプを表示するエンティティ。"
 msgid "The result of the help command, if any."
 msgstr "もしあれば、ヘルプコマンドの結果。"
 
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:3
-msgid "A shortcut method to :meth:`send` to reply to the :class:`~discord.Message` referenced by this context."
-msgstr "このコンテキストで参照されている :class:`~discord.Message` に返信するための、 :meth:`send` のショートカットメソッド。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:6
-msgid "For interaction based contexts, this is the same as :meth:`send`."
-msgstr "インタラクションベースのコンテキストでは、 :meth:`send` と同じです。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:10
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:13
-msgid "This function will now raise :exc:`TypeError` or :exc:`ValueError` instead of ``InvalidArgument``."
-msgstr "この関数は ``InvalidArgument`` の代わりに :exc:`TypeError` または :exc:`ValueError` を発生するようになりました。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:14
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:80
-msgid "Sending the message failed."
-msgstr "メッセージの送信に失敗しました。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:15
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:81
-msgid "You do not have the proper permissions to send the message."
-msgstr "メッセージを送信するための適切な権限がありません。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:16
-msgid "The ``files`` list is not of the appropriate size"
-msgstr "``files`` リストの大きさが適切ではありません。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:17
-msgid "You specified both ``file`` and ``files``."
-msgstr "``file`` と ``files`` の両方が指定されています。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:19
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:85
-msgid "The message that was sent."
-msgstr "送信されたメッセージ。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:20
-#: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.fetch_message:13
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:86
-msgid ":class:`~discord.Message`"
-msgstr ":class:`~discord.Message`"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:3
-msgid "Defers the interaction based contexts."
-msgstr "インタラクションの応答を遅らせます。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:5
-msgid "This is typically used when the interaction is acknowledged and a secondary action will be done later."
-msgstr "これは通常、インタラクションを認識した後、後で他のことを実行する場合に使われます。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:8
-msgid "If this isn't an interaction based context then it does nothing."
-msgstr "これがインタラクションベースのコンテキストでない場合、何もしません。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:10
-msgid "Indicates whether the deferred message will eventually be ephemeral."
-msgstr "遅れて送信するメッセージが一時的になるかを示します。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:13
-msgid "Deferring the interaction failed."
-msgstr "インタラクションの遅延に失敗した場合。"
-
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:14
-msgid "This interaction has already been responded to before."
-msgstr "既にインタラクションに応答していた場合。"
-
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.fetch_message:3
 msgid "Retrieves a single :class:`~discord.Message` from the destination."
 msgstr "出力先から、単一の :class:`~discord.Message` を取得します。"
@@ -4585,6 +4545,12 @@ msgstr "メッセージの取得に失敗した場合。"
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.fetch_message:12
 msgid "The message asked for."
 msgstr "要求されたメッセージ。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.fetch_message:13
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:20
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:91
+msgid ":class:`~discord.Message`"
+msgstr ":class:`~discord.Message`"
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.history:1
 msgid "Returns an :term:`asynchronous iterator` that enables receiving the destination's message history."
@@ -4653,6 +4619,66 @@ msgstr "現時点でピン留めされているメッセージ。"
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.pins:15
 msgid "List[:class:`~discord.Message`]"
 msgstr "List[:class:`~discord.Message`]"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:3
+msgid "A shortcut method to :meth:`send` to reply to the :class:`~discord.Message` referenced by this context."
+msgstr "このコンテキストで参照されている :class:`~discord.Message` に返信するための、 :meth:`send` のショートカットメソッド。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:6
+msgid "For interaction based contexts, this is the same as :meth:`send`."
+msgstr "インタラクションベースのコンテキストでは、 :meth:`send` と同じです。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:10
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:13
+msgid "This function will now raise :exc:`TypeError` or :exc:`ValueError` instead of ``InvalidArgument``."
+msgstr "この関数は ``InvalidArgument`` の代わりに :exc:`TypeError` または :exc:`ValueError` を発生するようになりました。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:14
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:85
+msgid "Sending the message failed."
+msgstr "メッセージの送信に失敗しました。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:15
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:86
+msgid "You do not have the proper permissions to send the message."
+msgstr "メッセージを送信するための適切な権限がありません。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:16
+msgid "The ``files`` list is not of the appropriate size"
+msgstr "``files`` リストの大きさが適切ではありません。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:17
+msgid "You specified both ``file`` and ``files``."
+msgstr "``file`` と ``files`` の両方が指定されています。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:19
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:90
+msgid "The message that was sent."
+msgstr "送信されたメッセージ。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:3
+msgid "Defers the interaction based contexts."
+msgstr "インタラクションの応答を遅らせます。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:5
+msgid "This is typically used when the interaction is acknowledged and a secondary action will be done later."
+msgstr "これは通常、インタラクションを認識した後、後で他のことを実行する場合に使われます。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:8
+msgid "If this isn't an interaction based context then it does nothing."
+msgstr "これがインタラクションベースのコンテキストでない場合、何もしません。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:10
+msgid "Indicates whether the deferred message will eventually be ephemeral."
+msgstr "遅れて送信するメッセージが一時的になるかを示します。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:13
+msgid "Deferring the interaction failed."
+msgstr "インタラクションの遅延に失敗した場合。"
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.defer:14
+msgid "This interaction has already been responded to before."
+msgstr "既にインタラクションに応答していた場合。"
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:3
 msgid "Sends a message to the destination with the content given."
@@ -4742,11 +4768,15 @@ msgstr "メッセージの埋め込みを抑制するかどうか。これが ``
 msgid "Indicates if the message should only be visible to the user who started the interaction. If a view is sent with an ephemeral message and it has no timeout set then the timeout is set to 15 minutes. **This is only applicable in contexts with an interaction**."
 msgstr "メッセージがインタラクションを開始したユーザーだけに表示されるかどうか。もしビューが一時的なメッセージで送信されている、かつタイムアウトが設定されていない場合、タイムアウトは15分に設定されます。 **これはインタラクションベースのコンテキストでのみ適用されます。**"
 
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:82
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:79
+msgid "Whether to suppress push and desktop notifications for the message. This will increment the mention counter in the UI, but will not actually send a notification."
+msgstr ""
+
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:87
 msgid "The ``files`` list is not of the appropriate size."
 msgstr "``files`` リストの大きさが適切でない場合。"
 
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:83
+#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:88
 msgid "You specified both ``file`` and ``files``,     or you specified both ``embed`` and ``embeds``,     or the ``reference`` object is not a :class:`~discord.Message`,     :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`."
 msgstr "``file`` と ``files`` の両方が指定された場合、 ``embed`` と ``embeds`` の両方が指定された場合、または ``reference`` が :class:`~discord.Message` 、 :class:`~discord.MessageReference` 、 :class:`~discord.PartialMessage` でない場合。"
 
@@ -4864,28 +4894,40 @@ msgstr "メンションで検索"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:10
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:9
-msgid "Lookup by name#discrim"
-msgstr "名前#タグ で検索"
+msgid "Lookup by username#discriminator (deprecated)."
+msgstr ""
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:11
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:10
-#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.TextChannelConverter:10
-#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.VoiceChannelConverter:10
-#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.StageChannelConverter:12
-msgid "Lookup by name"
-msgstr "名前 で検索"
+msgid "Lookup by username#0 (deprecated, only gets users that migrated from their discriminator)."
+msgstr ""
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:12
-msgid "Lookup by nickname"
-msgstr "ニックネーム で検索"
+msgid "Lookup by guild nickname."
+msgstr ""
+
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:13
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:11
+msgid "Lookup by global name."
+msgstr ""
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:14
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:12
+msgid "Lookup by user name."
+msgstr ""
+
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:16
 msgid "Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`"
 msgstr "一般的な :exc:`.BadArgument` の代わりに :exc:`.MemberNotFound` を発生させます。"
 
-#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:17
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:19
 msgid "This converter now lazily fetches members from the gateway and HTTP APIs, optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled."
 msgstr "このコンバータは、ゲートウェイやHTTP APIからメンバーを取得でき、 :attr:`.MemberCacheFlags.joined` が有効な場合には結果がキャッシュされるようになりました。"
+
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:23
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:21
+msgid "Looking up users by discriminator will be removed in a future version due to the removal of discriminators in an API change."
+msgstr ""
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:1
 msgid "Converts to a :class:`~discord.User`."
@@ -4895,11 +4937,11 @@ msgstr ":class:`~discord.User` に変換します。"
 msgid "All lookups are via the global user cache."
 msgstr "すべての検索はグローバルユーザーキャッシュを介して行われます。"
 
-#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:12
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:14
 msgid "Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`"
 msgstr "一般的な :exc:`.BadArgument` の代わりに :exc:`.UserNotFound` を発生させます。"
 
-#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:15
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.UserConverter:17
 msgid "This converter now lazily fetches users from the HTTP APIs if an ID is passed and it's not available in cache."
 msgstr "このコンバータは、ID が渡され、キャッシュされていない場合、HTTP API からユーザーを取得するようになりました。"
 
@@ -4957,6 +4999,14 @@ msgstr "名前で検索"
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.TextChannelConverter:1
 msgid "Converts to a :class:`~discord.TextChannel`."
 msgstr ":class:`~discord.TextChannel` に変換します。"
+
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.TextChannelConverter:10
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.VoiceChannelConverter:10
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.StageChannelConverter:12
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.CategoryChannelConverter:10
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.ForumChannelConverter:10
+msgid "Lookup by name"
+msgstr "名前 で検索"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.TextChannelConverter:12
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.VoiceChannelConverter:12
@@ -5189,11 +5239,19 @@ msgstr "``Range[int, None, 10]`` は最小値なし、最大値10を意味しま
 msgid "``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10."
 msgstr "``Range[int, 1, 10]`` は最小値1、最大値10を意味します。"
 
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:12
+msgid "``Range[float, 1.0, 5.0]`` means the minimum is 1.0 and the maximum is 5.0."
+msgstr ""
+
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:13
+msgid "``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10."
+msgstr ""
+
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:15
 msgid "Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`."
 msgstr ":class:`HybridCommand` 内では、この関数は :class:`discord.app_commands.Range` と同様に動作します。"
 
-#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:15
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:17
 msgid "If the value cannot be converted to the provided type or is outside the given range, :class:`~.ext.commands.BadArgument` or :class:`~.ext.commands.RangeError` is raised to the appropriate error handlers respectively."
 msgstr "もし値が渡された型に変換できず、または指定された範囲外である場合、:class:`~.ext.commands.BadArgument` や :class:`~.ext.commands.RangeError` が適切なエラーハンドラに送出されます。"
 
@@ -5412,6 +5470,11 @@ msgstr "このパラメータの説明。"
 msgid "The displayed default in :class:`Command.signature`."
 msgstr ":class:`Command.signature` で表示される既定値。"
 
+#: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.Parameter.displayed_name:1
+#: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:24
+msgid "The name that is displayed to the user."
+msgstr ""
+
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.Parameter.get_default:3
 msgid "Gets this parameter's default value."
 msgstr "このパラメータの既定値を取得します。"
@@ -5441,8 +5504,8 @@ msgid "The displayed default in :attr:`Command.signature`."
 msgstr ":attr:`Command.signature` で表示される既定値。"
 
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:1
-msgid "param(\\*, converter=..., default=..., description=..., displayed_default=...)"
-msgstr "param(\\*, converter=..., default=..., description=..., displayed_default=...)"
+msgid "param(\\*, converter=..., default=..., description=..., displayed_default=..., displayed_name=...)"
+msgstr ""
 
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:3
 msgid "An alias for :func:`parameter`."
@@ -5627,6 +5690,10 @@ msgstr "比較が失敗した値の、失敗した順のタプル。"
 #: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.BadLiteralArgument:18
 msgid "Tuple[Any, ``...``]"
 msgstr "Tuple[Any, ``...``]"
+
+#: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.BadLiteralArgument:28
+msgid "The argument's value that failed to be converted. Defaults to an empty string."
+msgstr ""
 
 #: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.PrivateMessageOnly:1
 msgid "Exception raised when an operation does not work outside of private message contexts."

@@ -24,22 +24,36 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union, Optional
 from typing_extensions import NotRequired
 
-from .channel import ChannelTypeWithoutThread, ThreadMetadata
-from .threads import ThreadType
+from .channel import ChannelTypeWithoutThread, GuildChannel, InteractionDMChannel, GroupDMChannel
+from .sku import Entitlement
+from .threads import ThreadType, ThreadMetadata
 from .member import Member
 from .message import Attachment
 from .role import Role
 from .snowflake import Snowflake
 from .user import User
+from .guild import GuildFeature
 
 if TYPE_CHECKING:
     from .message import Message
 
 
 InteractionType = Literal[1, 2, 3, 4, 5]
+InteractionResponseType = Literal[
+    1,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+]
+InteractionContextType = Literal[0, 1, 2]
+InteractionInstallationType = Literal[0, 1]
 
 
 class _BasePartialChannel(TypedDict):
@@ -50,6 +64,14 @@ class _BasePartialChannel(TypedDict):
 
 class PartialChannel(_BasePartialChannel):
     type: ChannelTypeWithoutThread
+    topic: NotRequired[str]
+    position: int
+    nsfw: bool
+    flags: int
+    rate_limit_per_user: int
+    parent_id: Optional[Snowflake]
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: NotRequired[str]
 
 
 class PartialThread(_BasePartialChannel):
@@ -65,6 +87,12 @@ class ResolvedData(TypedDict, total=False):
     channels: Dict[str, Union[PartialChannel, PartialThread]]
     messages: Dict[str, Message]
     attachments: Dict[str, Attachment]
+
+
+class PartialInteractionGuild(TypedDict):
+    id: Snowflake
+    locale: str
+    features: List[GuildFeature]
 
 
 class _BaseApplicationCommandInteractionDataOption(TypedDict):
@@ -203,10 +231,17 @@ class _BaseInteraction(TypedDict):
     token: str
     version: Literal[1]
     guild_id: NotRequired[Snowflake]
+    guild: NotRequired[PartialInteractionGuild]
     channel_id: NotRequired[Snowflake]
+    channel: Union[GuildChannel, InteractionDMChannel, GroupDMChannel]
     app_permissions: NotRequired[str]
     locale: NotRequired[str]
     guild_locale: NotRequired[str]
+    entitlement_sku_ids: NotRequired[List[Snowflake]]
+    entitlements: NotRequired[List[Entitlement]]
+    authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
+    context: NotRequired[InteractionContextType]
+    attachment_size_limit: int
 
 
 class PingInteraction(_BaseInteraction):
@@ -237,3 +272,75 @@ class MessageInteraction(TypedDict):
     name: str
     user: User
     member: NotRequired[Member]
+
+
+class _MessageInteractionMetadata(TypedDict):
+    id: Snowflake
+    user: User
+    authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
+    original_response_message_id: NotRequired[Snowflake]
+
+
+class _ApplicationCommandMessageInteractionMetadata(_MessageInteractionMetadata):
+    type: Literal[2]
+    # command_type: Literal[1, 2, 3, 4]
+
+
+class UserApplicationCommandMessageInteractionMetadata(_ApplicationCommandMessageInteractionMetadata):
+    # command_type: Literal[2]
+    target_user: User
+
+
+class MessageApplicationCommandMessageInteractionMetadata(_ApplicationCommandMessageInteractionMetadata):
+    # command_type: Literal[3]
+    target_message_id: Snowflake
+
+
+ApplicationCommandMessageInteractionMetadata = Union[
+    _ApplicationCommandMessageInteractionMetadata,
+    UserApplicationCommandMessageInteractionMetadata,
+    MessageApplicationCommandMessageInteractionMetadata,
+]
+
+
+class MessageComponentMessageInteractionMetadata(_MessageInteractionMetadata):
+    type: Literal[3]
+    interacted_message_id: Snowflake
+
+
+class ModalSubmitMessageInteractionMetadata(_MessageInteractionMetadata):
+    type: Literal[5]
+    triggering_interaction_metadata: Union[
+        ApplicationCommandMessageInteractionMetadata, MessageComponentMessageInteractionMetadata
+    ]
+
+
+MessageInteractionMetadata = Union[
+    ApplicationCommandMessageInteractionMetadata,
+    MessageComponentMessageInteractionMetadata,
+    ModalSubmitMessageInteractionMetadata,
+]
+
+
+class InteractionCallbackResponse(TypedDict):
+    id: Snowflake
+    type: InteractionType
+    activity_instance_id: NotRequired[str]
+    response_message_id: NotRequired[Snowflake]
+    response_message_loading: NotRequired[bool]
+    response_message_ephemeral: NotRequired[bool]
+
+
+class InteractionCallbackActivity(TypedDict):
+    id: str
+
+
+class InteractionCallbackResource(TypedDict):
+    type: InteractionResponseType
+    activity_instance: NotRequired[InteractionCallbackActivity]
+    message: NotRequired[Message]
+
+
+class InteractionCallback(TypedDict):
+    interaction: InteractionCallbackResponse
+    resource: NotRequired[InteractionCallbackResource]

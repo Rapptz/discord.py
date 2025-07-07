@@ -28,6 +28,7 @@ from typing_extensions import NotRequired
 from .user import PartialUser
 from .snowflake import Snowflake
 from .threads import ThreadMetadata, ThreadMember, ThreadArchiveDuration, ThreadType
+from .emoji import PartialEmoji
 
 
 OverwriteType = Literal[0, 1]
@@ -40,7 +41,7 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 15]
+ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 15, 16]
 ChannelType = Union[ChannelTypeWithoutThread, ThreadType]
 
 
@@ -89,6 +90,20 @@ class VoiceChannel(_BaseTextChannel):
     video_quality_mode: NotRequired[VideoQualityMode]
 
 
+VoiceChannelEffectAnimationType = Literal[0, 1]
+
+
+class VoiceChannelEffect(TypedDict):
+    guild_id: Snowflake
+    channel_id: Snowflake
+    user_id: Snowflake
+    emoji: NotRequired[Optional[PartialEmoji]]
+    animation_type: NotRequired[VoiceChannelEffectAnimationType]
+    animation_id: NotRequired[int]
+    sound_id: NotRequired[Union[int, str]]
+    sound_volume: NotRequired[float]
+
+
 class CategoryChannel(_BaseGuildChannel):
     type: Literal[4]
 
@@ -134,30 +149,49 @@ class ForumTag(TypedDict):
     emoji_name: Optional[str]
 
 
+ForumOrderType = Literal[0, 1]
 ForumLayoutType = Literal[0, 1, 2]
 
 
-class ForumChannel(_BaseTextChannel):
-    type: Literal[15]
+class _BaseForumChannel(_BaseTextChannel):
     available_tags: List[ForumTag]
     default_reaction_emoji: Optional[DefaultReaction]
+    default_sort_order: Optional[ForumOrderType]
     default_forum_layout: NotRequired[ForumLayoutType]
     flags: NotRequired[int]
 
 
-GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel]
+class ForumChannel(_BaseForumChannel):
+    type: Literal[15]
 
 
-class DMChannel(_BaseChannel):
+class MediaChannel(_BaseForumChannel):
+    type: Literal[16]
+
+
+GuildChannel = Union[
+    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel, MediaChannel
+]
+
+
+class _BaseDMChannel(_BaseChannel):
     type: Literal[1]
     last_message_id: Optional[Snowflake]
+
+
+class DMChannel(_BaseDMChannel):
     recipients: List[PartialUser]
+
+
+class InteractionDMChannel(_BaseDMChannel):
+    recipients: NotRequired[List[PartialUser]]
 
 
 class GroupDMChannel(_BaseChannel):
     type: Literal[3]
     icon: Optional[str]
     owner_id: Snowflake
+    recipients: List[PartialUser]
 
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]

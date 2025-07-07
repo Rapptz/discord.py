@@ -29,9 +29,10 @@ from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
-from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, try_enum
+from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, InviteType, try_enum
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
+from .flags import InviteFlags
 
 __all__ = (
     'PartialInviteChannel',
@@ -47,6 +48,7 @@ if TYPE_CHECKING:
         InviteGuild as InviteGuildPayload,
         GatewayInvite as GatewayInvitePayload,
     )
+    from .types.guild import GuildFeature
     from .types.channel import (
         PartialChannel as InviteChannelPayload,
     )
@@ -189,7 +191,7 @@ class PartialInviteGuild:
         self._state: ConnectionState = state
         self.id: int = id
         self.name: str = data['name']
-        self.features: List[str] = data.get('features', [])
+        self.features: List[GuildFeature] = data.get('features', [])
         self._icon: Optional[str] = data.get('icon')
         self._banner: Optional[str] = data.get('banner')
         self._splash: Optional[str] = data.get('splash')
@@ -295,6 +297,10 @@ class Invite(Hashable):
 
     Attributes
     -----------
+    type: :class:`InviteType`
+        The type of the invite.
+
+        .. versionadded: 2.4
     max_age: Optional[:class:`int`]
         How long before the invite expires in seconds.
         A value of ``0`` indicates that it doesn't expire.
@@ -373,6 +379,8 @@ class Invite(Hashable):
         'expires_at',
         'scheduled_event',
         'scheduled_event_id',
+        'type',
+        '_flags',
     )
 
     BASE = 'https://discord.gg'
@@ -386,6 +394,7 @@ class Invite(Hashable):
         channel: Optional[Union[PartialInviteChannel, GuildChannel]] = None,
     ):
         self._state: ConnectionState = state
+        self.type: InviteType = try_enum(InviteType, data.get('type', 0))
         self.max_age: Optional[int] = data.get('max_age')
         self.code: str = data['code']
         self.guild: Optional[InviteGuildType] = self._resolve_guild(data.get('guild'), guild)
@@ -425,12 +434,13 @@ class Invite(Hashable):
             else None
         )
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
+        self._flags: int = data.get('flags', 0)
 
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
         guild: Optional[Union[Guild, PartialInviteGuild]]
         try:
-            guild_data = data['guild']
+            guild_data = data['guild']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             # If we're here, then this is a group DM
             guild = None
@@ -495,7 +505,7 @@ class Invite(Hashable):
 
     def __repr__(self) -> str:
         return (
-            f'<Invite code={self.code!r} guild={self.guild!r} '
+            f'<Invite type={self.type} code={self.code!r} guild={self.guild!r} '
             f'online={self.approximate_presence_count} '
             f'members={self.approximate_member_count}>'
         )
@@ -515,6 +525,14 @@ class Invite(Hashable):
         if self.scheduled_event_id is not None:
             url += '?event=' + str(self.scheduled_event_id)
         return url
+
+    @property
+    def flags(self) -> InviteFlags:
+        """:class:`InviteFlags`: Returns the flags for this invite.
+
+        .. versionadded:: 2.6
+        """
+        return InviteFlags._from_value(self._flags)
 
     def set_scheduled_event(self, scheduled_event: Snowflake, /) -> Self:
         """Sets the scheduled event for this invite.
@@ -539,7 +557,7 @@ class Invite(Hashable):
 
         return self
 
-    async def delete(self, *, reason: Optional[str] = None) -> None:
+    async def delete(self, *, reason: Optional[str] = None) -> Self:
         """|coro|
 
         Revokes the instant invite.
@@ -561,4 +579,5 @@ class Invite(Hashable):
             Revoking the invite failed.
         """
 
-        await self._state.http.delete_invite(self.code, reason=reason)
+        data = await self._state.http.delete_invite(self.code, reason=reason)
+        return self.from_incomplete(state=self._state, data=data)

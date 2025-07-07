@@ -28,7 +28,7 @@ from typing import Optional, Tuple, Dict
 
 import argparse
 import sys
-from pathlib import Path
+from pathlib import Path, PurePath, PureWindowsPath
 
 import discord
 import importlib.metadata
@@ -157,7 +157,7 @@ _cog_extras = '''
     async def cog_command_error(self, ctx, error):
         # error handling to every command in here
         pass
-        
+
     async def cog_app_command_error(self, interaction, error):
         # error handling to every application command in here
         pass
@@ -225,8 +225,14 @@ def to_path(parser: argparse.ArgumentParser, name: str, *, replace_spaces: bool 
         )
         if len(name) <= 4 and name.upper() in forbidden:
             parser.error('invalid directory name given, use a different one')
+    path = PurePath(name)
+    if isinstance(path, PureWindowsPath) and path.drive:
+        drive, rest = path.parts[0], path.parts[1:]
+        transformed = tuple(map(lambda p: p.translate(_translation_table), rest))
+        name = drive + '\\'.join(transformed)
 
-    name = name.translate(_translation_table)
+    else:
+        name = name.translate(_translation_table)
     if replace_spaces:
         name = name.replace(' ', '-')
     return Path(name)

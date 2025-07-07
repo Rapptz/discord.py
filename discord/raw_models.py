@@ -25,13 +25,16 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
+from typing import TYPE_CHECKING, Literal, Optional, Set, List, Union
 
-from .enums import ChannelType, try_enum
-from .utils import _get_as_snowflake
+from .enums import ChannelType, try_enum, ReactionType
+from .utils import _get_as_snowflake, _RawReprMixin
 from .app_commands import AppCommandPermissions
+from .colour import Colour
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.gateway import (
         MessageDeleteEvent,
         MessageDeleteBulkEvent as BulkMessageDeleteEvent,
@@ -46,6 +49,7 @@ if TYPE_CHECKING:
         ThreadMembersUpdate,
         TypingStartEvent,
         GuildMemberRemoveEvent,
+        PollVoteActionEvent,
     )
     from .types.command import GuildApplicationCommandPermissions
     from .message import Message
@@ -57,6 +61,7 @@ if TYPE_CHECKING:
     from .guild import Guild
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
+    ReactionActionType = Literal['REACTION_ADD', 'REACTION_REMOVE']
 
 
 __all__ = (
@@ -73,15 +78,8 @@ __all__ = (
     'RawTypingEvent',
     'RawMemberRemoveEvent',
     'RawAppCommandPermissionsUpdateEvent',
+    'RawPollVoteActionEvent',
 )
-
-
-class _RawReprMixin:
-    __slots__: Tuple[str, ...] = ()
-
-    def __repr__(self) -> str:
-        value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
-        return f'<{self.__class__.__name__} {value}>'
 
 
 class RawMessageDeleteEvent(_RawReprMixin):
@@ -106,7 +104,7 @@ class RawMessageDeleteEvent(_RawReprMixin):
         self.channel_id: int = int(data['channel_id'])
         self.cached_message: Optional[Message] = None
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -134,7 +132,7 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
         self.cached_messages: List[Message] = []
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -156,24 +154,26 @@ class RawMessageUpdateEvent(_RawReprMixin):
         .. versionadded:: 1.7
 
     data: :class:`dict`
-        The raw data given by the :ddocs:`gateway <topics/gateway#message-update>`
+        The raw data given by the :ddocs:`gateway <topics/gateway-events#message-update>`
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache. Represents the message before
         it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
+    message: :class:`Message`
+        The updated message.
+
+        .. versionadded:: 2.5
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message', 'message')
 
-    def __init__(self, data: MessageUpdateEvent) -> None:
-        self.message_id: int = int(data['id'])
-        self.channel_id: int = int(data['channel_id'])
+    def __init__(self, data: MessageUpdateEvent, message: Message) -> None:
+        self.message_id: int = message.id
+        self.channel_id: int = message.channel.id
         self.data: MessageUpdateEvent = data
+        self.message: Message = message
         self.cached_message: Optional[Message] = None
 
-        try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
-        except KeyError:
-            self.guild_id: Optional[int] = None
+        self.guild_id: Optional[int] = message.guild.id if message.guild else None
 
 
 class RawReactionActionEvent(_RawReprMixin):
@@ -196,29 +196,69 @@ class RawReactionActionEvent(_RawReprMixin):
         The member who added the reaction. Only available if ``event_type`` is ``REACTION_ADD`` and the reaction is inside a guild.
 
         .. versionadded:: 1.3
+    message_author_id: Optional[:class:`int`]
+        The author ID of the message being reacted to. Only available if ``event_type`` is ``REACTION_ADD``.
 
+        .. versionadded:: 2.4
     event_type: :class:`str`
         The event type that triggered this action. Can be
         ``REACTION_ADD`` for reaction addition or
         ``REACTION_REMOVE`` for reaction removal.
 
         .. versionadded:: 1.3
+    burst: :class:`bool`
+        Whether the reaction was a burst reaction, also known as a "super reaction".
+
+        .. versionadded:: 2.4
+    burst_colours: List[:class:`Colour`]
+        A list of colours used for burst reaction animation. Only available if ``burst`` is ``True``
+        and if ``event_type`` is ``REACTION_ADD``.
+
+        .. versionadded:: 2.0
+    type: :class:`ReactionType`
+        The type of the reaction.
+
+        .. versionadded:: 2.4
     """
 
-    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji', 'event_type', 'member')
+    __slots__ = (
+        'message_id',
+        'user_id',
+        'channel_id',
+        'guild_id',
+        'emoji',
+        'event_type',
+        'member',
+        'message_author_id',
+        'burst',
+        'burst_colours',
+        'type',
+    )
 
-    def __init__(self, data: ReactionActionEvent, emoji: PartialEmoji, event_type: str) -> None:
+    def __init__(self, data: ReactionActionEvent, emoji: PartialEmoji, event_type: ReactionActionType) -> None:
         self.message_id: int = int(data['message_id'])
         self.channel_id: int = int(data['channel_id'])
         self.user_id: int = int(data['user_id'])
         self.emoji: PartialEmoji = emoji
-        self.event_type: str = event_type
+        self.event_type: ReactionActionType = event_type
         self.member: Optional[Member] = None
+        self.message_author_id: Optional[int] = _get_as_snowflake(data, 'message_author_id')
+        self.burst: bool = data.get('burst', False)
+        self.burst_colours: List[Colour] = [Colour.from_str(c) for c in data.get('burst_colours', [])]
+        self.type: ReactionType = try_enum(ReactionType, data['type'])
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
+
+    @property
+    def burst_colors(self) -> List[Colour]:
+        """An alias of :attr:`burst_colours`.
+
+        .. versionadded:: 2.4
+        """
+        return self.burst_colours
 
 
 class RawReactionClearEvent(_RawReprMixin):
@@ -241,7 +281,7 @@ class RawReactionClearEvent(_RawReprMixin):
         self.channel_id: int = int(data['channel_id'])
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -271,7 +311,7 @@ class RawReactionClearEmojiEvent(_RawReprMixin):
         self.channel_id: int = int(data['channel_id'])
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -298,7 +338,9 @@ class RawIntegrationDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
 
         try:
-            self.application_id: Optional[int] = int(data['application_id'])
+            self.application_id: Optional[int] = int(
+                data['application_id']  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            )
         except KeyError:
             self.application_id: Optional[int] = None
 
@@ -319,7 +361,7 @@ class RawThreadUpdateEvent(_RawReprMixin):
     parent_id: :class:`int`
         The ID of the channel the thread belongs to.
     data: :class:`dict`
-        The raw data given by the :ddocs:`gateway <topics/gateway#thread-update>`
+        The raw data given by the :ddocs:`gateway <topics/gateway-events#thread-update>`
     thread: Optional[:class:`discord.Thread`]
         The thread, if it could be found in the internal cache.
     """
@@ -363,6 +405,20 @@ class RawThreadDeleteEvent(_RawReprMixin):
         self.parent_id: int = int(data['parent_id'])
         self.thread: Optional[Thread] = None
 
+    @classmethod
+    def _from_thread(cls, thread: Thread) -> Self:
+        data: ThreadDeleteEvent = {
+            'id': thread.id,
+            'type': thread.type.value,
+            'guild_id': thread.guild.id,
+            'parent_id': thread.parent_id,
+        }
+
+        instance = cls(data)
+        instance.thread = thread
+
+        return instance
+
 
 class RawThreadMembersUpdate(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_thread_member_remove` event.
@@ -378,7 +434,7 @@ class RawThreadMembersUpdate(_RawReprMixin):
     member_count: :class:`int`
         The approximate number of members in the thread. This caps at 50.
     data: :class:`dict`
-        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`.
+        The raw data given by the :ddocs:`gateway <topics/gateway-events#thread-members-update>`.
     """
 
     __slots__ = ('thread_id', 'guild_id', 'member_count', 'data')
@@ -467,3 +523,33 @@ class RawAppCommandPermissionsUpdateEvent(_RawReprMixin):
         self.permissions: List[AppCommandPermissions] = [
             AppCommandPermissions(data=perm, guild=self.guild, state=state) for perm in data['permissions']
         ]
+
+
+class RawPollVoteActionEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_poll_vote_add` or :func:`on_raw_poll_vote_remove`
+    event.
+
+    .. versionadded:: 2.4
+
+    Attributes
+    ----------
+    user_id: :class:`int`
+        The ID of the user that added or removed a vote.
+    channel_id: :class:`int`
+        The channel ID where the poll vote action took place.
+    message_id: :class:`int`
+        The message ID that contains the poll the user added or removed their vote on.
+    guild_id: Optional[:class:`int`]
+        The guild ID where the vote got added or removed, if applicable..
+    answer_id: :class:`int`
+        The poll answer's ID the user voted on.
+    """
+
+    __slots__ = ('user_id', 'channel_id', 'message_id', 'guild_id', 'answer_id')
+
+    def __init__(self, data: PollVoteActionEvent) -> None:
+        self.user_id: int = int(data['user_id'])
+        self.channel_id: int = int(data['channel_id'])
+        self.message_id: int = int(data['message_id'])
+        self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
+        self.answer_id: int = int(data['answer_id'])

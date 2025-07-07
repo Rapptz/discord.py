@@ -27,6 +27,13 @@ Installing
 
 To install the library without full voice support, you can just run the following command:
 
+.. note::
+
+    A `Virtual Environment <https://docs.python.org/3/library/venv.html>`__ is recommended to install
+    the library, especially on Linux where the system Python is externally managed and restricts which
+    packages you can install on it.
+
+
 .. code:: sh
 
     # Linux/macOS

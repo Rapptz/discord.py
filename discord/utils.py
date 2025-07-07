@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import array
@@ -41,7 +42,6 @@ from typing import (
     Iterator,
     List,
     Literal,
-    Mapping,
     NamedTuple,
     Optional,
     Protocol,
@@ -56,7 +56,7 @@ from typing import (
     TYPE_CHECKING,
 )
 import unicodedata
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from bisect import bisect_left
 import datetime
 import functools
@@ -68,8 +68,10 @@ import re
 import os
 import sys
 import types
+import typing
 import warnings
 import logging
+import zlib
 
 import yarl
 
@@ -80,6 +82,12 @@ except ModuleNotFoundError:
 else:
     HAS_ORJSON = True
 
+try:
+    import zstandard  # type: ignore
+except ImportError:
+    _HAS_ZSTD = False
+else:
+    _HAS_ZSTD = True
 
 __all__ = (
     'oauth_url',
@@ -100,6 +108,7 @@ __all__ = (
 )
 
 DISCORD_EPOCH = 1420070400000
+DEFAULT_FILE_SIZE_LIMIT_BYTES = 10485760
 
 
 class _MissingSentinel:
@@ -146,8 +155,11 @@ if TYPE_CHECKING:
     from .invite import Invite
     from .template import Template
 
-    class _RequestLike(Protocol):
-        headers: Mapping[str, Any]
+    class _DecompressionContext(Protocol):
+        COMPRESSION_TYPE: str
+
+        def decompress(self, data: bytes, /) -> str | None:
+            ...
 
     P = ParamSpec('P')
 
@@ -300,7 +312,7 @@ def deprecated(instead: Optional[str] = None) -> Callable[[Callable[P, T]], Call
             else:
                 fmt = '{0.__name__} is deprecated.'
 
-            warnings.warn(fmt.format(func, instead), stacklevel=3, category=DeprecationWarning)
+            warnings.warn(fmt.format(func, instead), stacklevel=2, category=DeprecationWarning)
             warnings.simplefilter('default', DeprecationWarning)  # reset filter
             return func(*args, **kwargs)
 
@@ -315,7 +327,7 @@ def oauth_url(
     permissions: Permissions = MISSING,
     guild: Snowflake = MISSING,
     redirect_uri: str = MISSING,
-    scopes: Iterable[str] = MISSING,
+    scopes: Optional[Iterable[str]] = MISSING,
     disable_guild_select: bool = False,
     state: str = MISSING,
 ) -> str:
@@ -357,7 +369,8 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
+    if scopes is not None:
+        url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
     if permissions is not MISSING:
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:
@@ -621,11 +634,25 @@ def _get_mime_type_for_image(data: bytes):
         raise ValueError('Unsupported image type given')
 
 
-def _bytes_to_base64_data(data: bytes) -> str:
+def _get_mime_type_for_audio(data: bytes):
+    if data.startswith(b'\x49\x44\x33') or data.startswith(b'\xff\xfb'):
+        return 'audio/mpeg'
+    else:
+        raise ValueError('Unsupported audio type given')
+
+
+def _bytes_to_base64_data(data: bytes, *, audio: bool = False) -> str:
     fmt = 'data:{mime};base64,{data}'
-    mime = _get_mime_type_for_image(data)
+    if audio:
+        mime = _get_mime_type_for_audio(data)
+    else:
+        mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
+
+
+def _base64_to_bytes(data: str) -> bytes:
+    return b64decode(data.encode('ascii'))
 
 
 def _is_submodule(parent: str, child: str) -> bool:
@@ -687,13 +714,13 @@ async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: 
     if _isawaitable(value):
         return await value
     else:
-        return value  # type: ignore
+        return value
 
 
 async def async_all(
     gen: Iterable[Union[T, Awaitable[T]]],
     *,
-    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
+    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,  # type: ignore
 ) -> bool:
     for elem in gen:
         if check(elem):
@@ -716,7 +743,7 @@ async def sane_wait_for(futures: Iterable[Awaitable[T]], *, timeout: Optional[fl
 def get_slots(cls: Type[Any]) -> Iterator[str]:
     for mro in reversed(cls.__mro__):
         try:
-            yield from mro.__slots__  # type: ignore
+            yield from mro.__slots__
         except AttributeError:
             continue
 
@@ -842,6 +869,12 @@ def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
     invite: Union[:class:`~discord.Invite`, :class:`str`]
         The invite.
 
+    Raises
+    -------
+    ValueError
+        The invite is not a valid Discord invite, e.g. is not a URL
+        or does not contain alphanumeric characters.
+
     Returns
     --------
     :class:`.ResolvedInvite`
@@ -861,7 +894,12 @@ def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
             event_id = url.query.get('event')
 
             return ResolvedInvite(code, int(event_id) if event_id else None)
-    return ResolvedInvite(invite, None)
+
+        allowed_characters = r'[a-zA-Z0-9\-_]+'
+        if not re.fullmatch(allowed_characters, invite):
+            raise ValueError('Invite contains characters that are not allowed')
+
+        return ResolvedInvite(invite, None)
 
 
 def resolve_template(code: Union[Template, str]) -> str:
@@ -894,7 +932,7 @@ def resolve_template(code: Union[Template, str]) -> str:
 
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c) for c in ('*', '`', '_', '~', '|'))
 
-_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
+_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)|^#{1,3}|^\s*-'
 
 _MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
 
@@ -927,7 +965,7 @@ def remove_markdown(text: str, *, ignore_links: bool = True) -> str:
         The text with the markdown special characters removed.
     """
 
-    def replacement(match):
+    def replacement(match: re.Match[str]) -> str:
         groupdict = match.groupdict()
         return groupdict.get('url', '')
 
@@ -1075,6 +1113,7 @@ def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
 
 
 PY_310 = sys.version_info >= (3, 10)
+PY_312 = sys.version_info >= (3, 12)
 
 
 def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
@@ -1082,7 +1121,7 @@ def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
     literal_cls = type(Literal[0])
     for p in parameters:
         if isinstance(p, literal_cls):
-            params.extend(p.__args__)
+            params.extend(p.__args__)  # type: ignore
         else:
             params.append(p)
     return tuple(params)
@@ -1112,6 +1151,16 @@ def evaluate_annotation(
         evaluated = evaluate_annotation(eval(tp, globals, locals), globals, locals, cache)
         cache[tp] = evaluated
         return evaluated
+
+    if PY_312 and getattr(tp.__repr__, '__objclass__', None) is typing.TypeAliasType:  # type: ignore
+        temp_locals = dict(**locals, **{t.__name__: t for t in tp.__type_params__})
+        annotation = evaluate_annotation(tp.__value__, globals, temp_locals, cache.copy())
+        if hasattr(tp, '__args__'):
+            annotation = annotation[tp.__args__]
+        return annotation
+
+    if hasattr(tp, '__supertype__'):
+        return evaluate_annotation(tp.__supertype__, globals, locals, cache)
 
     if hasattr(tp, '__metadata__'):
         # Annotated[X, Y] can access Y via __metadata__
@@ -1239,11 +1288,12 @@ def is_docker() -> bool:
 
 
 def stream_supports_colour(stream: Any) -> bool:
+    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
+
     # Pycharm and Vscode support colour in their inbuilt editors
     if 'PYCHARM_HOSTED' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode':
-        return True
+        return is_a_tty
 
-    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
     if sys.platform != 'win32':
         # Docker does not consistently have a tty attached to it
         return is_a_tty or is_docker()
@@ -1374,3 +1424,119 @@ CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
+
+
+def _human_join(seq: Sequence[str], /, *, delimiter: str = ', ', final: str = 'or') -> str:
+    size = len(seq)
+    if size == 0:
+        return ''
+
+    if size == 1:
+        return seq[0]
+
+    if size == 2:
+        return f'{seq[0]} {final} {seq[1]}'
+
+    return delimiter.join(seq[:-1]) + f' {final} {seq[-1]}'
+
+
+if _HAS_ZSTD:
+
+    class _ZstdDecompressionContext:
+        __slots__ = ('context',)
+
+        COMPRESSION_TYPE: str = 'zstd-stream'
+
+        def __init__(self) -> None:
+            decompressor = zstandard.ZstdDecompressor()
+            self.context = decompressor.decompressobj()
+
+        def decompress(self, data: bytes, /) -> str | None:
+            # Each WS message is a complete gateway message
+            return self.context.decompress(data).decode('utf-8')
+
+    _ActiveDecompressionContext: Type[_DecompressionContext] = _ZstdDecompressionContext
+else:
+
+    class _ZlibDecompressionContext:
+        __slots__ = ('context', 'buffer')
+
+        COMPRESSION_TYPE: str = 'zlib-stream'
+
+        def __init__(self) -> None:
+            self.buffer: bytearray = bytearray()
+            self.context = zlib.decompressobj()
+
+        def decompress(self, data: bytes, /) -> str | None:
+            self.buffer.extend(data)
+
+            # Check whether ending is Z_SYNC_FLUSH
+            if len(data) < 4 or data[-4:] != b'\x00\x00\xff\xff':
+                return
+
+            msg = self.context.decompress(self.buffer)
+            self.buffer = bytearray()
+
+            return msg.decode('utf-8')
+
+    _ActiveDecompressionContext: Type[_DecompressionContext] = _ZlibDecompressionContext
+
+
+def _format_call_duration(duration: datetime.timedelta) -> str:
+    seconds = duration.total_seconds()
+
+    minutes_s = 60
+    hours_s = minutes_s * 60
+    days_s = hours_s * 24
+    # Discord uses approx. 1/12 of 365.25 days (avg. days per year)
+    months_s = days_s * 30.4375
+    years_s = months_s * 12
+
+    threshold_s = 45
+    threshold_m = 45
+    threshold_h = 21.5
+    threshold_d = 25.5
+    threshold_M = 10.5
+
+    if seconds < threshold_s:
+        formatted = "a few seconds"
+    elif seconds < (threshold_m * minutes_s):
+        minutes = round(seconds / minutes_s)
+        if minutes == 1:
+            formatted = "a minute"
+        else:
+            formatted = f"{minutes} minutes"
+    elif seconds < (threshold_h * hours_s):
+        hours = round(seconds / hours_s)
+        if hours == 1:
+            formatted = "an hour"
+        else:
+            formatted = f"{hours} hours"
+    elif seconds < (threshold_d * days_s):
+        days = round(seconds / days_s)
+        if days == 1:
+            formatted = "a day"
+        else:
+            formatted = f"{days} days"
+    elif seconds < (threshold_M * months_s):
+        months = round(seconds / months_s)
+        if months == 1:
+            formatted = "a month"
+        else:
+            formatted = f"{months} months"
+    else:
+        years = round(seconds / years_s)
+        if years == 1:
+            formatted = "a year"
+        else:
+            formatted = f"{years} years"
+
+    return formatted
+
+
+class _RawReprMixin:
+    __slots__: Tuple[str, ...] = ()
+
+    def __repr__(self) -> str:
+        value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
+        return f'<{self.__class__.__name__} {value}>'

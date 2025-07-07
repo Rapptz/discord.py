@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Optional, TYPE_CHECKING, List
-from .utils import parse_time, _bytes_to_base64_data, MISSING
+from .utils import parse_time, _bytes_to_base64_data, MISSING, deprecated
 from .guild import Guild
 
 # fmt: off
@@ -68,6 +68,10 @@ class _PartialTemplateState:
     @property
     def member_cache_flags(self):
         return self.__state.member_cache_flags
+
+    @property
+    def cache_guild_expressions(self):
+        return False
 
     def store_emoji(self, guild, packet) -> None:
         return None
@@ -146,18 +150,11 @@ class Template:
         self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
         self.updated_at: Optional[datetime.datetime] = parse_time(data.get('updated_at'))
 
-        guild_id = int(data['source_guild_id'])
-        guild: Optional[Guild] = self._state._get_guild(guild_id)
-
-        self.source_guild: Guild
-        if guild is None:
-            source_serialised = data['serialized_source_guild']
-            source_serialised['id'] = guild_id
-            state = _PartialTemplateState(state=self._state)
-            # Guild expects a ConnectionState, we're passing a _PartialTemplateState
-            self.source_guild = Guild(data=source_serialised, state=state)  # type: ignore
-        else:
-            self.source_guild = guild
+        source_serialised = data['serialized_source_guild']
+        source_serialised['id'] = int(data['source_guild_id'])
+        state = _PartialTemplateState(state=self._state)
+        # Guild expects a ConnectionState, we're passing a _PartialTemplateState
+        self.source_guild = Guild(data=source_serialised, state=state)  # type: ignore
 
         self.is_dirty: Optional[bool] = data.get('is_dirty', None)
 
@@ -167,6 +164,7 @@ class Template:
             f' creator={self.creator!r} source_guild={self.source_guild!r} is_dirty={self.is_dirty}>'
         )
 
+    @deprecated()
     async def create_guild(self, name: str, icon: bytes = MISSING) -> Guild:
         """|coro|
 
@@ -180,6 +178,9 @@ class Template:
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
+
+        .. deprecated:: 2.6
+            This function is deprecated and will be removed in a future version.
 
         Parameters
         ----------

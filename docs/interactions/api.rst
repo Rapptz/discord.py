@@ -28,6 +28,22 @@ InteractionResponse
 .. autoclass:: InteractionResponse()
     :members:
 
+InteractionCallbackResponse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: InteractionCallbackResponse
+
+.. autoclass:: InteractionCallbackResponse()
+    :members:
+
+InteractionCallbackActivityInstance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: InteractionCallbackActivityInstance
+
+.. autoclass:: InteractionCallbackActivityInstance()
+    :members:
+
 InteractionMessage
 ~~~~~~~~~~~~~~~~~~~
 
@@ -43,6 +59,14 @@ MessageInteraction
 .. attributetable:: MessageInteraction
 
 .. autoclass:: MessageInteraction()
+    :members:
+
+MessageInteractionMetadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageInteractionMetadata
+
+.. autoclass:: MessageInteractionMetadata()
     :members:
 
 Component
@@ -129,6 +153,22 @@ AppCommandPermissions
 .. autoclass:: discord.app_commands.AppCommandPermissions()
     :members:
 
+AppCommandContext
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.AppCommandContext
+
+.. autoclass:: discord.app_commands.AppCommandContext
+    :members:
+
+AppInstallationType
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.AppInstallationType
+
+.. autoclass:: discord.app_commands.AppInstallationType
+    :members:
+
 GuildAppCommandPermissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -164,6 +204,14 @@ SelectOption
 .. attributetable:: SelectOption
 
 .. autoclass:: SelectOption
+    :members:
+
+SelectDefaultValue
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SelectDefaultValue
+
+.. autoclass:: SelectDefaultValue
     :members:
 
 Choice
@@ -281,6 +329,10 @@ Enumerations
 
         Represents a select in which both users and roles can be selected.
 
+    .. attribute:: channel_select
+
+        Represents a channel select component.
+
 .. class:: ButtonStyle
 
     Represents the style of the button component.
@@ -302,7 +354,12 @@ Enumerations
     .. attribute:: link
 
         Represents a link button.
+    .. attribute:: premium
 
+        Represents a button denoting that buying a SKU is
+        required to perform this action.
+
+        .. versionadded:: 2.4
     .. attribute:: blurple
 
         An alias for :attr:`primary`.
@@ -442,6 +499,15 @@ Item
 
 .. autoclass:: discord.ui.Item
     :members:
+
+DynamicItem
+~~~~~~~~~~~~
+
+.. attributetable:: discord.ui.DynamicItem
+
+.. autoclass:: discord.ui.DynamicItem
+    :members:
+    :inherited-members:
 
 Button
 ~~~~~~~
@@ -623,6 +689,24 @@ Decorators
     :decorator:
 
 .. autofunction:: discord.app_commands.guild_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.dm_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.private_channel_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.allowed_contexts
+    :decorator:
+
+.. autofunction:: discord.app_commands.user_install
+    :decorator:
+
+.. autofunction:: discord.app_commands.guild_install
+    :decorator:
+
+.. autofunction:: discord.app_commands.allowed_installs
     :decorator:
 
 .. autofunction:: discord.app_commands.default_permissions
@@ -808,9 +892,6 @@ Exceptions
 .. autoexception:: discord.app_commands.CommandNotFound
     :members:
 
-.. autoexception:: discord.app_commands.MissingApplicationID
-    :members:
-
 .. autoexception:: discord.app_commands.CommandSyncFailure
     :members:
 
@@ -835,7 +916,7 @@ Exception Hierarchy
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
-            - :exc:`~discord.app_commands.MissingApplicationID`
+            - :exc:`~discord.MissingApplicationID`
             - :exc:`~discord.app_commands.CommandSyncFailure`
         - :exc:`~discord.HTTPException`
             - :exc:`~discord.app_commands.CommandSyncFailure`
