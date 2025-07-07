@@ -589,7 +589,8 @@ class Role(Hashable):
             else:
                 colours['tertiary_color'] = actual_tertiary_colour.value
 
-        payload['colors'] = colours
+        if colours:
+            payload['colors'] = colours
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         return Role(guild=self.guild, data=data, state=self._state)
 
