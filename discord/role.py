@@ -331,6 +331,7 @@ class Role(Hashable):
     @property
     def secondary_colour(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: The role's secondary colour.
+
         .. versionadded:: 2.6
         """
         return Colour(self._secondary_colour) if self._secondary_colour is not None else None
@@ -338,6 +339,7 @@ class Role(Hashable):
     @property
     def secondary_color(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: Alias for :attr:`secondary_colour`.
+
         .. versionadded:: 2.6
         """
         return self.secondary_colour
@@ -345,6 +347,7 @@ class Role(Hashable):
     @property
     def tertiary_colour(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: The role's tertiary colour.
+
         .. versionadded:: 2.6
         """
         return Colour(self._tertiary_colour) if self._tertiary_colour is not None else None
@@ -352,6 +355,7 @@ class Role(Hashable):
     @property
     def tertiary_color(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: Alias for :attr:`tertiary_colour`.
+
         .. versionadded:: 2.6
         """
         return self.tertiary_colour
