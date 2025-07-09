@@ -3811,6 +3811,109 @@ of :class:`enum.Enum`.
 
             The entitlement owner is a user.
 
+.. class:: PollLayoutType
+
+    Represents how a poll answers are shown.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: default
+
+        The default layout.
+
+.. class:: InviteType
+
+    Represents the type of an invite.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: guild
+
+        The invite is a guild invite.
+
+    .. attribute:: group_dm
+
+        The invite is a group DM invite.
+
+    .. attribute:: friend
+
+        The invite is a friend invite.
+
+
+.. class:: ReactionType
+
+    Represents the type of a reaction.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: normal
+
+        A normal reaction.
+
+    .. attribute:: burst
+
+        A burst reaction, also known as a "super reaction".
+
+
+.. class:: VoiceChannelEffectAnimationType
+
+    Represents the animation type of a voice channel effect.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: premium
+
+        A fun animation, sent by a Nitro subscriber.
+
+    .. attribute:: basic
+
+        The standard animation.
+
+
+.. class:: SubscriptionStatus
+
+    Represents the status of an subscription.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: active
+
+        The subscription is active.
+
+    .. attribute:: ending
+
+        The subscription is active but will not renew.
+
+    .. attribute:: inactive
+
+        The subscription is inactive and not being charged.
+
+
+.. class:: MessageReferenceType
+
+    Represents the type of a message reference.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: default
+
+        A standard reference used by message replies (:attr:`MessageType.reply`),
+        crossposted messaged created by a followed channel integration, and messages of type:
+
+        - :attr:`MessageType.pins_add`
+        - :attr:`MessageType.channel_follow_add`
+        - :attr:`MessageType.thread_created`
+        - :attr:`MessageType.thread_starter_message`
+        - :attr:`MessageType.poll_result`
+        - :attr:`MessageType.context_menu_command`
+
+    .. attribute:: forward
+
+        A forwarded message.
+
+    .. attribute:: reply
+
+        An alias for :attr:`.default`.
 
 .. class:: OnboardingPromptType
 
