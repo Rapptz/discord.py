@@ -409,8 +409,8 @@ class AuditLogChanges:
 
             # special case for colors to set secondary and tertiary colos/colour attributes
             if attr == 'colors':
-                self._handle_colors(self.before, elem['old_value'])  #type: ignore  # should be a RoleColours dict
-                self._handle_colors(self.after, elem['new_value'])  #type: ignore  # should be a RoleColours dict
+                self._handle_colors(self.before, elem['old_value'])  # type: ignore  # should be a RoleColours dict
+                self._handle_colors(self.after, elem['new_value'])  # type: ignore  # should be a RoleColours dict
                 continue
 
             try:
