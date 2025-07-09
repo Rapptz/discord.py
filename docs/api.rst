@@ -3811,6 +3811,7 @@ of :class:`enum.Enum`.
 
             The entitlement owner is a user.
 
+
 .. class:: PollLayoutType
 
     Represents how a poll answers are shown.
@@ -3820,6 +3821,7 @@ of :class:`enum.Enum`.
     .. attribute:: default
 
         The default layout.
+
 
 .. class:: InviteType
 
