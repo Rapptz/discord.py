@@ -287,7 +287,7 @@ def _transform_type(
         return data  # type: ignore  # integration type is str
     elif entry.action.name.startswith('webhook_'):
         return enums.try_enum(enums.WebhookType, data)
-    elif entry.action.name.startswith('onboarding_question_'):
+    elif entry.action.name.startswith('onboarding_prompt_'):
         return enums.try_enum(enums.OnboardingPromptType, data)
     else:
         return enums.try_enum(enums.ChannelType, data)
