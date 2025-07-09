@@ -297,7 +297,7 @@ class _AuditLogChange_TriggerMetadata(TypedDict):
     old_value: Optional[AutoModerationTriggerMetadata]
 
 
-class _AuditLogChange_RoleColors(TypedDict):
+class _AuditLogChange_RoleColours(TypedDict):
     key: Literal['colors']
     new_value: RoleColours
     old_value: RoleColours
@@ -327,7 +327,7 @@ AuditLogChange = Union[
     _AuditLogChange_AvailableTags,
     _AuditLogChange_DefaultReactionEmoji,
     _AuditLogChange_TriggerMetadata,
-    _AuditLogChange_RoleColors,
+    _AuditLogChange_RoleColours,
 ]
 
 

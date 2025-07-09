@@ -409,8 +409,8 @@ class AuditLogChanges:
 
             # special case for colors to set secondary and tertiary colos/colour attributes
             if attr == 'colors':
-                self._handle_colors(self.before, elem['old_value'])  # type: ignore  # should be a RoleColours dict
-                self._handle_colors(self.after, elem['new_value'])  # type: ignore  # should be a RoleColours dict
+                self._handle_colours(self.before, elem['old_value'])  # type: ignore  # should be a RoleColours dict
+                self._handle_colours(self.after, elem['new_value'])  # type: ignore  # should be a RoleColours dict
                 continue
 
             try:
@@ -545,15 +545,15 @@ class AuditLogChanges:
         except (AttributeError, TypeError):
             pass
 
-    def _handle_colors(self, diff: AuditLogDiff, colors: RoleColours):
-        # handle colors to multiple color attributes
-        diff.color = diff.colour = Colour(colors['primary_color'])
+    def _handle_colors(self, diff: AuditLogDiff, colours: RoleColours):
+        # handle colours to multiple colour attributes
+        diff.color = diff.colour = Colour(colours['primary_color'])
 
-        secondary_color = colors['secondary_color']
-        tertiary_color = colors['tertiary_color']
+        secondary_colour = colours['secondary_color']
+        tertiary_colour= colours['tertiary_color']
 
-        diff.secondary_color = diff.secondary_colour = Colour(secondary_color) if secondary_color is not None else None
-        diff.tertiary_color = diff.tertiary_colour = Colour(tertiary_color) if tertiary_color is not None else None
+        diff.secondary_color = diff.secondary_colour = Colour(secondary_colour) if secondary_colour is not None else None
+        diff.tertiary_color = diff.tertiary_colour = Colour(tertiary_colour) if tertiary_colour is not None else None
 
     def _create_trigger(self, diff: AuditLogDiff, entry: AuditLogEntry) -> AutoModTrigger:
         # check if trigger has already been created
