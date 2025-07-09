@@ -3157,6 +3157,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.enabled`
         - :attr:`~AuditLogDiff.default_channels`
         - :attr:`~AuditLogDiff.prompts`
+        - :attr:`~AuditLogDiff.mode`
 
         .. versionadded:: 2.6
 
@@ -3169,6 +3170,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.enabled`
         - :attr:`~AuditLogDiff.default_channels`
         - :attr:`~AuditLogDiff.prompts`
+        - :attr:`~AuditLogDiff.mode`
 
         .. versionadded:: 2.6
 
@@ -4632,7 +4634,7 @@ AuditLogDiff
 
         The trigger for the automod rule.
 
-        .. note ::
+        .. note::
 
             The :attr:`~AutoModTrigger.type` of the trigger may be incorrect.
             Some attributes such as :attr:`~AutoModTrigger.keyword_filter`, :attr:`~AutoModTrigger.regex_patterns`,
@@ -4644,7 +4646,7 @@ AuditLogDiff
 
         The actions to take when an automod rule is triggered.
 
-        :type: List[AutoModRuleAction]
+        :type: List[:class:`AutoModRuleAction`]
 
     .. attribute:: exempt_roles
 
@@ -4798,61 +4800,6 @@ AuditLogDiff
 
         :type: :class:`bool`
 
-    .. attribute:: options
-
-        The onboarding prompt options associated with this onboarding prompt.
-
-        See also :attr:`OnboardingPrompt.options`
-
-        :type: List[:class:`OnboardingPromptOption`]
-    
-    .. attribute:: default_channels
-
-        The default channels associated with the onboarding in this guild.
-
-        See also :attr:`Onboarding.default_channels`
-
-        :type: List[:class:`abc.GuildChannel`, :class:`Object`]
-
-    .. attribute:: prompts
-
-        The onboarding prompts associated with the onboarding in this guild.
-
-        See also :attr:`Onboarding.prompts`
-
-        :type: List[:class:`OnboardingPrompt`]
-
-    .. attribute:: title
-
-        The title of the onboarding prompt.
-
-        See also :attr:`OnboardingPrompt.title`
-
-        :type: :class:`str`
-
-    .. attribute:: single_select
-
-        Whether only one prompt option can be selected.
-
-        See also :attr:`OnboardingPrompt.single_select`
-
-        :type: :class:`bool`
-
-    .. attribute:: required
-
-        Whether the onboarding prompt is required to complete the onboarding.
-
-        See also :attr:`OnboardingPrompt.required`
-
-        :type: :class:`bool`
-
-    .. attribute:: in_onboarding
-
-        Whether this prompt is currently part of the onboarding flow.
-
-        See also :attr:`OnboardingPrompt.in_onboarding`
-
-        :type: :class:`bool`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these

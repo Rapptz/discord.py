@@ -249,13 +249,13 @@ def _transform_default_emoji(entry: AuditLogEntry, data: str) -> PartialEmoji:
 
 
 def _transform_onboarding_prompts(entry: AuditLogEntry, data: List[PromptPayload]) -> List[OnboardingPrompt]:
-    return [OnboardingPrompt(data=prompt, state=entry._state, guild=entry.guild) for prompt in data]
+    return [OnboardingPrompt.from_dict(data=prompt, state=entry._state, guild=entry.guild) for prompt in data]
 
 
 def _transform_onboarding_prompt_options(
     entry: AuditLogEntry, data: List[PromptOptionPayload]
 ) -> List[OnboardingPromptOption]:
-    return [OnboardingPromptOption(data=option, state=entry._state, guild=entry.guild) for option in data]
+    return [OnboardingPromptOption.from_dict(data=option, state=entry._state, guild=entry.guild) for option in data]
 
 
 E = TypeVar('E', bound=enums.Enum)
@@ -371,6 +371,7 @@ class AuditLogChanges:
         'options':                               (None, _transform_onboarding_prompt_options),
         'prompts':                               (None, _transform_onboarding_prompts),
         'default_channel_ids':                   ('default_channels', _transform_channels_or_threads),
+        'mode':                                  (None, _enum_transformer(enums.OnboardingMode)),
     }
     # fmt: on
 

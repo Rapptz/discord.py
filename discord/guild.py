@@ -92,7 +92,7 @@ from .sticker import GuildSticker
 from .file import File
 from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
-from .onboarding import Onboarding, PartialOnboardingPrompt
+from .onboarding import Onboarding
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
@@ -141,6 +141,7 @@ if TYPE_CHECKING:
     from .types.widget import EditWidgetSettings
     from .types.audit_log import AuditLogEvent
     from .message import EmojiInputType
+    from .onboarding import OnboardingPrompt
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -4875,7 +4876,7 @@ class Guild(Hashable):
 
         Fetches the onboarding configuration for this guild.
 
-        You must have :attr:`Permissions.manage_guild` and 
+        You must have :attr:`Permissions.manage_guild` and
         :attr:`Permissions.manage_roles` to do this.
 
         .. versionadded:: 2.6
@@ -4891,7 +4892,7 @@ class Guild(Hashable):
     async def edit_onboarding(
         self,
         *,
-        prompts: List[PartialOnboardingPrompt] = MISSING,
+        prompts: List[OnboardingPrompt] = MISSING,
         default_channels: List[Snowflake] = MISSING,
         enabled: bool = MISSING,
         mode: OnboardingMode = MISSING,
@@ -4905,7 +4906,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        prompts: List[:class:`PartialOnboardingPrompt`]
+        prompts: List[:class:`OnboardingPrompt`]
             The prompts that will be shown to new members.
         default_channels: List[:class:`abc.Snowflake`]
             The channels that will be used as the default channels for new members.

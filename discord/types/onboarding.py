@@ -23,29 +23,40 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
-from typing import Literal, Optional, TypedDict, List
+from typing import TYPE_CHECKING, Literal, Optional, TypedDict, List, Union
 
 from .emoji import PartialEmoji
 from .snowflake import Snowflake
+
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
 
 PromptType = Literal[0, 1]
 OnboardingMode = Literal[0, 1]
 
 
-class PromptOption(TypedDict):
-    id: Snowflake
+class _PromptOption(TypedDict):
     channel_ids: List[Snowflake]
     role_ids: List[Snowflake]
-    emoji: PartialEmoji
     title: str
     description: Optional[str]
 
 
+class CreatePromptOption(_PromptOption):
+    emoji_id: NotRequired[Snowflake]
+    emoji_name: NotRequired[str]
+    emoji_animated: NotRequired[bool]
+
+
+class PromptOption(_PromptOption):
+    id: Snowflake
+    emoji: NotRequired[PartialEmoji]
+
+
 class Prompt(TypedDict):
     id: Snowflake
-    options: List[PromptOption]
+    options: List[Union[PromptOption, CreatePromptOption]]
     title: str
     single_select: bool
     required: bool
