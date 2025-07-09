@@ -3110,7 +3110,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.required`
         - :attr:`~AuditLogDiff.in_onboarding`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.6
 
     .. attribute:: onboarding_prompt_update
 
@@ -3125,7 +3125,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.required`
         - :attr:`~AuditLogDiff.in_onboarding`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.6
 
     .. attribute:: onboarding_prompt_delete
 
@@ -3140,7 +3140,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.required`
         - :attr:`~AuditLogDiff.in_onboarding`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.6
 
     .. attribute:: onboarding_create
 
@@ -3152,7 +3152,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.default_channels`
         - :attr:`~AuditLogDiff.prompts`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.6
 
     .. attribute:: onboarding_update
 
@@ -3164,19 +3164,19 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.default_channels`
         - :attr:`~AuditLogDiff.prompts`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.6
 
     .. attribute:: home_settings_create
 
         The guild's server guide was created.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.6
 
     .. attribute:: home_settings_update
 
         The guild's server guide was updated.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.6
 
 .. class:: AuditLogActionCategory
 
@@ -3960,7 +3960,7 @@ of :class:`enum.Enum`.
 
     Represents the type of onboarding prompt.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.6
 
     .. attribute:: multiple_choice
 
@@ -3972,9 +3972,9 @@ of :class:`enum.Enum`.
 
 .. class:: OnboardingMode
 
-    Represents the onboarding constriant mode.
+    Represents the onboarding constraint mode.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.6
 
     .. attribute:: default
 

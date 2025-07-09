@@ -62,7 +62,7 @@ class PartialOnboardingPromptOption:
     """Represents a partial onboarding prompt option, these are used in the creation
     of an :class:`OnboardingPrompt` via :meth:`Guild.edit_onboarding`.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.6
 
     Attributes
     -----------
@@ -126,7 +126,7 @@ class PartialOnboardingPromptOption:
 class OnboardingPromptOption(PartialOnboardingPromptOption, Hashable):
     """Represents an onboarding prompt option.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.6
 
     Attributes
     -----------
@@ -189,7 +189,7 @@ class PartialOnboardingPrompt:
     """Represents a partial onboarding prompt, these are used in the creation
     of an :class:`Onboarding` via :meth:`Guild.edit_onboarding`.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.6
 
     Attributes
     -----------
@@ -248,7 +248,7 @@ class PartialOnboardingPrompt:
 class OnboardingPrompt(PartialOnboardingPrompt, Hashable):
     """Represents an onboarding prompt.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.6
 
     Attributes
     -----------
@@ -304,7 +304,7 @@ class OnboardingPrompt(PartialOnboardingPrompt, Hashable):
 class Onboarding:
     """Represents a guild's onboarding configuration.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.6
 
     Attributes
     -----------
