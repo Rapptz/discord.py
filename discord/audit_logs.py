@@ -550,7 +550,7 @@ class AuditLogChanges:
         diff.color = diff.colour = Colour(colours['primary_color'])
 
         secondary_colour = colours['secondary_color']
-        tertiary_colour= colours['tertiary_color']
+        tertiary_colour = colours['tertiary_color']
 
         diff.secondary_color = diff.secondary_colour = Colour(secondary_colour) if secondary_colour is not None else None
         diff.tertiary_color = diff.tertiary_colour = Colour(tertiary_colour) if tertiary_colour is not None else None
