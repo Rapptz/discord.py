@@ -4223,7 +4223,7 @@ AuditLogDiff
 
         See also :attr:`Role.secondary_colour`
 
-        :type: Optional[]:class:`Colour`]
+        :type: Optional[:class:`Colour`]
 
     .. attribute:: tertiary_colour
                    tertiary_color
