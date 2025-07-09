@@ -545,7 +545,7 @@ class AuditLogChanges:
         except (AttributeError, TypeError):
             pass
 
-    def _handle_colors(self, diff: AuditLogDiff, colours: RoleColours):
+    def _handle_colours(self, diff: AuditLogDiff, colours: RoleColours):
         # handle colours to multiple colour attributes
         diff.color = diff.colour = Colour(colours['primary_color'])
 
