@@ -1722,16 +1722,47 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def pins(self) -> List[Message]:
-        """|coro|
+    async def pins(
+        self,
+        *,
+        limit: Optional[int] = None,
+        before: SnowflakeTime = MISSING,
+        oldest_first: bool = False,
+    ) -> AsyncIterator[Message]:
+        """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
 
-        Retrieves all messages that are currently pinned in the channel.
+        You must have the following permissions to get these:
+        :attr:`~discord.Permissions.view_channel`, :attr:`~discord.Permissions.read_message_history`.
+
+        .. versionchanged:: 2.6
+            Due to a change in Discord's API, this now returns a paginated iterator instead of a list.
 
         .. note::
 
             Due to a limitation with the Discord API, the :class:`.Message`
             objects returned by this method do not contain complete
             :attr:`.Message.reactions` data.
+
+        Parameters
+        -----------
+        limit: Optional[int]
+            The number of pinned messages to retrieve. If ``None``, it retrieves
+            every pinned message in the channel. Note, however, that this would
+            make it a slow operation.
+            Defaults to ``50``.
+
+            .. versionadded:: 2.6
+        before: Union[:class:`datetime.datetime`, :class:`.abc.Snowflake`]
+            Retrieve pinned messages before this time or snowflake.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
+        oldest_first: :class:`bool`
+            If set to ``True``, return messages in oldest->newest order.
+            Defaults to ``False``.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1742,14 +1773,48 @@ class Messageable:
 
         Returns
         --------
-        List[:class:`~discord.Message`]
-            The messages that are currently pinned.
+        :class:`~discord.Message`
+            The pinned message with :attr:`.Message.pinned_at` set.
         """
 
         channel = await self._get_channel()
         state = self._state
-        data = await state.http.pins_from(channel.id)
-        return [state.create_message(channel=channel, data=m) for m in data]
+        max_limit: int = 50
+
+        time: Optional[str] = (
+            (before if isinstance(before, datetime) else utils.snowflake_time(before.id)).isoformat()
+            if before is not None
+            else None
+        )
+        while True:
+            retrieve = max_limit if limit is None else min(limit, max_limit)
+            if retrieve < 1:
+                return
+
+            data = await self._state.http.pins_from(
+                channel_id=channel.id,
+                limit=retrieve,
+                before=time,
+            )
+
+            items = data and data["items"]
+            if items:
+                if limit is not None:
+                    limit -= len(items)
+
+                time = items[-1]['pinned_at']
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(items) < max_limit or not data['has_more']:
+                limit = 0
+
+            if oldest_first:
+                reversed(items)
+
+            for m in items:
+                message = state.create_message(channel=channel, data=m['message'])
+                message._pinned_at = utils.parse_time(m['pinned_at'])
+                yield message
 
     async def history(
         self,
