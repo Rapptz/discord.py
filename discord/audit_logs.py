@@ -69,7 +69,7 @@ if TYPE_CHECKING:
         DefaultReaction as DefaultReactionPayload,
     )
     from .types.invite import Invite as InvitePayload
-    from .types.role import Role as RolePayload
+    from .types.role import Role as RolePayload, RoleColours
     from .types.snowflake import Snowflake
     from .types.command import ApplicationCommandPermissions
     from .types.automod import AutoModerationAction
@@ -407,6 +407,12 @@ class AuditLogChanges:
                     self._handle_trigger_attr_update(self.after, self.before, entry, trigger_attr, elem['new_value'])  # type: ignore
                 continue
 
+            # special case for colors to set secondary and tertiary colos/colour attributes
+            if attr == 'colors':
+                self._handle_colors(self.before, elem['old_value'])  #type: ignore  # should be a RoleColours dict
+                self._handle_colors(self.after, elem['new_value'])  #type: ignore  # should be a RoleColours dict
+                continue
+
             try:
                 key, transformer = self.TRANSFORMERS[attr]
             except (ValueError, KeyError):
@@ -538,6 +544,16 @@ class AuditLogChanges:
             getattr(trigger, attr).extend(data)
         except (AttributeError, TypeError):
             pass
+
+    def _handle_colors(self, diff: AuditLogDiff, colors: RoleColours):
+        # handle colors to multiple color attributes
+        diff.color = diff.colour = Colour(colors['primary_color'])
+
+        secondary_color = colors['secondary_color']
+        tertiary_color = colors['tertiary_color']
+
+        diff.secondary_color = diff.secondary_colour = Colour(secondary_color) if secondary_color is not None else None
+        diff.tertiary_color = diff.tertiary_colour = Colour(tertiary_color) if tertiary_color is not None else None
 
     def _create_trigger(self, diff: AuditLogDiff, entry: AuditLogEntry) -> AutoModTrigger:
         # check if trigger has already been created
