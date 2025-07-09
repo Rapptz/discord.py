@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, Optional, TypedDict
+from typing import Literal, Optional, TypedDict, List
 
 from .emoji import PartialEmoji
 from .snowflake import Snowflake
@@ -36,8 +36,8 @@ OnboardingMode = Literal[0, 1]
 
 class PromptOption(TypedDict):
     id: Snowflake
-    channel_ids: list[Snowflake]
-    role_ids: list[Snowflake]
+    channel_ids: List[Snowflake]
+    role_ids: List[Snowflake]
     emoji: PartialEmoji
     title: str
     description: Optional[str]
@@ -45,7 +45,7 @@ class PromptOption(TypedDict):
 
 class Prompt(TypedDict):
     id: Snowflake
-    options: list[PromptOption]
+    options: List[PromptOption]
     title: str
     single_select: bool
     required: bool
@@ -55,7 +55,7 @@ class Prompt(TypedDict):
 
 class Onboarding(TypedDict):
     guild_id: Snowflake
-    prompts: list[Prompt]
-    default_channel_ids: list[Snowflake]
+    prompts: List[Prompt]
+    default_channel_ids: List[Snowflake]
     enabled: bool
     mode: OnboardingMode

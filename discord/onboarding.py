@@ -89,7 +89,7 @@ class PartialOnboardingPromptOption:
     def __init__(
         self,
         title: str,
-        emoji: Union[Emoji, PartialEmoji, str],
+        emoji: Union[Emoji, PartialEmoji, str] = MISSING,
         description: Optional[str] = None,
         channel_ids: Iterable[int] = MISSING,
         role_ids: Iterable[int] = MISSING,
@@ -101,14 +101,17 @@ class PartialOnboardingPromptOption:
         self.role_ids: Set[int] = set(role_ids or [])
 
     def to_dict(self, *, id: int = MISSING) -> PromptOptionPayload:
-        if isinstance(self.emoji, str):
-            emoji_payload = {"emoji_name": self.emoji}
+        if self.emoji is not MISSING:
+            if isinstance(self.emoji, str):
+                emoji_payload = {"emoji_name": self.emoji}
+            else:
+                emoji_payload = {
+                    "emoji_id": self.emoji.id,
+                    "emoji_name": self.emoji.name,
+                    "emoji_animated": self.emoji.animated,
+                }
         else:
-            emoji_payload = {
-                "emoji_id": self.emoji.id,
-                "emoji_name": self.emoji.name,
-                "emoji_animated": self.emoji.animated,
-            }
+            emoji_payload = {}
 
         return {
             'id': id or os.urandom(16).hex(),
