@@ -526,10 +526,12 @@ class AuditLogAction(Enum):
             return 'user'
         elif v < 152:
             return 'creator_monetization'
-        elif v < 165:
-            return 'onboarding_question'
+        elif v < 166:
+            return 'onboarding_prompt'
         elif v < 168:
             return 'onboarding'
+        elif v < 192:
+            return 'home_settings'
 
 
 class UserFlags(Enum):
