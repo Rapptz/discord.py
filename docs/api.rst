@@ -3097,7 +3097,7 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.5
 
-    .. attribute:: onboarding_question_create
+    .. attribute:: onboarding_prompt_create
 
         A guild onboarding prompt was created.
 
@@ -3112,7 +3112,7 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.4
 
-    .. attribute:: onboarding_question_update
+    .. attribute:: onboarding_prompt_update
 
         A guild onboarding prompt was updated.
 
@@ -3127,6 +3127,33 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.4
 
+    .. attribute:: onboarding_prompt_delete
+
+        A guild onboarding prompt was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.title`
+        - :attr:`~AuditLogDiff.options`
+        - :attr:`~AuditLogDiff.single_select`
+        - :attr:`~AuditLogDiff.required`
+        - :attr:`~AuditLogDiff.in_onboarding`
+
+        .. versionadded:: 2.4
+
+    .. attribute:: onboarding_create
+
+        The guild's onboarding configuration was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.default_channels`
+        - :attr:`~AuditLogDiff.prompts`
+
+        .. versionadded:: 2.4
+
     .. attribute:: onboarding_update
 
         The guild's onboarding configuration was updated.
@@ -3136,6 +3163,18 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.enabled`
         - :attr:`~AuditLogDiff.default_channels`
         - :attr:`~AuditLogDiff.prompts`
+
+        .. versionadded:: 2.4
+
+    .. attribute:: home_settings_create
+
+        The guild's server guide was created.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: home_settings_update
+
+        The guild's server guide was updated.
 
         .. versionadded:: 2.4
 
