@@ -96,7 +96,7 @@ if TYPE_CHECKING:
     )
     from .poll import Poll
     from .threads import Thread
-    from .ui.view import View
+    from .ui.view import BaseView, View, LayoutView
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
         Channel as ChannelPayload,
@@ -1389,6 +1389,38 @@ class Messageable:
     @overload
     async def send(
         self,
+        *,
+        file: File = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        *,
+        files: Sequence[File] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -1485,7 +1517,7 @@ class Messageable:
         allowed_mentions: Optional[AllowedMentions] = None,
         reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
         mention_author: Optional[bool] = None,
-        view: Optional[View] = None,
+        view: Optional[BaseView] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
@@ -1558,10 +1590,12 @@ class Messageable:
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
 
             .. versionadded:: 1.6
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             A Discord UI View to add to the message.
 
             .. versionadded:: 2.0
+            .. versionchanged:: 2.6
+                This now accepts :class:`discord.ui.LayoutView` instances.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
@@ -1656,7 +1690,7 @@ class Messageable:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             state.store_view(view, ret.id)
 
         if poll:
