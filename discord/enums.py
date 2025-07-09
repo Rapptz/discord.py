@@ -479,6 +479,8 @@ class AuditLogAction(Enum):
             AuditLogAction.onboarding_prompt_delete:                 AuditLogActionCategory.delete,
             AuditLogAction.onboarding_create:                        AuditLogActionCategory.create,
             AuditLogAction.onboarding_update:                        AuditLogActionCategory.update,
+            AuditLogAction.home_settings_create:                     AuditLogActionCategory.create,
+            AuditLogAction.home_settings_update:                     AuditLogActionCategory.update,
         }
         # fmt: on
         return lookup[self]
