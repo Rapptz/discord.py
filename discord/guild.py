@@ -4908,10 +4908,13 @@ class Guild(Hashable):
         -----------
         prompts: List[:class:`OnboardingPrompt`]
             The prompts that will be shown to new members.
+            This overrides the existing prompts and its options.
         default_channels: List[:class:`abc.Snowflake`]
             The channels that will be used as the default channels for new members.
+            This overrides the existing default channels.
         enabled: :class:`bool`
             Whether the onboarding configuration is enabled.
+            This overrides the existing enabled state.
         mode: :class:`OnboardingMode`
             The mode that will be used for the onboarding configuration.
         reason: :class:`str`
