@@ -195,7 +195,7 @@ class OnboardingPrompt:
         The type of this prompt.
     title: :class:`str`
         The title of this prompt.
-    options: List[:class:`PartialOnboardingPromptOption`]
+    options: List[:class:`OnboardingPromptOption`]
         The options of this prompt.
     single_select: :class:`bool`
         Whether this prompt is single select.
