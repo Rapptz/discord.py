@@ -63,6 +63,20 @@ class OnboardingPromptOption(Hashable):
 
     .. versionadded:: 2.6
 
+    Parameters
+    -----------
+    title: :class:`str`
+        The title of this prompt option.
+    emoji: Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]
+        The emoji tied to this option. May be a custom emoji, or a unicode emoji. I
+        f this is a string, it will be converted to a :class:`PartialEmoji`.
+    description: Optional[:class:`str`]
+        The description of this prompt option.
+    channels: Iterable[Union[:class:`abc.Snowflake`, :class:`int`]]
+        The channels the user will be added to if this option is selected.
+    roles: Iterable[Union[:class:`abc.Snowflake`, :class:`int`]]
+        The roles the user will be given if this option is selected.
+
     Attributes
     -----------
     id: :class:`int`
@@ -71,7 +85,7 @@ class OnboardingPromptOption(Hashable):
         The title of this prompt option.
     description: Optional[:class:`str`]
         The description of this prompt option.
-    emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+    emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`]]
         The emoji tied to this option. May be a custom emoji, or a unicode emoji.
     channel_ids: Set[:class:`int`]
         The IDs of the channels the user will be added to if this option is selected.
@@ -187,10 +201,28 @@ class OnboardingPrompt:
 
     .. versionadded:: 2.6
 
+    Parameters
+    -----------
+    type: :class:`OnboardingPromptType`
+        The type of this prompt.
+    title: :class:`str`
+        The title of this prompt.
+    options: List[:class:`OnboardingPromptOption`]
+        The options of this prompt.
+    single_select: :class:`bool`
+        Whether this prompt is single select.
+        Defaults to ``True``.
+    required: :class:`bool`
+        Whether this prompt is required.
+        Defaults to ``True``.
+    in_onboarding: :class:`bool`
+        Whether this prompt is in the onboarding flow.
+        Defaults to ``True``.
+
     Attributes
     -----------
     id: :class:`int`
-        The ID of this prompt. If this was manually created then the ID will be ``0
+        The ID of this prompt. If this was manually created then the ID will be ``0``.
     type: :class:`OnboardingPromptType`
         The type of this prompt.
     title: :class:`str`
