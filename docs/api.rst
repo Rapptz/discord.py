@@ -4800,6 +4800,14 @@ AuditLogDiff
 
         :type: :class:`bool`
 
+    .. attribute:: mode
+
+        The onboarding constraint mode.
+
+        See also :attr:`Onboarding.mode`
+
+        :type: :class:`OnboardingMode`
+
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
@@ -5432,14 +5440,6 @@ Onboarding
 .. autoclass:: Onboarding()
     :members:
 
-PartialOnboardingPrompt
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialOnboardingPrompt
-
-.. autoclass:: PartialOnboardingPrompt
-    :members:
-
 OnboardingPrompt
 ~~~~~~~~~~~~~~~~~
 
@@ -5448,13 +5448,6 @@ OnboardingPrompt
 .. autoclass:: OnboardingPrompt()
     :members:
 
-PartialOnboardingPromptOption
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialOnboardingPromptOption
-
-.. autoclass:: PartialOnboardingPromptOption
-    :members:
 
 OnboardingPromptOption
 ~~~~~~~~~~~~~~~~~~~~~~~
