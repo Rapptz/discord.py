@@ -149,10 +149,10 @@ class OnboardingPromptOption(Hashable):
         Raises
         -------
         ValueError
-            If this prompt option is manually created.
+            If the prompt option was created manually.
         """
         if self._guild is None:
-            raise ValueError('This prompt option is manually created therefore has no guild.')
+            raise ValueError('This prompt does not have an associated guild because it was created manually.')
         return self._guild
 
     @cached_slot_property('_cs_channels')
@@ -273,10 +273,10 @@ class OnboardingPrompt:
         Raises
         ------
         ValueError
-            If this prompt is manually created, therefore has no guild.
+            If the prompt was created manually.
         """
         if self._guild is None:
-            raise ValueError('This prompt is manually created therefore has no guild.')
+            raise ValueError('This prompt does not have an associated guild because it was created manually.')
         return self._guild
 
     def get_option(self, option_id: int, /) -> Optional[OnboardingPromptOption]:
