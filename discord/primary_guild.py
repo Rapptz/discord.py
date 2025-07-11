@@ -57,7 +57,6 @@ class PrimaryGuild:
 
     __slots__ = ('id', 'identity_enabled', 'tag', '_badge', '_state')
 
-
     def __init__(self, *, state, data: PrimaryGuildPayload) -> None:
         self._state = state
         self._update(data)
@@ -84,7 +83,7 @@ class PrimaryGuild:
 
     @classmethod
     def _default(cls, state: ConnectionState) -> Self:
-        payload: PrimaryGuildPayload = {"identity_enabled": False} # type: ignore
+        payload: PrimaryGuildPayload = {"identity_enabled": False}  # type: ignore
         return cls(state=state, data=payload)
 
     def __repr__(self) -> str:
