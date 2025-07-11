@@ -3888,15 +3888,15 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.6
 
-        .. attribute:: NAME
+    .. attribute:: name
 
         The name of the activity is displayed.
 
-    .. attribute:: STATE
+    .. attribute:: state
 
         The state of the activity is displayed.
 
-    .. attribute:: DETAILS
+    .. attribute:: details
 
         The details of the activity are displayed.
 

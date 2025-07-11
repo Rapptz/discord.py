@@ -914,9 +914,9 @@ class SubscriptionStatus(Enum):
 
 
 class StatusDisplayType(Enum):
-    NAME = 0
-    STATE = 1
-    DETAILS = 2
+    name = 0  # pyright: ignore[reportAssignmentType]
+    state = 1
+    details = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
