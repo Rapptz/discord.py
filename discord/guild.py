@@ -4876,9 +4876,6 @@ class Guild(Hashable):
 
         Fetches the onboarding configuration for this guild.
 
-        You must have :attr:`Permissions.manage_guild` and
-        :attr:`Permissions.manage_roles` to do this.
-
         .. versionadded:: 2.6
 
         Returns
@@ -4901,6 +4898,9 @@ class Guild(Hashable):
         """|coro|
 
         Edits the onboarding configuration for this guild.
+
+        You must have :attr:`Permissions.manage_guild` and
+        :attr:`Permissions.manage_roles` to do this.
 
         .. versionadded:: 2.6
 
