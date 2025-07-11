@@ -3648,6 +3648,8 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
+        secondary_colour: Optional[Union[Colour, int]] = ...,
+        tertiary_colour: Optional[Union[Colour, int]] = ...,
     ) -> Role:
         ...
 
@@ -3662,6 +3664,8 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
+        secondary_color: Optional[Union[Colour, int]] = ...,
+        tertiary_color: Optional[Union[Colour, int]] = ...,
     ) -> Role:
         ...
 
@@ -3676,6 +3680,10 @@ class Guild(Hashable):
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = MISSING,
         reason: Optional[str] = None,
+        secondary_color: Optional[Union[Colour, int]] = MISSING,
+        tertiary_color: Optional[Union[Colour, int]] = MISSING,
+        secondary_colour: Optional[Union[Colour, int]] = MISSING,
+        tertiary_colour: Optional[Union[Colour, int]] = MISSING,
     ) -> Role:
         """|coro|
 
@@ -3695,6 +3703,10 @@ class Guild(Hashable):
             This function will now raise :exc:`TypeError` instead of
             ``InvalidArgument``.
 
+        .. versionchanged:: 2.6
+            The ``colour`` and ``color`` parameters now set the role's primary color.
+
+
         Parameters
         -----------
         name: :class:`str`
@@ -3704,6 +3716,15 @@ class Guild(Hashable):
         colour: Union[:class:`Colour`, :class:`int`]
             The colour for the role. Defaults to :meth:`Colour.default`.
             This is aliased to ``color`` as well.
+        secondary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
+            The secondary colour for the role.
+
+            .. versionadded:: 2.6
+        tertiary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
+            The tertiary colour for the role. Can only be used for the holographic role preset,
+            which is ``(11127295, 16759788, 16761760)``
+
+            .. versionadded:: 2.6
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to ``False``.
@@ -3738,11 +3759,34 @@ class Guild(Hashable):
         else:
             fields['permissions'] = '0'
 
+        colours: Dict[str, Any] = {}
+
         actual_colour = colour or color or Colour.default()
         if isinstance(actual_colour, int):
-            fields['color'] = actual_colour
+            colours['primary_color'] = actual_colour
         else:
-            fields['color'] = actual_colour.value
+            colours['primary_color'] = actual_colour.value
+
+        actual_secondary_colour = secondary_colour or secondary_color
+        actual_tertiary_colour = tertiary_colour or tertiary_color
+
+        if actual_secondary_colour is not MISSING:
+            if actual_secondary_colour is None:
+                colours['secondary_color'] = None
+            elif isinstance(actual_secondary_colour, int):
+                colours['secondary_color'] = actual_secondary_colour
+            else:
+                colours['secondary_color'] = actual_secondary_colour.value
+
+        if actual_tertiary_colour is not MISSING:
+            if actual_tertiary_colour is None:
+                colours['tertiary_color'] = None
+            elif isinstance(actual_tertiary_colour, int):
+                colours['tertiary_color'] = actual_tertiary_colour
+            else:
+                colours['tertiary_color'] = actual_tertiary_colour.value
+
+        fields['colors'] = colours
 
         if hoist is not MISSING:
             fields['hoist'] = hoist

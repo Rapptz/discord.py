@@ -656,9 +656,9 @@ class HybridGroup(Group[CogT, P, T]):
         self.fallback_locale: Optional[app_commands.locale_str] = fallback_locale
 
         if self.with_app_command:
-            guild_ids = attrs.pop('guild_ids', None) or getattr(
-                self.callback, '__discord_app_commands_default_guilds__', None
-            )
+            guild_ids = attrs.pop('guild_ids', None)
+            if guild_ids is None:
+                guild_ids = getattr(self.callback, '__discord_app_commands_default_guilds__', None)
             guild_only = getattr(self.callback, '__discord_app_commands_guild_only__', False)
             default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
             nsfw = getattr(self.callback, '__discord_app_commands_is_nsfw__', False)
