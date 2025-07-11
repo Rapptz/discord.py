@@ -128,7 +128,7 @@ class OnboardingPromptOption(Hashable):
         self._guild: Optional[Guild] = None
 
     def __repr__(self) -> str:
-        return f'<OnboardingPromptOption id={self.id} title={self.title}>'
+        return f'<OnboardingPromptOption id={self.id!r} title={self.title!r} emoji={self.emoji!r}>'
 
     @classmethod
     def from_dict(cls, *, data: PromptOptionPayload, state: ConnectionState, guild: Guild) -> Self:
@@ -269,7 +269,7 @@ class OnboardingPrompt:
         self._guild: Optional[Guild] = None
 
     def __repr__(self) -> str:
-        return f'<OnboardingPrompt id={self.id} title={self.title}, type={self.type}>'
+        return f'<OnboardingPrompt id={self.id!r} title={self.title!r}, type={self.type!r}>'
 
     @classmethod
     def from_dict(cls, *, data: PromptPayload, state: ConnectionState, guild: Guild) -> Self:
@@ -356,7 +356,7 @@ class Onboarding:
         self.mode: OnboardingMode = try_enum(OnboardingMode, data.get('mode', 0))
 
     def __repr__(self) -> str:
-        return f'<Onboarding guild={self.guild!r} enabled={self.enabled}>'
+        return f'<Onboarding guild={self.guild!r} enabled={self.enabled!r} mode={self.mode!r}>'
 
     @cached_slot_property('_cs_default_channels')
     def default_channels(self) -> List[Union[GuildChannel, Thread]]:
