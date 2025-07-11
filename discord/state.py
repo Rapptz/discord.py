@@ -1786,7 +1786,7 @@ class ConnectionState(Generic[ClientT]):
             return channel.guild.get_member(user_id)
         return self.get_user(user_id)
 
-    def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[Emoji, PartialEmoji, str]:
+    def get_emoji_from_partial_payload(self, data: PartialEmojiPayload) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = utils._get_as_snowflake(data, 'id')
 
         if not emoji_id:
