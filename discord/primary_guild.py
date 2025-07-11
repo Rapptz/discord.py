@@ -39,6 +39,8 @@ if TYPE_CHECKING:
 class PrimaryGuild:
     """Represents the primary guild identity of a :class:`User`
 
+    .. versionadded:: 2.6
+
     Attributes
     -----------
     id: Optional[:class:`int`]
@@ -48,19 +50,13 @@ class PrimaryGuild:
     identity_enabled: Optional[:class:`bool`]
         Whether the user has their primary guild publicly displayed. If ``None``, the user has a public guild but has not reaffirmed the guild identity after a change
 
-        .. note::
+        .. warning::
 
             Users can have their primary guild publicly displayed while still having an :attr:`id` of ``None``. Be careful when checking this attribute!
     """
 
     __slots__ = ('id', 'identity_enabled', 'tag', '_badge', '_state')
 
-    if TYPE_CHECKING:
-        id: Optional[int]
-        identity_enabled: Optional[bool]
-        tag: Optional[str]
-        _badge: Optional[str]
-        _state: ConnectionState
 
     def __init__(self, *, state, data: PrimaryGuildPayload) -> None:
         self._state = state
@@ -82,13 +78,13 @@ class PrimaryGuild:
     @property
     def created_at(self) -> Optional[datetime]:
         """Optional[:class:`datetime.datetime`]: Returns the primary guild's creation time in UTC."""
-        if self.id:
+        if self.id is not None:
             return snowflake_time(self.id)
         return None
 
     @classmethod
     def _default(cls, state: ConnectionState) -> Self:
-        payload: PrimaryGuildPayload = {"identity_guild_id": None, "identity_enabled": False, "tag": None, "badge": None}
+        payload: PrimaryGuildPayload = {"identity_enabled": False} # type: ignore
         return cls(state=state, data=payload)
 
     def __repr__(self) -> str:

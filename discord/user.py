@@ -317,7 +317,9 @@ class BaseUser(_UserTag):
 
     @property
     def primary_guild(self) -> PrimaryGuild:
-        """:class:`PrimaryGuild`: Returns the user's primary guild."""
+        """:class:`PrimaryGuild`: Returns the user's primary guild.
+        
+        .. versionadded:: 2.6"""
         if self._primary_guild:
             return PrimaryGuild(state=self._state, data=self._primary_guild)
         return PrimaryGuild._default(self._state)
