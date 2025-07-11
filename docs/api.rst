@@ -3881,6 +3881,25 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`.default`.
 
+.. class:: StatusDisplayType
+
+    Represents which field is of the user's activity is 
+    displayed in the members list.
+
+    .. versionadded:: 2.6
+
+        .. attribute:: NAME
+
+        The name of the activity is displayed.
+
+    .. attribute:: STATE
+
+        The state of the activity is displayed.
+
+    .. attribute:: DETAILS
+
+        The details of the activity are displayed.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data

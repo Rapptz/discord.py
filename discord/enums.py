@@ -78,6 +78,7 @@ __all__ = (
     'VoiceChannelEffectAnimationType',
     'SubscriptionStatus',
     'MessageReferenceType',
+    'StatusDisplayType',
 )
 
 
@@ -910,6 +911,12 @@ class SubscriptionStatus(Enum):
     active = 0
     ending = 1
     inactive = 2
+
+
+class StatusDisplayType(Enum):
+    NAME = 0
+    STATE = 1
+    DETAILS = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
