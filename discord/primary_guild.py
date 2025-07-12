@@ -70,7 +70,7 @@ class PrimaryGuild:
     @property
     def badge(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Returns the primary guild's asset"""
-        if self._badge and self.id:
+        if self._badge is not None and self.id is not None:
             return Asset._from_primary_guild(self._state, self.id, self._badge)
         return None
 

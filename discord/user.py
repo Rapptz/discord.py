@@ -320,7 +320,7 @@ class BaseUser(_UserTag):
         """:class:`PrimaryGuild`: Returns the user's primary guild.
 
         .. versionadded:: 2.6"""
-        if self._primary_guild:
+        if self._primary_guild is not None:
             return PrimaryGuild(state=self._state, data=self._primary_guild)
         return PrimaryGuild._default(self._state)
 
