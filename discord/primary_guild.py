@@ -57,7 +57,7 @@ class PrimaryGuild:
 
     __slots__ = ('id', 'identity_enabled', 'tag', '_badge', '_state')
 
-    def __init__(self, *, state, data: PrimaryGuildPayload) -> None:
+    def __init__(self, *, state: ConnectionState, data: PrimaryGuildPayload) -> None:
         self._state = state
         self._update(data)
 
