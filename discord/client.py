@@ -381,7 +381,7 @@ class Client:
 
         .. note::
 
-            This not include the emojis that are owned by the application.
+            This does not include the emojis that are owned by the application.
             Use :meth:`.fetch_application_emoji` to get those.
         """
         return self._connection.emojis
