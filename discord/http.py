@@ -53,7 +53,7 @@ import aiohttp
 
 from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
 from .gateway import DiscordClientWebSocketResponse
-from .file import File
+from .file import File, VoiceMessageFile
 from .mentions import AllowedMentions
 from . import __version__, utils
 from .utils import MISSING
@@ -243,7 +243,10 @@ def handle_message_parameters(
         file_index = 0
         attachments_payload = []
         for attachment in attachments:
-            if isinstance(attachment, File):
+            if isinstance(attachment, VoiceMessageFile):
+                attachments_payload.append(attachment.to_dict(file_index))
+                file_index += 1
+            elif isinstance(attachment, File):
                 attachments_payload.append(attachment.to_dict(file_index))
                 file_index += 1
             else:
@@ -269,6 +272,9 @@ def handle_message_parameters(
     multipart = []
     if files:
         multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
+        print(";;;;")
+        print(utils._to_json(payload))
+        print(";;;;")
         payload = None
         for index, file in enumerate(files):
             multipart.append(
@@ -617,7 +623,9 @@ class HTTPClient:
                 headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
         kwargs['headers'] = headers
-
+        print("=-=-=-=-=-=-=-=-=-=-=-=")
+        print(headers)
+        print("=-=-=-=-=-=-=-=-=-=-=-=")
         # Proxy support
         if self.proxy is not None:
             kwargs['proxy'] = self.proxy
@@ -868,6 +876,10 @@ class HTTPClient:
         *,
         params: MultipartParameters,
     ) -> Response[message.Message]:
+        print(":::::")
+        print(params.payload)
+        print(params.multipart)
+        print(":::::")
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         if params.files:
             return self.request(r, files=params.files, form=params.multipart)
@@ -1057,6 +1069,47 @@ class HTTPClient:
 
     def pins_from(self, channel_id: Snowflake) -> Response[List[message.Message]]:
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
+
+    async def send_voice_message(self, channel_id: Snowflake, VoiceMessage: VoiceMessageFile):
+        """|coro|
+
+        Sends a voice message to the specified channel.
+
+        Parameters
+        -----------
+        channel_id: :class:`~discord.abc.Snowflake`
+            The ID of the channel to send the voice message to.
+        VoiceMessage: :class:`~discord.VoiceMessageFile`
+            The voice message file to send. This should be an instance of :class:`~discord.VoiceMessageFile`.
+        """
+        from .message import MessageFlags
+        uploadRoute = Route('POST', '/channels/{channel_id}/attachments', channel_id=channel_id)
+        payload = {
+            "files": [{
+                "filename": "voice-message.ogg",
+                "file_size": VoiceMessage.size(),
+                "id": 0,
+            }]
+        }
+        response = await self.request(uploadRoute, json=payload)
+
+        upload_data = response['attachments'][0]
+        upload_url = upload_data["upload_url"]
+        uploaded_filename = upload_data["upload_filename"]
+
+        x: Optional[aiohttp.ClientResponse] = None
+        x = await self.__session.request("PUT", upload_url, headers={"Content-Type": "audio/ogg"}, data=VoiceMessage.fp.read())
+        print("*********")
+        print(upload_url)
+        print(x.read())
+        print("*********")
+
+        VoiceMessage.uploaded_filename = uploaded_filename
+
+        r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
+        params = handle_message_parameters(file=VoiceMessage, flags=MessageFlags(voice=True))
+        return await self.request(r, files=params.files, form=params.multipart)
+
 
     # Member management
 
