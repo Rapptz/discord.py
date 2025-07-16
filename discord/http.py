@@ -53,7 +53,7 @@ import aiohttp
 
 from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
 from .gateway import DiscordClientWebSocketResponse
-from .file import File, VoiceMessageFile
+from .file import File
 from .mentions import AllowedMentions
 from . import __version__, utils
 from .utils import MISSING
@@ -1059,49 +1059,6 @@ class HTTPClient:
 
     def pins_from(self, channel_id: Snowflake) -> Response[List[message.Message]]:
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
-
-    async def send_voice_message(self, channel_id: Snowflake, voice_message: VoiceMessageFile) -> Any:
-        upload_route = Route('POST', '/channels/{channel_id}/attachments', channel_id=channel_id)
-        payload = {
-            "files": [
-                {
-                    "filename": "voice-message.ogg",
-                    "file_size": voice_message.size(),
-                    "id": 0,
-                }
-            ]
-        }
-        response = await self.request(upload_route, json=payload)
-
-        upload_data = response['attachments'][0]
-        upload_url = upload_data["upload_url"]
-        uploaded_filename = upload_data["upload_filename"]
-
-        import requests
-
-        t = requests.put(upload_url, headers={"Content-Type": "audio/ogg"}, data=voice_message.fp)
-        print(f"Status code: {t.status_code}")
-
-        # x = await self.__session.request("PUT", upload_url, headers={"Content-Type": "audio/ogg"}, data=voice_message.fp)
-        # print("*********")
-        # print(upload_url)
-        # print(x.read())
-        # print("*********")
-
-        voice_message.uploaded_filename = uploaded_filename
-
-        r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
-
-        message_payload = {
-            "flags": 8192,  # IS_VOICE_MESSAGE
-            "attachments": [voice_message.to_dict(0)],
-        }
-
-        headers = {"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}
-
-        response = await self.__session.request("post", r.url, headers=headers, json=message_payload)
-        data = await json_or_text(response)
-        return data
 
     # Member management
 

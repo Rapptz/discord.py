@@ -1404,6 +1404,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1425,6 +1426,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1446,6 +1448,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1467,6 +1470,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1489,6 +1493,7 @@ class Messageable:
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
+        voice: bool = False,
     ) -> Message:
         """|coro|
 
@@ -1624,12 +1629,13 @@ class Messageable:
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
-        if suppress_embeds or silent:
+        if suppress_embeds or silent or voice:
             from .message import MessageFlags  # circular import
 
             flags = MessageFlags._from_value(0)
             flags.suppress_embeds = suppress_embeds
             flags.suppress_notifications = silent
+            flags.voice = voice
         else:
             flags = MISSING
 
@@ -1937,9 +1943,8 @@ class Messageable:
         :class:`~discord.Message`
             The message that was sent.
         """
-        channel = await self._get_channel()
-        data = await self._state.http.send_voice_message(channel.id, file)
-        return self._state.create_message(channel=channel, data=data)
+
+        return await self.send(file=file, voice=True)
 
 
 class Connectable(Protocol):
