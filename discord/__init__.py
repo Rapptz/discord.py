@@ -73,6 +73,7 @@ from .poll import *
 from .soundboard import *
 from .subscription import *
 from .presences import *
+from .onboarding import *
 
 
 class VersionInfo(NamedTuple):
