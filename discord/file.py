@@ -27,12 +27,14 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import os
 import io
+import base64
 
 from .utils import MISSING
 
 # fmt: off
 __all__ = (
     'File',
+    'VoiceMessageFile',
 )
 # fmt: on
 
@@ -157,3 +159,41 @@ class File:
             payload['description'] = self.description
 
         return payload
+
+
+class VoiceMessageFile(File):
+    """A file object used for sending voice messages.
+
+    This is a subclass of :class:`File` that is specifically used for sending voice messages.
+
+    .. versionadded:: 2.6
+    """
+
+    def __init__(
+        self,
+        fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase],
+        duration: float = 5.0,
+        waveform: Optional[str] = None,
+    ):
+        super().__init__(fp, filename="voice-message.ogg", spoiler=False)
+        self.duration = duration
+        self._waveform = waveform
+        self.uploaded_filename = None
+    
+    def to_dict(self, index: int) -> Dict[str, Any]:
+        payload = super().to_dict(index)
+        payload['duration_secs'] = self.duration
+        payload['waveform'] = self.waveform
+        if self.uploaded_filename is not None:
+            payload['uploaded_filename'] = self.uploaded_filename
+        return payload
+
+    @property
+    def waveform(self) -> str:
+        """:class:`bytes`: The waveform data for the voice message."""
+        if self._waveform is None:
+            return base64.b64encode(os.urandom(256)).decode('utf-8')
+        return self._waveform
+    
+    def size(self):
+        return 47194 # Placeholder, figure out how to get size
