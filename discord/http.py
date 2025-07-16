@@ -243,10 +243,7 @@ def handle_message_parameters(
         file_index = 0
         attachments_payload = []
         for attachment in attachments:
-            if isinstance(attachment, VoiceMessageFile):
-                attachments_payload.append(attachment.to_dict(file_index))
-                file_index += 1
-            elif isinstance(attachment, File):
+            if isinstance(attachment, File):
                 attachments_payload.append(attachment.to_dict(file_index))
                 file_index += 1
             else:
@@ -272,9 +269,6 @@ def handle_message_parameters(
     multipart = []
     if files:
         multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
-        print(";;;;")
-        print(utils._to_json(payload))
-        print(";;;;")
         payload = None
         for index, file in enumerate(files):
             multipart.append(
@@ -876,10 +870,6 @@ class HTTPClient:
         *,
         params: MultipartParameters,
     ) -> Response[message.Message]:
-        print(":::::")
-        print(params.payload)
-        print(params.multipart)
-        print(":::::")
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         if params.files:
             return self.request(r, files=params.files, form=params.multipart)
@@ -1070,26 +1060,18 @@ class HTTPClient:
     def pins_from(self, channel_id: Snowflake) -> Response[List[message.Message]]:
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
 
-    async def send_voice_message(self, channel_id: Snowflake, VoiceMessage: VoiceMessageFile):
-        """|coro|
-
-        Sends a voice message to the specified channel.
-
-        Parameters
-        -----------
-        channel_id: :class:`~discord.abc.Snowflake`
-            The ID of the channel to send the voice message to.
-        VoiceMessage: :class:`~discord.VoiceMessageFile`
-            The voice message file to send. This should be an instance of :class:`~discord.VoiceMessageFile`.
-        """
+    async def send_voice_message(self, channel_id: Snowflake, voice_message: VoiceMessageFile):
         from .message import MessageFlags
+
         uploadRoute = Route('POST', '/channels/{channel_id}/attachments', channel_id=channel_id)
         payload = {
-            "files": [{
-                "filename": "voice-message.ogg",
-                "file_size": VoiceMessage.size(),
-                "id": 0,
-            }]
+            "files": [
+                {
+                    "filename": "voice-message.ogg",
+                    "file_size": voice_message.size(),
+                    "id": 0,
+                }
+            ]
         }
         response = await self.request(uploadRoute, json=payload)
 
@@ -1099,33 +1081,31 @@ class HTTPClient:
 
         import requests
 
-        t = requests.put(upload_url, headers={"Content-Type": "audio/ogg"}, data=VoiceMessage.fp)
+        t = requests.put(upload_url, headers={"Content-Type": "audio/ogg"}, data=voice_message.fp)
         print(f"Status code: {t.status_code}")
 
-        # x = await self.__session.request("PUT", upload_url, headers={"Content-Type": "audio/ogg"}, data=VoiceMessage.fp)
+        # x = await self.__session.request("PUT", upload_url, headers={"Content-Type": "audio/ogg"}, data=voice_message.fp)
         # print("*********")
         # print(upload_url)
         # print(x.read())
         # print("*********")
 
-        VoiceMessage.uploaded_filename = uploaded_filename
+        voice_message.uploaded_filename = uploaded_filename
 
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
 
         message_payload = {
             "flags": 8192,  # IS_VOICE_MESSAGE
-            "attachments": [VoiceMessage.to_dict(0)],
+            "attachments": [voice_message.to_dict(0)],
         }
 
-        headers = {"Authorization": f"Bot {self.token}",
-                   "Content-Type": "application/json"}
+        headers = {"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}
 
         res = requests.post("" + r.url, headers=headers, json=message_payload)
         return res.json()
 
-        # params = handle_message_parameters(file=VoiceMessage, flags=MessageFlags(voice=True))
+        # params = handle_message_parameters(file=voice_message, flags=MessageFlags(voice=True))
         # return await self.request(r, files=params.files, form=params.multipart)
-
 
     # Member management
 

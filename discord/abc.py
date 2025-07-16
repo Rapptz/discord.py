@@ -1941,6 +1941,7 @@ class Messageable:
         data = await self._state.http.send_voice_message(channel.id, file)
         return self._state.create_message(channel=channel, data=data)
 
+
 class Connectable(Protocol):
     """An ABC that details the common operations on a channel that can
     connect to a voice server.
