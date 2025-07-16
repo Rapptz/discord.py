@@ -1097,18 +1097,34 @@ class HTTPClient:
         upload_url = upload_data["upload_url"]
         uploaded_filename = upload_data["upload_filename"]
 
-        x: Optional[aiohttp.ClientResponse] = None
-        x = await self.__session.request("PUT", upload_url, headers={"Content-Type": "audio/ogg"}, data=VoiceMessage.fp.read())
-        print("*********")
-        print(upload_url)
-        print(x.read())
-        print("*********")
+        import requests
+
+        t = requests.put(upload_url, headers={"Content-Type": "audio/ogg"}, data=VoiceMessage.fp)
+        print(f"Status code: {t.status_code}")
+
+        # x = await self.__session.request("PUT", upload_url, headers={"Content-Type": "audio/ogg"}, data=VoiceMessage.fp)
+        # print("*********")
+        # print(upload_url)
+        # print(x.read())
+        # print("*********")
 
         VoiceMessage.uploaded_filename = uploaded_filename
 
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
-        params = handle_message_parameters(file=VoiceMessage, flags=MessageFlags(voice=True))
-        return await self.request(r, files=params.files, form=params.multipart)
+
+        message_payload = {
+            "flags": 8192,  # IS_VOICE_MESSAGE
+            "attachments": [VoiceMessage.to_dict(0)],
+        }
+
+        headers = {"Authorization": f"Bot {self.token}",
+                   "Content-Type": "application/json"}
+
+        res = requests.post("" + r.url, headers=headers, json=message_payload)
+        return res.json()
+
+        # params = handle_message_parameters(file=VoiceMessage, flags=MessageFlags(voice=True))
+        # return await self.request(r, files=params.files, form=params.multipart)
 
 
     # Member management
