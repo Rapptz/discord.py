@@ -1060,10 +1060,8 @@ class HTTPClient:
     def pins_from(self, channel_id: Snowflake) -> Response[List[message.Message]]:
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
 
-    async def send_voice_message(self, channel_id: Snowflake, voice_message: VoiceMessageFile):
-        from .message import MessageFlags
-
-        uploadRoute = Route('POST', '/channels/{channel_id}/attachments', channel_id=channel_id)
+    async def send_voice_message(self, channel_id: Snowflake, voice_message: VoiceMessageFile) -> Any:
+        upload_route = Route('POST', '/channels/{channel_id}/attachments', channel_id=channel_id)
         payload = {
             "files": [
                 {
@@ -1073,7 +1071,7 @@ class HTTPClient:
                 }
             ]
         }
-        response = await self.request(uploadRoute, json=payload)
+        response = await self.request(upload_route, json=payload)
 
         upload_data = response['attachments'][0]
         upload_url = upload_data["upload_url"]
@@ -1101,11 +1099,9 @@ class HTTPClient:
 
         headers = {"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}
 
-        res = requests.post("" + r.url, headers=headers, json=message_payload)
-        return res.json()
-
-        # params = handle_message_parameters(file=voice_message, flags=MessageFlags(voice=True))
-        # return await self.request(r, files=params.files, form=params.multipart)
+        response = await self.__session.request("post", r.url, headers=headers, json=message_payload)
+        data = await json_or_text(response)
+        return data
 
     # Member management
 
