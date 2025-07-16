@@ -55,7 +55,7 @@ from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
-from .file import File
+from .file import File, VoiceMessageFile
 from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
@@ -1915,6 +1915,31 @@ class Messageable:
                 # There's no data left after this
                 break
 
+    async def send_voice_message(self, file: VoiceMessageFile):
+        """|coro|
+
+        Sends a voice message to the destination.
+
+        Parameters
+        -----------
+        file: :class:`~discord.VoiceMessageFile`
+            The voice message file to send.
+
+        Raises
+        -------
+        ~discord.HTTPException
+            Sending the voice message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the voice message.
+
+        Returns
+        --------
+        :class:`~discord.Message`
+            The message that was sent.
+        """
+        channel = await self._get_channel()
+        data = await self._state.http.send_voice_message(channel.id, file)
+        return self._state.create_message(channel=channel, data=data)
 
 class Connectable(Protocol):
     """An ABC that details the common operations on a channel that can
