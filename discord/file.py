@@ -167,12 +167,18 @@ class VoiceMessageFile(File):
     This is a subclass of :class:`File` that is specifically used for sending voice messages.
 
     .. versionadded:: 2.6
+
+    Attributes
+    -----------
+    duration: :class:`float`
+        The duration of the voice message in seconds. Does not need to be accurate
+
     """
 
     def __init__(
         self,
         fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase],
-        duration: float = 5.0,
+        duration: float,
         waveform: Optional[str] = None,
     ):
         super().__init__(fp, filename="voice-message.ogg", spoiler=False)
