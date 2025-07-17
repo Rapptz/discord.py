@@ -5632,14 +5632,6 @@ File
 .. autoclass:: File
     :members:
 
-VoiceMessageFile
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: VoiceMessageFile
-
-.. autoclass:: VoiceMessageFile
-    :members:
-
 Colour
 ~~~~~~
 

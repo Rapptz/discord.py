@@ -34,7 +34,6 @@ from .utils import MISSING
 # fmt: off
 __all__ = (
     'File',
-    'VoiceMessageFile',
 )
 # fmt: on
 
@@ -79,7 +78,7 @@ class File:
         .. versionadded:: 2.0
     """
 
-    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
+    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer', 'duation', '_waveform')
 
     def __init__(
         self,
@@ -88,6 +87,8 @@ class File:
         *,
         spoiler: bool = MISSING,
         description: Optional[str] = None,
+        duration: Optional[float] = None,
+        waveform: Optional[str] = None,
     ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
@@ -119,6 +120,8 @@ class File:
 
         self.spoiler: bool = spoiler
         self.description: Optional[str] = description
+        self.duation = duration
+        self._waveform = waveform
 
     @property
     def filename(self) -> str:
@@ -127,6 +130,13 @@ class File:
         a string then the ``filename`` will default to the string given.
         """
         return 'SPOILER_' + self._filename if self.spoiler else self._filename
+
+    @property
+    def waveform(self) -> str:
+        """:class:`str`: The waveform data for the voice message."""
+        if self._waveform is None:
+            return base64.b64encode(os.urandom(256)).decode('utf-8')
+        return self._waveform
 
     @filename.setter
     def filename(self, value: str) -> None:
@@ -158,42 +168,8 @@ class File:
         if self.description is not None:
             payload['description'] = self.description
 
+        if self.duation is not None:
+            payload['duration_secs'] = self.duation
+            payload['waveform'] = self.waveform
+
         return payload
-
-
-class VoiceMessageFile(File):
-    """A file object used for sending voice messages.
-
-    This is a subclass of :class:`File` that is specifically used for sending voice messages.
-
-    .. versionadded:: 2.6
-
-    Attributes
-    -----------
-    duration: :class:`float`
-        The duration of the voice message in seconds. Does not need to be accurate
-
-    """
-
-    def __init__(
-        self,
-        fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase],
-        duration: float,
-        waveform: Optional[str] = None,
-    ):
-        super().__init__(fp, filename="voice-message.ogg", spoiler=False)
-        self.duration = duration
-        self._waveform = waveform
-
-    def to_dict(self, index: int) -> Dict[str, Any]:
-        payload = super().to_dict(index)
-        payload['duration_secs'] = self.duration
-        payload['waveform'] = self.waveform
-        return payload
-
-    @property
-    def waveform(self) -> str:
-        """:class:`bytes`: The waveform data for the voice message."""
-        if self._waveform is None:
-            return base64.b64encode(os.urandom(256)).decode('utf-8')
-        return self._waveform
