@@ -1587,9 +1587,6 @@ class Messageable:
         voice: :class:`bool`
             If the message is a voice message.
 
-            .. warning::
-
-                `file` attribute must be a :class:`discord.VoiceMessageFile` for this to work. Content must also be `None`
             .. versionadded:: 2.6
 
         Raises
