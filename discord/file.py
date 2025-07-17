@@ -194,6 +194,3 @@ class VoiceMessageFile(File):
         if self._waveform is None:
             return base64.b64encode(os.urandom(256)).decode('utf-8')
         return self._waveform
-
-    def size(self):
-        return 47194  # Placeholder, figure out how to get size
