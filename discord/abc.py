@@ -55,7 +55,7 @@ from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
-from .file import File, VoiceMessageFile
+from .file import File
 from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
@@ -1584,6 +1584,13 @@ class Messageable:
             The poll to send with this message.
 
             .. versionadded:: 2.4
+        voice: :class:`bool`
+            If the message is a voice message.
+
+            .. warning::
+
+                `file` attribute must be a :class:`discord.VoiceMessageFile` for this to work. Content must also be `None`
+            .. versionadded:: 2.6
 
         Raises
         --------
@@ -1920,31 +1927,6 @@ class Messageable:
             if count < 100:
                 # There's no data left after this
                 break
-
-    async def send_voice_message(self, file: VoiceMessageFile):
-        """|coro|
-
-        Sends a voice message to the destination.
-
-        Parameters
-        -----------
-        file: :class:`~discord.VoiceMessageFile`
-            The voice message file to send.
-
-        Raises
-        -------
-        ~discord.HTTPException
-            Sending the voice message failed.
-        ~discord.Forbidden
-            You do not have the proper permissions to send the voice message.
-
-        Returns
-        --------
-        :class:`~discord.Message`
-            The message that was sent.
-        """
-
-        return await self.send(file=file, voice=True)
 
 
 class Connectable(Protocol):

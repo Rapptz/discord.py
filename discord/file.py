@@ -178,14 +178,11 @@ class VoiceMessageFile(File):
         super().__init__(fp, filename="voice-message.ogg", spoiler=False)
         self.duration = duration
         self._waveform = waveform
-        self.uploaded_filename = None
 
     def to_dict(self, index: int) -> Dict[str, Any]:
         payload = super().to_dict(index)
         payload['duration_secs'] = self.duration
         payload['waveform'] = self.waveform
-        if self.uploaded_filename is not None:
-            payload['uploaded_filename'] = self.uploaded_filename
         return payload
 
     @property
