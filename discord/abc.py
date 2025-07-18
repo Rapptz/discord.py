@@ -1643,6 +1643,16 @@ class Messageable:
         else:
             flags = MISSING
 
+        if voice:
+            if content is not None:
+                raise TypeError('Cannot send content with a voice message')
+            if embeds is not None:
+                raise TypeError('Cannot send embeds with a voice message')
+            if file is None:
+                raise TypeError('A voice message must have a file')
+            if file.duation is None:
+                raise TypeError('A voice message file must have a duration')
+
         if nonce is None:
             nonce = secrets.randbits(64)
 
