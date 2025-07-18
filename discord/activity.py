@@ -28,7 +28,7 @@ import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
 from .asset import Asset
-from .enums import ActivityType, try_enum
+from .enums import ActivityType, StatusDisplayType, try_enum
 from .colour import Colour
 from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
@@ -180,8 +180,10 @@ class Activity(BaseActivity):
 
         - ``large_image``: A string representing the ID for the large image asset.
         - ``large_text``: A string representing the text when hovering over the large image asset.
+        - ``large_url``: A string representing the URL of the large image asset.
         - ``small_image``: A string representing the ID for the small image asset.
         - ``small_text``: A string representing the text when hovering over the small image asset.
+        - ``small_url``: A string representing the URL of the small image asset.
 
     party: :class:`dict`
         A dictionary representing the activity party. It contains the following optional keys:
@@ -195,6 +197,19 @@ class Activity(BaseActivity):
 
     emoji: Optional[:class:`PartialEmoji`]
         The emoji that belongs to this activity.
+    details_url: Optional[:class:`str`]
+        A URL that is linked to when clicking on the details text of the activity.
+
+        ... versionadded:: 2.6
+    state_url: Optional[:class:`str`]
+        A URL that is linked to when clicking on the state text of the activity.
+
+        ... versionadded:: 2.6
+    status_display_type: Optional[:class:`StatusDisplayType`]
+        Determines which field from the user's status text is displayed
+        in the members list.
+
+        .. versionadded:: 2.6
     """
 
     __slots__ = (
@@ -213,6 +228,9 @@ class Activity(BaseActivity):
         'application_id',
         'emoji',
         'buttons',
+        'state_url',
+        'details_url',
+        'status_display_type',
     )
 
     def __init__(self, **kwargs: Any) -> None:
@@ -239,6 +257,16 @@ class Activity(BaseActivity):
         emoji = kwargs.pop('emoji', None)
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
 
+        self.state_url: Optional[str] = kwargs.pop('state_url')
+        self.details_url: Optional[str] = kwargs.pop('details_url')
+
+        status_display_type = kwargs.pop('status_display_type', None)
+        self.status_display_type: Optional[StatusDisplayType] = (
+            status_display_type
+            if isinstance(status_display_type, StatusDisplayType)
+            else try_enum(StatusDisplayType, status_display_type)
+        )
+
     def __repr__(self) -> str:
         attrs = (
             ('type', self.type),
@@ -255,10 +283,14 @@ class Activity(BaseActivity):
 
     def to_dict(self) -> Dict[str, Any]:
         ret: Dict[str, Any] = {}
+        enums = ('status_display_type',)
         for attr in self.__slots__:
             value = getattr(self, attr, None)
             if value is None:
                 continue
+
+            if attr in enums:
+                value = int(value.value)
 
             if isinstance(value, dict) and len(value) == 0:
                 continue
