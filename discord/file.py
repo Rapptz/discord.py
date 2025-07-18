@@ -27,6 +27,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import os
 import io
+import base64
 
 from .utils import MISSING
 
@@ -77,7 +78,7 @@ class File:
         .. versionadded:: 2.0
     """
 
-    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
+    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer', 'duation', '_waveform')
 
     def __init__(
         self,
@@ -86,6 +87,8 @@ class File:
         *,
         spoiler: bool = MISSING,
         description: Optional[str] = None,
+        duration: Optional[float] = None,
+        waveform: Optional[str] = None,
     ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
@@ -117,6 +120,8 @@ class File:
 
         self.spoiler: bool = spoiler
         self.description: Optional[str] = description
+        self.duation = duration
+        self._waveform = waveform
 
     @property
     def filename(self) -> str:
@@ -125,6 +130,13 @@ class File:
         a string then the ``filename`` will default to the string given.
         """
         return 'SPOILER_' + self._filename if self.spoiler else self._filename
+
+    @property
+    def waveform(self) -> str:
+        """:class:`str`: The waveform data for the voice message."""
+        if self._waveform is None:
+            return base64.b64encode(os.urandom(256)).decode('utf-8')
+        return self._waveform
 
     @filename.setter
     def filename(self, value: str) -> None:
@@ -155,5 +167,9 @@ class File:
 
         if self.description is not None:
             payload['description'] = self.description
+
+        if self.duation is not None:
+            payload['duration_secs'] = self.duation
+            payload['waveform'] = self.waveform
 
         return payload
