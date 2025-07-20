@@ -446,11 +446,9 @@ class AuditLogChanges:
         # add an alias
         if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
-        if hasattr(self.before, 'colour'):
             self.before.color = self.before.colour
         if hasattr(self.after, 'expire_behavior'):
             self.after.expire_behaviour = self.after.expire_behavior
-        if hasattr(self.before, 'expire_behavior'):
             self.before.expire_behaviour = self.before.expire_behavior
 
     def __repr__(self) -> str:
