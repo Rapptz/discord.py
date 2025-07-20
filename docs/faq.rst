@@ -571,7 +571,7 @@ There are four to five ways to declare a command to one or multiple guilds.
 
 4. Using the ``guild`` or ``guilds`` parameters in the :meth:`~ext.commands.Bot.add_cog` method.
     This is primarily intended for a :class:`~ext.commands.GroupCog`, but can also be used for a regular cog that
-    contains application commands. Note however that this does not work with the hybrid app commands (:issue:`9428`).
+    contains application commands. Note however that this does not work with the hybrid app commands (:issue:`9366`).
 
     .. code-block:: python3
 
