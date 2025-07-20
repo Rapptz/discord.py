@@ -444,9 +444,9 @@ class AuditLogChanges:
             setattr(self.after, attr, after)
 
         # add an alias
-        if hasattr(self.after, 'color'):
+        if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
-        if hasattr(self.before, 'color'):
+        if hasattr(self.before, 'colour'):
             self.before.color = self.before.colour
         if hasattr(self.after, 'expire_behavior'):
             self.after.expire_behaviour = self.after.expire_behavior
