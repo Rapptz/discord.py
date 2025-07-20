@@ -571,19 +571,19 @@ There are four to five ways to declare a command to one or multiple guilds.
 
 4. Using the ``guild`` or ``guilds`` parameters in the :meth:`~ext.commands.Bot.add_cog` method.
     This is primarily intended for a :class:`~ext.commands.GroupCog`, but can also be used for a regular cog that
-    contains application commands. Note however that this does not work with the hybrid app commands (:issue:`9366`).
+    contains application commands. Note however that this does not work with hybrid app commands (:issue:`9366`).
 
     .. code-block:: python3
 
-        class MyGroup(commands.GroupCog):
+        class MyCog(commands.Cog):
             @app_commands.command()
             async def ping(self, interaction: Interaction):
                 await interaction.response.send_message("Pong!")
 
         async def setup(bot: commands.Bot) -> None:
-            await bot.add_cog(MyGroup(...), guild=discord.Object(123456789012345678))
+            await bot.add_cog(MyCog(...), guild=discord.Object(123456789012345678))
             # or multiple:
-            # await bot.add_cog(MyGroup(...), guilds=[discord.Object(123456789012345678), discord.Object(987654321098765432)])
+            # await bot.add_cog(MyCog(...), guilds=[discord.Object(123456789012345678), discord.Object(987654321098765432)])
 
 5. Using the :meth:`~app_commands.CommandTree.copy_global_to` method.
     This one is intended for development purposes and is not recommended for production use.
