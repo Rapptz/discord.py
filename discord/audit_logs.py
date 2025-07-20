@@ -409,8 +409,8 @@ class AuditLogChanges:
 
             # special case for colors to set secondary and tertiary colos/colour attributes
             if attr == 'colors':
-                self._handle_colours(self.before, elem['old_value'])  # type: ignore  # should be a RoleColours dict
-                self._handle_colours(self.after, elem['new_value'])  # type: ignore  # should be a RoleColours dict
+                self._handle_colours(self.before, elem.get('old_value'))  # type: ignore  # should be a RoleColours dict
+                self._handle_colours(self.after, elem.get('new_value'))  # type: ignore  # should be a RoleColours dict
                 continue
 
             try:
@@ -446,9 +446,11 @@ class AuditLogChanges:
         # add an alias
         if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
+        if hasattr(self.before, 'colour'):
             self.before.color = self.before.colour
         if hasattr(self.after, 'expire_behavior'):
             self.after.expire_behaviour = self.after.expire_behavior
+        if hasattr(self.before, 'expire_behavior'):
             self.before.expire_behaviour = self.before.expire_behavior
 
     def __repr__(self) -> str:
@@ -545,13 +547,18 @@ class AuditLogChanges:
         except (AttributeError, TypeError):
             pass
 
-    def _handle_colours(self, diff: AuditLogDiff, colours: RoleColours):
-        # handle colours to multiple colour attributes
-        diff.color = diff.colour = Colour(colours['primary_color'])
+    def _handle_colours(self, diff: AuditLogDiff, colours: Optional[RoleColours]):
+        if colours is not None:
+            # handle colours to multiple colour attributes
+            colour = Colour(colours['primary_color'])
+            secondary_colour = colours['secondary_color']
+            tertiary_colour = colours['tertiary_color']
+        else:
+            colour = None
+            secondary_colour = None
+            tertiary_colour = None
 
-        secondary_colour = colours['secondary_color']
-        tertiary_colour = colours['tertiary_color']
-
+        diff.color = diff.colour = colour
         diff.secondary_color = diff.secondary_colour = Colour(secondary_colour) if secondary_colour is not None else None
         diff.tertiary_color = diff.tertiary_colour = Colour(tertiary_colour) if tertiary_colour is not None else None
 
