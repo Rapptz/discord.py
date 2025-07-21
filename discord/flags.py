@@ -2399,6 +2399,7 @@ class EmbedFlags(BaseFlags):
         """
         return 1 << 5
 
+
 @fill_with_flags()
 class InviteFlags(BaseFlags):
     r"""Wraps up the Discord Invite flags
