@@ -2111,6 +2111,7 @@ class MemberFlags(BaseFlags):
         """
         return 1 << 9
 
+
 @fill_with_flags()
 class AttachmentFlags(BaseFlags):
     r"""Wraps up the Discord Attachment flags
