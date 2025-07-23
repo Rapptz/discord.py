@@ -398,6 +398,7 @@ class AuditLogAction(Enum):
     automod_block_message                             = 143
     automod_flag_message                              = 144
     automod_timeout_member                            = 145
+    automod_quarantine_member                         = 146
     creator_monetization_request_created              = 150
     creator_monetization_terms_accepted               = 151
     # fmt: on
@@ -460,6 +461,7 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_block_message:                    None,
             AuditLogAction.automod_flag_message:                     None,
             AuditLogAction.automod_timeout_member:                   None,
+            AuditLogAction.automod_quarantine_member:                None,
             AuditLogAction.creator_monetization_request_created:     None,
             AuditLogAction.creator_monetization_terms_accepted:      None,
             AuditLogAction.soundboard_sound_create:                  AuditLogActionCategory.create,
