@@ -744,6 +744,7 @@ class AuditLogEntry(Hashable):
                 self.action is enums.AuditLogAction.automod_block_message
                 or self.action is enums.AuditLogAction.automod_flag_message
                 or self.action is enums.AuditLogAction.automod_timeout_member
+                or self.action is enums.AuditLogAction.automod_quarantine_member
             ):
                 channel_id = utils._get_as_snowflake(extra, 'channel_id')
                 channel = None
