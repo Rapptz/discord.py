@@ -508,7 +508,7 @@ class AuditLogAction(Enum):
             return 'integration_or_app_command'
         elif 139 < v < 143:
             return 'auto_moderation'
-        elif v < 146:
+        elif v < 147:
             return 'user'
         elif v < 152:
             return 'creator_monetization'
