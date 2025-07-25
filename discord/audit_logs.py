@@ -765,6 +765,7 @@ class AuditLogEntry(Hashable):
                     ),
                     channel=channel,
                 )
+                
             elif self.action is enums.AuditLogAction.automod_quarantine_user:
                 self.extra = _AuditLogProxyAutoModActionQuarantineUser(
                     automod_rule_name=extra['auto_moderation_rule_name'],
