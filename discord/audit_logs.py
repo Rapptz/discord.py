@@ -765,7 +765,6 @@ class AuditLogEntry(Hashable):
                     ),
                     channel=channel,
                 )
-
             elif self.action is enums.AuditLogAction.automod_quarantine_user:
                 self.extra = _AuditLogProxyAutoModActionQuarantineUser(
                     automod_rule_name=extra['auto_moderation_rule_name'],
@@ -773,6 +772,7 @@ class AuditLogEntry(Hashable):
                         enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
                     )
                 )
+
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(extra['id'])
