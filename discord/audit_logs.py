@@ -770,7 +770,7 @@ class AuditLogEntry(Hashable):
                     automod_rule_name=extra['auto_moderation_rule_name'],
                     automod_rule_trigger_type=enums.try_enum(
                         enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
-                    )
+                    ),
                 )
 
             elif self.action.name.startswith('overwrite_'):
