@@ -3055,7 +3055,7 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.1
 
-    .. attribute:: automod_quarantine_member
+    .. attribute:: automod_quarantine_user
 
         An automod rule quarantined a member.
 
