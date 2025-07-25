@@ -614,6 +614,11 @@ class _AuditLogProxyAutoModAction(_AuditLogProxy):
     channel: Optional[Union[abc.GuildChannel, Thread]]
 
 
+class _AuditLogProxyAutoModActionQuarantineUser(_AuditLogProxy):
+    automod_rule_name: str
+    automod_rule_trigger_type: str
+
+
 class _AuditLogProxyMemberKickOrMemberRoleUpdate(_AuditLogProxy):
     integration_type: Optional[str]
 
@@ -704,6 +709,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyStageInstanceAction,
             _AuditLogProxyMessageBulkDelete,
             _AuditLogProxyAutoModAction,
+            _AuditLogProxyAutoModActionQuarantineUser,
             _AuditLogProxyMemberKickOrMemberRoleUpdate,
             Member, User, None, PartialIntegration,
             Role, Object
@@ -744,7 +750,6 @@ class AuditLogEntry(Hashable):
                 self.action is enums.AuditLogAction.automod_block_message
                 or self.action is enums.AuditLogAction.automod_flag_message
                 or self.action is enums.AuditLogAction.automod_timeout_member
-                or self.action is enums.AuditLogAction.automod_quarantine_user
             ):
                 channel_id = utils._get_as_snowflake(extra, 'channel_id')
                 channel = None
@@ -760,7 +765,13 @@ class AuditLogEntry(Hashable):
                     ),
                     channel=channel,
                 )
-
+            elif self.action is enums.AuditLogAction.automod_quarantine_user:
+                self.extra = _AuditLogProxyAutoModActionQuarantineUser(
+                    automod_rule_name=extra['auto_moderation_rule_name'],
+                    automod_rule_trigger_type=enums.try_enum(
+                        enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
+                    )
+                )
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(extra['id'])
