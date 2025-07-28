@@ -89,7 +89,7 @@ class File:
             Voice files must be an audio only format.
 
             A *non-exhaustive* list of supported formats are: `ogg`, `mp3`, `wav`, `aac`, and `flac`.
-            
+
         .. versionadded:: 2.6
 
     duration: Optional[:class:`float`]
@@ -178,7 +178,7 @@ class File:
             If a waveform was not given, it will be generated
 
             Only supports generating the waveform for Opus format files, other files will be given a random waveform
-        
+
         .. versionadded:: 2.6"""
         if self._waveform is None:
             try:
@@ -223,10 +223,10 @@ class File:
             payload['waveform'] = self.waveform
 
         return payload
-    
+
     def generate_waveform(self) -> str:
         self.reset()
-        ogg = OggStream(self.fp) # type: ignore
+        ogg = OggStream(self.fp)  # type: ignore
         decoder = Decoder()
         waveform: list[int] = []
         prefixes = [b'OpusHead', b'OpusTags']
@@ -238,22 +238,22 @@ class File:
                 raise TypeError("File format is 'vorbis'. Format of 'opus' is required for waveform generation")
 
             # these are PCM bytes in 16-bit signed little-endian form
-            decoded = decoder.decode(packet, fec=False) 
+            decoded = decoder.decode(packet, fec=False)
 
             # 16 bits -> 2 bytes per sample
             num_samples = len(decoded) // 2
-            
+
             # https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment
             format = '<' + 'h' * num_samples
             samples: tuple[int] = struct.unpack(format, decoded)
 
             waveform.extend(samples)
-        
+
         # Make sure all values are positive
         for i in range(len(waveform)):
             if waveform[i] < 0:
                 waveform[i] = -waveform[i]
-        
+
         # TODO: Figure out how discord sets the sample count
         # Voice message I've been using has 40 samples, so using that for now
         points_per_sample = len(waveform) // 40
