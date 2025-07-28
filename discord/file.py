@@ -225,6 +225,8 @@ class File:
         return payload
 
     def generate_waveform(self) -> str:
+        if not self.voice:
+            raise TypeError("Cannot produce waveform for non voice file")
         self.reset()
         ogg = OggStream(self.fp)  # type: ignore
         decoder = Decoder()
@@ -254,9 +256,9 @@ class File:
             if waveform[i] < 0:
                 waveform[i] = -waveform[i]
 
-        # TODO: Figure out how discord sets the sample count
-        # Voice message I've been using has 40 samples, so using that for now
-        points_per_sample = len(waveform) // 40
+        point_count: int = self.duration * 10  # type: ignore
+        point_count = min(point_count, 255)
+        points_per_sample: int = len(waveform) // point_count
         sample_waveform: list[int] = []
 
         total, count = 0, 0
@@ -274,4 +276,5 @@ class File:
         for i in range(len(sample_waveform)):
             sample_waveform[i] = int(sample_waveform[i] * mult)
 
+        print(len(sample_waveform))
         return base64.b64encode(bytes(sample_waveform)).decode('utf-8')
