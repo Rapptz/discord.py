@@ -43,6 +43,7 @@ from .colour import Colour
 from .object import Object
 from .flags import MemberFlags
 from .presences import ClientStatus
+from .role import Role
 
 __all__ = (
     'VoiceState',
@@ -69,7 +70,6 @@ if TYPE_CHECKING:
     from .abc import Snowflake
     from .state import ConnectionState
     from .message import Message
-    from .role import Role
     from .types.voice import (
         GuildVoiceState as GuildVoiceStatePayload,
         VoiceState as VoiceStatePayload,
@@ -563,12 +563,12 @@ class Member(discord.abc.Messageable, _UserTag):
         return self.colour
 
     @property
-    def roles(self) -> List[Union[Role, int]]:
-        """List[Union[:class:`Role`, :class:`int`]]: A :class:`list` of :class:`Role` that the member belongs to. Note
+    def roles(self) -> List[Union[Role, Object]]:
+        """List[Union[:class:`Role`, :class:`Object`]]: A :class:`list` of :class:`Role` that the member belongs to. Note
         that the first element of this list is always the default '@everyone'
         role.
 
-        If all the roles are not cached, it returns a list of role IDs instead. They are not
+        If all the roles are not cached, a :class:`list` of :class:`Object` is returned instead. They are not
         sorted by role hierarchy. See below.
 
         If a :class:`list` of :class:`Role` is returned, only then are the roles sorted by their position in the role hierarchy.
@@ -581,8 +581,8 @@ class Member(discord.abc.Messageable, _UserTag):
                 result.append(role)
         if not result:
             default_role_id = g.id
-            result.append(default_role_id)
-            result.extend(self._roles)
+            result.append(Object(default_role_id, type=Role))
+            result.extend(Object(role_id, type=Role) for role_id in self._roles)
         else:
             default_role = g.default_role
             result.append(default_role)
