@@ -563,12 +563,15 @@ class Member(discord.abc.Messageable, _UserTag):
         return self.colour
 
     @property
-    def roles(self) -> List[Role]:
-        """List[:class:`Role`]: A :class:`list` of :class:`Role` that the member belongs to. Note
+    def roles(self) -> List[Union[Role, int]]:
+        """List[Union[:class:`Role`, :class:`int`]]: A :class:`list` of :class:`Role` that the member belongs to. Note
         that the first element of this list is always the default '@everyone'
         role.
 
-        These roles are sorted by their position in the role hierarchy.
+        If all the roles are not cached, it returns a list of role IDs instead. They are not
+        sorted by role hierarchy. See below.
+
+        If a :class:`list` of :class:`Role` is returned, only then are the roles sorted by their position in the role hierarchy.
         """
         result = []
         g = self.guild
@@ -576,10 +579,14 @@ class Member(discord.abc.Messageable, _UserTag):
             role = g.get_role(role_id)
             if role:
                 result.append(role)
-        default_role = g.default_role
-        if default_role:
+        if not result:
+            default_role_id = g.id
+            result.append(default_role_id)
+            result.extend(self._roles)
+        else:
+            default_role = g.default_role
             result.append(default_role)
-        result.sort()
+            result.sort()
         return result
 
     @property
