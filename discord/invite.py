@@ -32,6 +32,7 @@ from .mixins import Hashable
 from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, InviteType, try_enum
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
+from .flags import InviteFlags
 
 __all__ = (
     'PartialInviteChannel',
@@ -379,6 +380,7 @@ class Invite(Hashable):
         'scheduled_event',
         'scheduled_event_id',
         'type',
+        '_flags',
     )
 
     BASE = 'https://discord.gg'
@@ -432,6 +434,7 @@ class Invite(Hashable):
             else None
         )
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
+        self._flags: int = data.get('flags', 0)
 
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
@@ -523,6 +526,14 @@ class Invite(Hashable):
             url += '?event=' + str(self.scheduled_event_id)
         return url
 
+    @property
+    def flags(self) -> InviteFlags:
+        """:class:`InviteFlags`: Returns the flags for this invite.
+
+        .. versionadded:: 2.6
+        """
+        return InviteFlags._from_value(self._flags)
+
     def set_scheduled_event(self, scheduled_event: Snowflake, /) -> Self:
         """Sets the scheduled event for this invite.
 
@@ -546,7 +557,7 @@ class Invite(Hashable):
 
         return self
 
-    async def delete(self, *, reason: Optional[str] = None) -> None:
+    async def delete(self, *, reason: Optional[str] = None) -> Self:
         """|coro|
 
         Revokes the instant invite.
@@ -568,4 +579,5 @@ class Invite(Hashable):
             Revoking the invite failed.
         """
 
-        await self._state.http.delete_invite(self.code, reason=reason)
+        data = await self._state.http.delete_invite(self.code, reason=reason)
+        return self.from_incomplete(state=self._state, data=data)

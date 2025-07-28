@@ -1560,6 +1560,7 @@ class Guild(Hashable):
         rtc_region: Optional[str] = MISSING,
         video_quality_mode: VideoQualityMode = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
+        nsfw: bool = MISSING,
     ) -> VoiceChannel:
         """|coro|
 
@@ -1597,6 +1598,10 @@ class Guild(Hashable):
             The camera video quality for the voice channel's participants.
 
             .. versionadded:: 2.0
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+
+            .. versionadded:: 2.6
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1632,6 +1637,9 @@ class Guild(Hashable):
                 raise TypeError('video_quality_mode must be of type VideoQualityMode')
             options['video_quality_mode'] = video_quality_mode.value
 
+        if nsfw is not MISSING:
+            options['nsfw'] = nsfw
+
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.voice, category=category, reason=reason, **options
         )
@@ -1653,6 +1661,7 @@ class Guild(Hashable):
         rtc_region: Optional[str] = MISSING,
         video_quality_mode: VideoQualityMode = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
+        nsfw: bool = MISSING,
     ) -> StageChannel:
         """|coro|
 
@@ -1696,6 +1705,10 @@ class Guild(Hashable):
             The camera video quality for the voice channel's participants.
 
             .. versionadded:: 2.2
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+
+            .. versionadded:: 2.6
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1731,6 +1744,9 @@ class Guild(Hashable):
             if not isinstance(video_quality_mode, VideoQualityMode):
                 raise TypeError('video_quality_mode must be of type VideoQualityMode')
             options['video_quality_mode'] = video_quality_mode.value
+
+        if nsfw is not MISSING:
+            options['nsfw'] = nsfw
 
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.stage_voice, category=category, reason=reason, **options
@@ -1800,6 +1816,7 @@ class Guild(Hashable):
         category: Optional[CategoryChannel] = None,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
+        media: bool = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
@@ -1862,12 +1879,17 @@ class Guild(Hashable):
             .. versionadded:: 2.3
         default_layout: :class:`ForumLayoutType`
             The default layout for posts in this forum.
+            This cannot be set if ``media`` is set to ``True``.
 
             .. versionadded:: 2.3
         available_tags: Sequence[:class:`ForumTag`]
             The available tags for this forum channel.
 
             .. versionadded:: 2.1
+        media: :class:`bool`
+            Whether to create a media forum channel.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1919,7 +1941,7 @@ class Guild(Hashable):
             else:
                 raise ValueError(f'default_reaction_emoji parameter must be either Emoji, PartialEmoji, or str')
 
-        if default_layout is not MISSING:
+        if not media and default_layout is not MISSING:
             if not isinstance(default_layout, ForumLayoutType):
                 raise TypeError(
                     f'default_layout parameter must be a ForumLayoutType not {default_layout.__class__.__name__}'
@@ -1931,10 +1953,17 @@ class Guild(Hashable):
             options['available_tags'] = [t.to_dict() for t in available_tags]
 
         data = await self._create_channel(
-            name=name, overwrites=overwrites, channel_type=ChannelType.forum, category=category, reason=reason, **options
+            name=name,
+            overwrites=overwrites,
+            channel_type=ChannelType.forum if not media else ChannelType.media,
+            category=category,
+            reason=reason,
+            **options,
         )
 
-        channel = ForumChannel(state=self._state, guild=self, data=data)
+        channel = ForumChannel(
+            state=self._state, guild=self, data=data  # pyright: ignore[reportArgumentType] # it's the correct data
+        )
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
@@ -3619,6 +3648,8 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
+        secondary_colour: Optional[Union[Colour, int]] = ...,
+        tertiary_colour: Optional[Union[Colour, int]] = ...,
     ) -> Role:
         ...
 
@@ -3633,6 +3664,8 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
+        secondary_color: Optional[Union[Colour, int]] = ...,
+        tertiary_color: Optional[Union[Colour, int]] = ...,
     ) -> Role:
         ...
 
@@ -3647,6 +3680,10 @@ class Guild(Hashable):
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = MISSING,
         reason: Optional[str] = None,
+        secondary_color: Optional[Union[Colour, int]] = MISSING,
+        tertiary_color: Optional[Union[Colour, int]] = MISSING,
+        secondary_colour: Optional[Union[Colour, int]] = MISSING,
+        tertiary_colour: Optional[Union[Colour, int]] = MISSING,
     ) -> Role:
         """|coro|
 
@@ -3666,6 +3703,10 @@ class Guild(Hashable):
             This function will now raise :exc:`TypeError` instead of
             ``InvalidArgument``.
 
+        .. versionchanged:: 2.6
+            The ``colour`` and ``color`` parameters now set the role's primary color.
+
+
         Parameters
         -----------
         name: :class:`str`
@@ -3675,6 +3716,15 @@ class Guild(Hashable):
         colour: Union[:class:`Colour`, :class:`int`]
             The colour for the role. Defaults to :meth:`Colour.default`.
             This is aliased to ``color`` as well.
+        secondary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
+            The secondary colour for the role.
+
+            .. versionadded:: 2.6
+        tertiary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
+            The tertiary colour for the role. Can only be used for the holographic role preset,
+            which is ``(11127295, 16759788, 16761760)``
+
+            .. versionadded:: 2.6
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to ``False``.
@@ -3709,11 +3759,34 @@ class Guild(Hashable):
         else:
             fields['permissions'] = '0'
 
+        colours: Dict[str, Any] = {}
+
         actual_colour = colour or color or Colour.default()
         if isinstance(actual_colour, int):
-            fields['color'] = actual_colour
+            colours['primary_color'] = actual_colour
         else:
-            fields['color'] = actual_colour.value
+            colours['primary_color'] = actual_colour.value
+
+        actual_secondary_colour = secondary_colour or secondary_color
+        actual_tertiary_colour = tertiary_colour or tertiary_color
+
+        if actual_secondary_colour is not MISSING:
+            if actual_secondary_colour is None:
+                colours['secondary_color'] = None
+            elif isinstance(actual_secondary_colour, int):
+                colours['secondary_color'] = actual_secondary_colour
+            else:
+                colours['secondary_color'] = actual_secondary_colour.value
+
+        if actual_tertiary_colour is not MISSING:
+            if actual_tertiary_colour is None:
+                colours['tertiary_color'] = None
+            elif isinstance(actual_tertiary_colour, int):
+                colours['tertiary_color'] = actual_tertiary_colour
+            else:
+                colours['tertiary_color'] = actual_tertiary_colour.value
+
+        fields['colors'] = colours
 
         if hoist is not MISSING:
             fields['hoist'] = hoist

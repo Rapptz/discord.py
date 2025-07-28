@@ -33,7 +33,7 @@ from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
 from .scheduled_event import EntityType, EventStatus, GuildScheduledEvent
 from .snowflake import Snowflake
-from .role import Role
+from .role import Role, RoleColours
 from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
 from .threads import Thread
 from .command import ApplicationCommand, ApplicationCommandPermissions
@@ -97,6 +97,7 @@ AuditLogEvent = Literal[
     143,
     144,
     145,
+    146,
     150,
     151,
 ]
@@ -297,6 +298,12 @@ class _AuditLogChange_TriggerMetadata(TypedDict):
     old_value: Optional[AutoModerationTriggerMetadata]
 
 
+class _AuditLogChange_RoleColours(TypedDict):
+    key: Literal['colors']
+    new_value: RoleColours
+    old_value: RoleColours
+
+
 AuditLogChange = Union[
     _AuditLogChange_Str,
     _AuditLogChange_AssetHash,
@@ -321,6 +328,7 @@ AuditLogChange = Union[
     _AuditLogChange_AvailableTags,
     _AuditLogChange_DefaultReactionEmoji,
     _AuditLogChange_TriggerMetadata,
+    _AuditLogChange_RoleColours,
 ]
 
 

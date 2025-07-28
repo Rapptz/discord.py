@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import types
@@ -399,6 +400,7 @@ class AuditLogAction(Enum):
     automod_block_message                             = 143
     automod_flag_message                              = 144
     automod_timeout_member                            = 145
+    automod_quarantine_user                           = 146
     creator_monetization_request_created              = 150
     creator_monetization_terms_accepted               = 151
     # fmt: on
@@ -461,6 +463,7 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_block_message:                    None,
             AuditLogAction.automod_flag_message:                     None,
             AuditLogAction.automod_timeout_member:                   None,
+            AuditLogAction.automod_quarantine_user:                  None,
             AuditLogAction.creator_monetization_request_created:     None,
             AuditLogAction.creator_monetization_terms_accepted:      None,
             AuditLogAction.soundboard_sound_create:                  AuditLogActionCategory.create,
@@ -507,7 +510,7 @@ class AuditLogAction(Enum):
             return 'integration_or_app_command'
         elif 139 < v < 143:
             return 'auto_moderation'
-        elif v < 146:
+        elif v < 147:
             return 'user'
         elif v < 152:
             return 'creator_monetization'
@@ -623,6 +626,7 @@ class InteractionResponseType(Enum):
     autocomplete_result = 8
     modal = 9  # for modals
     # premium_required = 10 (deprecated)
+    launch_activity = 12
 
 
 class VideoQualityMode(Enum):
@@ -702,6 +706,42 @@ class MFALevel(Enum, comparable=True):
     require_2fa = 1
 
 
+_UNICODE_LANG_MAP: Dict[str, str] = {
+    'bg': 'bg-BG',
+    'zh-CN': 'zh-CN',
+    'zh-TW': 'zh-TW',
+    'hr': 'hr-HR',
+    'cs': 'cs-CZ',
+    'da': 'da-DK',
+    'nl': 'nl-NL',
+    'en-US': 'en-US',
+    'en-GB': 'en-GB',
+    'fi': 'fi-FI',
+    'fr': 'fr-FR',
+    'de': 'de-DE',
+    'el': 'el-GR',
+    'hi': 'hi-IN',
+    'hu': 'hu-HU',
+    'id': 'id-ID',
+    'it': 'it-IT',
+    'ja': 'ja-JP',
+    'ko': 'ko-KR',
+    'lt': 'lt-LT',
+    'no': 'no-NO',
+    'pl': 'pl-PL',
+    'pt-BR': 'pt-BR',
+    'ro': 'ro-RO',
+    'ru': 'ru-RU',
+    'es-ES': 'es-ES',
+    'es-419': 'es-419',
+    'sv-SE': 'sv-SE',
+    'th': 'th-TH',
+    'tr': 'tr-TR',
+    'uk': 'uk-UA',
+    'vi': 'vi-VN',
+}
+
+
 class Locale(Enum):
     american_english = 'en-US'
     british_english = 'en-GB'
@@ -738,6 +778,17 @@ class Locale(Enum):
 
     def __str__(self) -> str:
         return self.value
+
+    @property
+    def language_code(self) -> str:
+        """:class:`str`: Returns the locale's BCP 47 language code in the format of ``language-COUNTRY``.
+
+        This is derived from a predefined mapping based on Discord's supported locales.
+        If no mapping exists for the current locale, this returns the raw locale value as a fallback.
+
+        .. versionadded:: 2.6
+        """
+        return _UNICODE_LANG_MAP.get(self.value, self.value)
 
 
 E = TypeVar('E', bound='Enum')
