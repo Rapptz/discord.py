@@ -83,7 +83,9 @@ class File:
 
         .. note::
 
-            Voice files must be an audio only format. Known supported formats are: mp3, ogg, wav, aac, and flac.
+            Voice files must be an audio only format.
+
+            A *non-exhaustive* list of supported formats are: `mp3`, `ogg`, `wav`, `aac`, and `flac`.
 
         .. versionadded:: 2.6
 
