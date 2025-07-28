@@ -76,9 +76,35 @@ class File:
         The file description to display, currently only supported for images.
 
         .. versionadded:: 2.0
+
+    voice: :class:`bool`
+        Whether the file is a voice message. If left unspecified, the :attr:`~File.duration` is used
+        to determine if the file is a voice message.
+
+        .. note::
+
+            Voice files must be an audio only format. Known supported formats are: mp3, ogg, wav, aac, and flac.
+
+        .. versionadded:: 2.6
+
+    duration: Optional[:class:`float`]
+        The duration of the voice message in seconds
+
+        .. versionadded:: 2.6
     """
 
-    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer', 'duation', '_waveform')
+    __slots__ = (
+        'fp',
+        '_filename',
+        'spoiler',
+        'description',
+        '_original_pos',
+        '_owner',
+        '_closer',
+        'duration',
+        '_waveform',
+        'voice',
+    )
 
     def __init__(
         self,
@@ -87,6 +113,7 @@ class File:
         *,
         spoiler: bool = MISSING,
         description: Optional[str] = None,
+        voice: bool = MISSING,
         duration: Optional[float] = None,
         waveform: Optional[str] = None,
     ):
@@ -122,6 +149,13 @@ class File:
         self.description: Optional[str] = description
         self.duration = duration
         self._waveform = waveform
+
+        if voice is MISSING:
+            voice = duration is not None
+        self.voice = voice
+
+        if duration is None and voice:
+            raise TypeError('Voice messages must have a duration')
 
     @property
     def filename(self) -> str:
