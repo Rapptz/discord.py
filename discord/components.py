@@ -1013,7 +1013,7 @@ class MediaGalleryItem:
     """
 
     __slots__ = (
-        'media',
+        '_media',
         'description',
         'spoiler',
         '_state',
@@ -1026,13 +1026,27 @@ class MediaGalleryItem:
         description: Optional[str] = None,
         spoiler: bool = False,
     ) -> None:
-        self.media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
+        self._media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
         self.description: Optional[str] = description
         self.spoiler: bool = spoiler
         self._state: Optional[ConnectionState] = None
 
     def __repr__(self) -> str:
         return f'<MediaGalleryItem media={self.media!r}>'
+
+    @property
+    def media(self) -> UnfurledMediaItem:
+        """:class:`UnfurledMediaItem`: This item's media data."""
+        return self._media
+
+    @media.setter
+    def media(self, value: Union[str, UnfurledMediaItem]) -> None:
+        if isinstance(value, str):
+            self._media = UnfurledMediaItem(value)
+        elif isinstance(value, UnfurledMediaItem):
+            self._media = value
+        else:
+            raise TypeError(f'Expected a str or UnfurledMediaItem, not {value.__class__.__name__}')
 
     @classmethod
     def _from_data(cls, data: MediaGalleryItemPayload, state: Optional[ConnectionState]) -> MediaGalleryItem:

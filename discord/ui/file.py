@@ -119,8 +119,13 @@ class File(Item[V]):
         return self._underlying.media
 
     @media.setter
-    def media(self, value: UnfurledMediaItem) -> None:
-        self._underlying.media = value
+    def media(self, value: Union[str, UnfurledMediaItem]) -> None:
+        if isinstance(value, str):
+            self._underlying.media = UnfurledMediaItem(value)
+        elif isinstance(value, UnfurledMediaItem):
+            self._underlying.media = value
+        else:
+            raise TypeError(f'expected a str or UnfurledMediaItem, not {value.__class__.__name__!r}')
 
     @property
     def url(self) -> str:

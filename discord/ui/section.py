@@ -43,7 +43,7 @@ __all__ = ('Section',)
 
 
 class Section(Item[V]):
-    """Represents a UI section.
+    r"""Represents a UI section.
 
     This is a top-level layout component that can only be used on :class:`LayoutView`
 
@@ -51,7 +51,7 @@ class Section(Item[V]):
 
     Parameters
     ----------
-    *children: Union[:class:`str`, :class:`TextDisplay`]
+    \*children: Union[:class:`str`, :class:`TextDisplay`]
         The text displays of this section. Up to 3.
     accessory: :class:`Item`
         The section accessory.
@@ -192,7 +192,7 @@ class Section(Item[V]):
 
         return self
 
-    def get_item(self, id: int, /) -> Optional[Item[V]]:
+    def find_item(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 

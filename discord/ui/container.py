@@ -106,7 +106,7 @@ class Container(Item[V]):
 
     Parameters
     ----------
-    *children: :class:`Item`
+    \*children: :class:`Item`
         The initial children of this container.
     accent_colour: Optional[Union[:class:`.Colour`, :class:`int`]]
         The colour of the container. Defaults to ``None``.
@@ -169,9 +169,6 @@ class Container(Item[V]):
             if isinstance(raw, Item):
                 item = copy.deepcopy(raw)
                 item._parent = self
-                if getattr(item, '__discord_ui_action_row__', False) and item.is_dispatchable():
-                    if item.is_dispatchable():
-                        self.__dispatchable.extend(item._children)  # type: ignore
                 if getattr(item, '__discord_ui_section__', False) and item.accessory.is_dispatchable():  # type: ignore
                     if item.accessory._provided_custom_id is False:  # type: ignore
                         item.accessory.custom_id = os.urandom(16).hex()  # type: ignore
@@ -368,7 +365,7 @@ class Container(Item[V]):
                     self._view._total_children -= 1
         return self
 
-    def get_item(self, id: int, /) -> Optional[Item[V]]:
+    def find_item(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 

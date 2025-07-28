@@ -102,7 +102,7 @@ _log = logging.getLogger(__name__)
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
     for item in components:
-        if isinstance(item, ActionRowComponent):
+        if isinstance(item, (ActionRowComponent, ContainerComponent, SectionComponent)):
             yield from item.children
         else:
             yield item
@@ -590,7 +590,7 @@ class BaseView:
         self._total_children = 0
         return self
 
-    def get_item(self, id: int, /) -> Optional[Item[Self]]:
+    def find_item(self, id: int, /) -> Optional[Item[Self]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 
@@ -711,7 +711,7 @@ class BaseView:
         # fmt: off
         old_state: Dict[str, Item[Any]] = {
             item.custom_id: item  # type: ignore
-            for item in self._children
+            for item in self.walk_children()
             if item.is_dispatchable()
         }
         # fmt: on
@@ -983,6 +983,9 @@ class LayoutView(BaseView):
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
+                    if member._parent is not None:
+                        continue
+
                     member._rendered_row = member._row
                     children[name] = member
                 elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):

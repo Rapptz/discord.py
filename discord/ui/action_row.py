@@ -126,7 +126,7 @@ class ActionRow(Item[V]):
 
     Parameters
     ----------
-    *children: :class:`Item`
+    \*children: :class:`Item`
         The initial children of this action row.
     row: Optional[:class:`int`]
         The relative row this action row belongs to. By default
@@ -288,7 +288,7 @@ class ActionRow(Item[V]):
 
         return self
 
-    def get_item(self, id: int, /) -> Optional[Item[V]]:
+    def find_item(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 

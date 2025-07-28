@@ -41,7 +41,7 @@ __all__ = ('Thumbnail',)
 
 
 class Thumbnail(Item[V]):
-    """Represents a UI Thumbnail.
+    """Represents a UI Thumbnail. This currently can only be used as a :class:`Section`\'s accessory.
 
     .. versionadded:: 2.6
 
@@ -85,7 +85,7 @@ class Thumbnail(Item[V]):
     ) -> None:
         super().__init__()
 
-        self.media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
+        self._media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
         self.description: Optional[str] = description
         self.spoiler: bool = spoiler
 
@@ -95,6 +95,20 @@ class Thumbnail(Item[V]):
     @property
     def width(self):
         return 5
+
+    @property
+    def media(self) -> UnfurledMediaItem:
+        """:class:`discord.UnfurledMediaItem`: This thumbnail unfurled media data."""
+        return self._media
+
+    @media.setter
+    def media(self, value: Union[str, UnfurledMediaItem]) -> None:
+        if isinstance(value, str):
+            self._media = UnfurledMediaItem(value)
+        elif isinstance(value, UnfurledMediaItem):
+            self._media = value
+        else:
+            raise TypeError(f'expected a str or UnfurledMediaItem, got {value.__class__.__name__!r}')
 
     @property
     def type(self) -> Literal[ComponentType.thumbnail]:
