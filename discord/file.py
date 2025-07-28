@@ -120,7 +120,7 @@ class File:
 
         self.spoiler: bool = spoiler
         self.description: Optional[str] = description
-        self.duation = duration
+        self.duration = duration
         self._waveform = waveform
 
     @property
@@ -133,7 +133,9 @@ class File:
 
     @property
     def waveform(self) -> str:
-        """:class:`str`: The waveform data for the voice message."""
+        """:class:`str`: The waveform data for the voice message.
+
+        .. versionadded:: 2.6"""
         if self._waveform is None:
             return base64.b64encode(os.urandom(256)).decode('utf-8')
         return self._waveform
@@ -168,8 +170,8 @@ class File:
         if self.description is not None:
             payload['description'] = self.description
 
-        if self.duation is not None:
-            payload['duration_secs'] = self.duation
+        if self.duration is not None:
+            payload['duration_secs'] = self.duration
             payload['waveform'] = self.waveform
 
         return payload
