@@ -1404,7 +1404,6 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1426,7 +1425,6 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1448,7 +1446,6 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1470,7 +1467,6 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-        voice: bool = ...,
     ) -> Message:
         ...
 
@@ -1493,7 +1489,6 @@ class Messageable:
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
-        voice: bool = False,
     ) -> Message:
         """|coro|
 
@@ -1584,10 +1579,6 @@ class Messageable:
             The poll to send with this message.
 
             .. versionadded:: 2.4
-        voice: :class:`bool`
-            If the message is a voice message.
-
-            .. versionadded:: 2.6
 
         Raises
         --------
@@ -1633,6 +1624,14 @@ class Messageable:
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
+        voice = False
+        if file is not None and file.voice:
+            if content is not None:
+                raise TypeError('Cannot send content with a voice message')
+            if embed is not None or embeds is not None:
+                raise TypeError('Cannot send embeds with a voice message')
+            voice = True
+
         if suppress_embeds or silent or voice:
             from .message import MessageFlags  # circular import
 
@@ -1642,16 +1641,6 @@ class Messageable:
             flags.voice = voice
         else:
             flags = MISSING
-
-        if voice:
-            if content is not None:
-                raise TypeError('Cannot send content with a voice message')
-            if embed is not None or embeds is not None:
-                raise TypeError('Cannot send embeds with a voice message')
-            if file is None:
-                raise TypeError('A voice message must have a file')
-            if file.duation is None:
-                raise TypeError('A voice message file must have a duration')
 
         if nonce is None:
             nonce = secrets.randbits(64)
