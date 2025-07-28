@@ -226,7 +226,7 @@ class File:
 
     def generate_waveform(self) -> str:
         if not self.voice:
-            raise TypeError("Cannot produce waveform for non voice file")
+            raise ValueError("Cannot produce waveform for non voice file")
         self.reset()
         ogg = OggStream(self.fp)  # type: ignore
         decoder = Decoder()
@@ -237,7 +237,7 @@ class File:
                 continue
 
             if b'vorbis' in packet:
-                raise TypeError("File format is 'vorbis'. Format of 'opus' is required for waveform generation")
+                raise ValueError("File format is 'vorbis'. Format of 'opus' is required for waveform generation")
 
             # these are PCM bytes in 16-bit signed little-endian form
             decoded = decoder.decode(packet, fec=False)
