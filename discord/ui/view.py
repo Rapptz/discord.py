@@ -887,10 +887,6 @@ class View(BaseView):
         super().__init__(timeout=timeout)
         self.__weights = _ViewWeights(self._children)
 
-    @property
-    def width(self):
-        return 5
-
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
             return item._rendered_row or 0
