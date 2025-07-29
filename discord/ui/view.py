@@ -84,7 +84,7 @@ __all__ = (
 
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, TypeGuard
     import re
 
     from ..interactions import Interaction
@@ -360,7 +360,7 @@ class BaseView:
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
         self._total_children: int = sum(1 for _ in self.walk_children())
 
-    def _is_v2(self) -> bool:
+    def _is_layout(self) -> TypeGuard[LayoutView]:
         return False
 
     def __repr__(self) -> str:
@@ -490,7 +490,7 @@ class BaseView:
         row = 0
 
         for component in message.components:
-            if not view._is_v2() and isinstance(component, ActionRowComponent):
+            if not view._is_layout() and isinstance(component, ActionRowComponent):
                 for child in component.children:
                     item = _component_to_item(child)
                     item.row = row
@@ -505,7 +505,7 @@ class BaseView:
             item = _component_to_item(component)
             item.row = row
 
-            if item._is_v2() and not view._is_v2():
+            if item._is_v2() and not view._is_layout():
                 raise RuntimeError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
 
             view.add_item(item)
@@ -536,7 +536,7 @@ class BaseView:
 
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
-        if item._is_v2() and not self._is_v2():
+        if item._is_v2() and not self._is_layout():
             raise ValueError('v2 items cannot be added to this view')
 
         item._view = self
@@ -546,7 +546,7 @@ class BaseView:
             item._update_children_view(self)  # type: ignore
             added += len(tuple(item.walk_children()))  # type: ignore
 
-        if self._is_v2() and self._total_children + added > 40:
+        if self._is_layout() and self._total_children + added > 40:
             raise ValueError('maximum number of children exceeded')
         self._total_children += added
         self._children.append(item)
@@ -834,7 +834,7 @@ class BaseView:
         for raw in data:
             item = _component_data_to_item(raw)
 
-            if item._is_v2() and not self._is_v2():
+            if item._is_v2() and not self._is_layout():
                 continue
 
             self.add_item(item)
@@ -992,7 +992,7 @@ class LayoutView(BaseView):
         children.update(callback_children)
         cls.__view_children_items__ = children
 
-    def _is_v2(self) -> bool:
+    def _is_layout(self) -> bool:
         return True
 
     def to_components(self):

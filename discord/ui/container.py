@@ -327,7 +327,7 @@ class Container(Item[V]):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
         self._children.append(item)
-        is_layout_view = self._view and self._view._is_v2()
+        is_layout_view = self._view and self._view._is_layout()
 
         if getattr(item, '__discord_ui_update_view__', False):
             item._update_children_view(self.view)  # type: ignore
@@ -358,7 +358,7 @@ class Container(Item[V]):
         except ValueError:
             pass
         else:
-            if self._view and self._view._is_v2():
+            if self._view and self._view._is_layout():
                 if getattr(item, '__discord_ui_update_view__', False):
                     self._view._total_children -= len(tuple(item.walk_children()))  # type: ignore
                 else:
@@ -392,7 +392,7 @@ class Container(Item[V]):
         chaining.
         """
 
-        if self._view and self._view._is_v2():
+        if self._view and self._view._is_layout():
             self._view._total_children -= sum(1 for _ in self.walk_children())
         self._children.clear()
         return self
