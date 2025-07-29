@@ -362,9 +362,6 @@ class BaseSelect(Item[V]):
         kwrgs = {key: getattr(component, key) for key in constructor.__component_attributes__}
         return constructor(**kwrgs)
 
-    def _can_be_dynamic(self) -> bool:
-        return True
-
 
 class Select(BaseSelect[V]):
     """Represents a UI select menu with a list of custom options. This is represented

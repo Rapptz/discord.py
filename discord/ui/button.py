@@ -268,9 +268,6 @@ class Button(Item[V]):
             return self.url is not None
         return super().is_persistent()
 
-    def _can_be_dynamic(self) -> bool:
-        return True
-
     def _refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
