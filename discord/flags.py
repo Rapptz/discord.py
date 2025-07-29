@@ -2095,6 +2095,15 @@ class MemberFlags(BaseFlags):
         return 1 << 7
 
     @flag_value
+    def automod_quarantined_guild_tag(self):
+        """:class:`bool`: Returns ``True`` if the member's guild tag has been
+        blocked by AutoMod.
+
+        .. versionadded:: 2.6
+        """
+        return 1 << 10
+
+    @flag_value
     def dm_settings_upsell_acknowledged(self):
         """:class:`bool`: Returns ``True`` if the member has dismissed the DM settings upsell.
 
@@ -2400,6 +2409,7 @@ class EmbedFlags(BaseFlags):
         return 1 << 5
 
 
+@fill_with_flags()
 class InviteFlags(BaseFlags):
     r"""Wraps up the Discord Invite flags
 
