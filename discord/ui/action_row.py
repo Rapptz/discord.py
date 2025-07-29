@@ -176,7 +176,7 @@ class ActionRow(Item[V]):
         cls.__action_row_children_items__ = list(children.values())
 
     def __repr__(self) -> str:
-        return f'{super().__repr__()[:-1]} children={len(self._children)}>'
+        return f'{self.__class__.__name__} children={len(self._children)}>'
 
     def _init_children(self) -> List[Item[Any]]:
         children = []
