@@ -77,6 +77,10 @@ class Button(Item[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
     sku_id: Optional[:class:`int`]
         The SKU ID this button sends you to. Can't be combined with ``url``, ``label``, ``emoji``
         nor ``custom_id``.
@@ -321,7 +325,7 @@ def button(
 
         .. note::
 
-            This parameter is ignored when used in a :class:`ActionRow`.
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
 
