@@ -55,20 +55,12 @@ class Section(Item[V]):
         The text displays of this section. Up to 3.
     accessory: :class:`Item`
         The section accessory.
-    row: Optional[:class:`int`]
-        The relative row this section belongs to. By default
-        items are arranged automatically into those rows. If you'd
-        like to control the relative positioning of the row then
-        passing an index is advised. For example, row=1 will show
-        up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 39 (i.e. zero indexed)
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
 
     __item_repr_attributes__ = (
         'accessory',
-        'row',
         'id',
     )
     __discord_ui_section__: ClassVar[bool] = True
@@ -83,7 +75,6 @@ class Section(Item[V]):
         self,
         *children: Union[Item[V], str],
         accessory: Item[V],
-        row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
@@ -95,7 +86,6 @@ class Section(Item[V]):
                 [c if isinstance(c, Item) else TextDisplay(c) for c in children],
             )
         self.accessory: Item[V] = accessory
-        self.row = row
         self.id = id
 
     def __repr__(self) -> str:
@@ -239,14 +229,7 @@ class Section(Item[V]):
     def to_components(self) -> List[Dict[str, Any]]:
         components = []
 
-        def key(item: Item) -> int:
-            if item._rendered_row is not None:
-                return item._rendered_row
-            if item._row is not None:
-                return item._row
-            return sys.maxsize
-
-        for component in sorted(self._children, key=key):
+        for component in self._children:
             components.append(component.to_component_dict())
         return components
 

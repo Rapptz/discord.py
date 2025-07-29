@@ -124,13 +124,6 @@ class ActionRow(Item[V]):
     ----------
     \*children: :class:`Item`
         The initial children of this action row.
-    row: Optional[:class:`int`]
-        The relative row this action row belongs to. By default
-        items are arranged automatically into those rows. If you'd
-        like to control the relative positioning of the row then
-        passing an index is advised. For example, row=1 will show
-        up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 39 (i.e. zero indexed)
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
@@ -139,14 +132,12 @@ class ActionRow(Item[V]):
     __discord_ui_action_row__: ClassVar[bool] = True
     __discord_ui_update_view__: ClassVar[bool] = True
     __item_repr_attributes__ = (
-        'row',
         'id',
     )
 
     def __init__(
         self,
         *children: Item[V],
-        row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
@@ -158,7 +149,6 @@ class ActionRow(Item[V]):
             raise ValueError('maximum number of children exceeded')
 
         self.id = id
-        self.row = row
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -253,6 +243,7 @@ class ActionRow(Item[V]):
 
         item._view = self._view
         item._parent = self
+        self._weight += 1
         self._children.append(item)
 
         if self._view and self._view._is_layout():
@@ -279,6 +270,7 @@ class ActionRow(Item[V]):
         else:
             if self._view and self._view._is_layout():
                 self._view._total_children -= 1
+            self._weight -= 1
 
         return self
 
@@ -311,19 +303,12 @@ class ActionRow(Item[V]):
         if self._view and self._view._is_layout():
             self._view._total_children -= len(self._children)
         self._children.clear()
+        self._weight = 0
         return self
 
     def to_component_dict(self) -> Dict[str, Any]:
         components = []
-
-        def key(item: Item) -> int:
-            if item._rendered_row is not None:
-                return item._rendered_row
-            if item._row is not None:
-                return item._row
-            return sys.maxsize
-
-        for component in sorted(self.children, key=key):
+        for component in self.children:
             components.append(component.to_component_dict())
 
         base = {

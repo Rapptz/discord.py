@@ -79,7 +79,6 @@ class Item(Generic[V]):
         # only called upon edit and we're mainly interested during initial creation time.
         self._provided_custom_id: bool = False
         self._id: Optional[int] = None
-        self._max_row: int = 5 if not self._is_v2() else 40
         self._parent: Optional[Item] = None
 
     def to_component_dict(self) -> Dict[str, Any]:
@@ -120,12 +119,16 @@ class Item(Generic[V]):
 
     @row.setter
     def row(self, value: Optional[int]) -> None:
+        if self._is_v2():
+            # row is ignored on v2 components
+            return
+
         if value is None:
             self._row = None
-        elif self._max_row > value >= 0:
+        elif 5 > value >= 0:
             self._row = value
         else:
-            raise ValueError(f'row cannot be negative or greater than or equal to {self._max_row}')
+            raise ValueError('row cannot be negative or greater than or equal to 5')
 
         if self._rendered_row is None:
             self._rendered_row = value

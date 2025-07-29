@@ -53,21 +53,16 @@ class Separator(Item[V]):
         is whether a divider line should be shown or not.
     spacing: :class:`.SeparatorSpacing`
         The spacing of this separator.
-    row: Optional[:class:`int`]
-        The relative row this separator belongs to. By default
-        items are arranged automatically into those rows. If you'd
-        like to control the relative positioning of the row then
-        passing an index is advised. For example, row=1 will show
-        up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 39 (i.e. zero indexed)
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
 
+    __slots__ = (
+        '_underlying',
+    )
     __item_repr_attributes__ = (
         'visible',
         'spacing',
-        'row',
         'id',
     )
 
@@ -76,7 +71,6 @@ class Separator(Item[V]):
         *,
         visible: bool = True,
         spacing: SeparatorSpacing = SeparatorSpacing.small,
-        row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
@@ -85,8 +79,6 @@ class Separator(Item[V]):
             visible=visible,
             id=id,
         )
-
-        self.row = row
         self.id = id
 
     def _is_v2(self):

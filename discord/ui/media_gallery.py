@@ -56,27 +56,18 @@ class MediaGallery(Item[V]):
     ----------
     \*items: :class:`.MediaGalleryItem`
         The initial items of this gallery.
-    row: Optional[:class:`int`]
-        The relative row this media gallery belongs to. By default
-        items are arranged automatically into those rows. If you'd
-        like to control the relative positioning of the row then
-        passing an index is advised. For example, row=1 will show
-        up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 39 (i.e. zero indexed)
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
 
     __item_repr_attributes__ = (
         'items',
-        'row',
         'id',
     )
 
     def __init__(
         self,
         *items: MediaGalleryItem,
-        row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
@@ -85,8 +76,6 @@ class MediaGallery(Item[V]):
             items=list(items),
             id=id,
         )
-
-        self.row = row
         self.id = id
 
     def __repr__(self) -> str:

@@ -115,13 +115,6 @@ class Container(Item[V]):
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults
         to ``False``.
-    row: Optional[:class:`int`]
-        The relative row this container belongs to. By default
-        items are arranged automatically into those rows. If you'd
-        like to control the relative positioning of the row then
-        passing an index is advised. For example, row=1 will show
-        up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 39 (i.e. zero indexed)
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
@@ -132,7 +125,6 @@ class Container(Item[V]):
     __item_repr_attributes__ = (
         'accent_colour',
         'spoiler',
-        'row',
         'id',
     )
 
@@ -142,7 +134,6 @@ class Container(Item[V]):
         accent_colour: Optional[Union[Colour, int]] = None,
         accent_color: Optional[Union[Color, int]] = None,
         spoiler: bool = False,
-        row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
@@ -154,8 +145,6 @@ class Container(Item[V]):
 
         self.spoiler: bool = spoiler
         self._colour = accent_colour if accent_colour is not None else accent_color
-
-        self.row = row
         self.id = id
 
     def __repr__(self) -> str:
@@ -251,15 +240,7 @@ class Container(Item[V]):
 
     def to_components(self) -> List[Dict[str, Any]]:
         components = []
-
-        def key(item: Item) -> int:
-            if item._rendered_row is not None:
-                return item._rendered_row
-            if item._row is not None:
-                return item._row
-            return sys.maxsize
-
-        for i in sorted(self._children, key=key):
+        for i in self._children:
             components.append(i.to_component_dict())
         return components
 

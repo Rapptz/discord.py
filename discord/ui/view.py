@@ -809,18 +809,7 @@ class LayoutView(BaseView):
 
     def to_components(self):
         components: List[Dict[str, Any]] = []
-
-        # sorted by row, which in LayoutView indicates the position of the component in the
-        # payload instead of in which ActionRow it should be placed on.
-
-        def key(item: Item) -> int:
-            if item._rendered_row is not None:
-                return item._rendered_row
-            if item._row is not None:
-                return item._row
-            return sys.maxsize
-
-        for i in sorted(self._children, key=key):
+        for i in self._children:
             components.append(i.to_component_dict())
 
         return components

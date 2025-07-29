@@ -318,6 +318,10 @@ def button(
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow`.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
 
