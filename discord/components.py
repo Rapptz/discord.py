@@ -77,7 +77,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
-    SectionComponentType = Union['TextDisplay', 'Button']
+    SectionComponentType = Union['TextDisplay']
     MessageComponentType = Union[
         ActionRowChildComponentType,
         SectionComponentType,
@@ -753,7 +753,7 @@ class SectionComponent(Component):
 
     Attributes
     ----------
-    components: List[Union[:class:`TextDisplay`, :class:`Button`]]
+    children: List[:class:`TextDisplay`]
         The components on this section.
     accessory: :class:`Component`
         The section accessory.
@@ -762,7 +762,7 @@ class SectionComponent(Component):
     """
 
     __slots__ = (
-        'components',
+        'children',
         'accessory',
         'id',
     )
@@ -770,14 +770,14 @@ class SectionComponent(Component):
     __repr_info__ = __slots__
 
     def __init__(self, data: SectionComponentPayload, state: Optional[ConnectionState]) -> None:
-        self.components: List[SectionComponentType] = []
+        self.children: List[SectionComponentType] = []
         self.accessory: Component = _component_factory(data['accessory'], state)  # type: ignore
         self.id: Optional[int] = data.get('id')
 
         for component_data in data['components']:
             component = _component_factory(component_data, state)
             if component is not None:
-                self.components.append(component)  # type: ignore # should be the correct type here
+                self.children.append(component)  # type: ignore # should be the correct type here
 
     @property
     def type(self) -> Literal[ComponentType.section]:
@@ -786,7 +786,7 @@ class SectionComponent(Component):
     def to_dict(self) -> SectionComponentPayload:
         payload: SectionComponentPayload = {
             'type': self.type.value,
-            'components': [c.to_dict() for c in self.components],
+            'components': [c.to_dict() for c in self.children],
             'accessory': self.accessory.to_dict(),
         }
 
