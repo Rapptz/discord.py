@@ -179,7 +179,7 @@ class File:
 
     @property
     def waveform(self) -> list[int]:
-        """:class:`list[int]`: The waveform data for the voice message.
+        """List[:class:`int`]: The waveform data for the voice message.
 
         .. note::
             If a waveform was not given, it will be generated
