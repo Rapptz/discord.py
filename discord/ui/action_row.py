@@ -150,10 +150,9 @@ class ActionRow(Item[V]):
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
-        self._weight: int = 0
         self._children: List[Item[V]] = self._init_children()
         self._children.extend(children)
-        self._weight += sum(i.width for i in children)
+        self._weight: int = sum(i.width for i in self._children)
 
         if self._weight > 5:
             raise ValueError('maximum number of children exceeded')
@@ -186,7 +185,6 @@ class ActionRow(Item[V]):
             item.callback = _ActionRowCallback(func, self, item)  # type: ignore
             item._parent = getattr(func, '__discord_ui_parent__', self)
             setattr(self, func.__name__, item)
-            self._weight += item.width
             children.append(item)
         return children
 
