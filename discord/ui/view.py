@@ -227,7 +227,7 @@ class BaseView:
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
         self._total_children: int = sum(1 for _ in self.walk_children())
 
-    def _is_layout(self) -> TypeGuard[LayoutView]:
+    def _is_layout(self) -> TypeGuard[LayoutView]:  # type: ignore
         return False
 
     def __repr__(self) -> str:
@@ -804,7 +804,7 @@ class LayoutView(BaseView):
         children.update(callback_children)
         cls.__view_children_items__ = children
 
-    def _is_layout(self) -> TypeGuard[LayoutView]:
+    def _is_layout(self) -> TypeGuard[LayoutView]:  # type: ignore
         return True
 
     def to_components(self):
