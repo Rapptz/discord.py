@@ -232,7 +232,7 @@ class Section(Item[V]):
         self = cls(id=component.id, accessory=MISSING)
         self.accessory = _component_to_item(component.accessory, self)
         self.id = component.id
-        self._children = [_component_to_item(c, self) for c in component.components]
+        self._children = [_component_to_item(c, self) for c in component.children]
 
         return self
 
