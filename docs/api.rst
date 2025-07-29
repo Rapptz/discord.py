@@ -5846,14 +5846,6 @@ PollMedia
 .. autoclass:: PollMedia
     :members:
 
-CallMessage
-~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: CallMessage
-
-.. autoclass:: CallMessage()
-    :members:
-
 UnfurledMediaItem
 ~~~~~~~~~~~~~~~~~
 
