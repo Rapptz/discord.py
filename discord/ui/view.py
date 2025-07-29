@@ -330,14 +330,9 @@ class BaseView:
         In order to modify and edit message components they must be
         converted into a :class:`View` or :class:`LayoutView` first.
 
-        If the message has any v2 component, then you must use
+        If the message has any v2 components, then you must use
         :class:`LayoutView` in order for them to be converted into
-        their respective items.
-
-        This method should be called on the respective class (or subclass), so
-        if you want to convert v2 items, you should call :meth:`LayoutView.from_message`,
-        or the same method from any subclass of it; and not :meth:`View.from_message`, or the
-        same method from any subclass of it.
+        their respective items. :class:`View` does not support v2 components.
 
         Parameters
         -----------
