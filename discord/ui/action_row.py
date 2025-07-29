@@ -261,7 +261,7 @@ class ActionRow(Item[V]):
         item._parent = self
         self._children.append(item)
 
-        if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+        if self._view and self._view._is_v2():
             self._view._total_children += 1
 
         return self
@@ -283,7 +283,7 @@ class ActionRow(Item[V]):
         except ValueError:
             pass
         else:
-            if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+            if self._view and self._view._is_v2():
                 self._view._total_children -= 1
 
         return self
@@ -314,7 +314,7 @@ class ActionRow(Item[V]):
         This function returns the class instance to allow for fluent-style
         chaining.
         """
-        if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+        if self._view and self._view._is_v2():
             self._view._total_children -= len(self._children)
         self._children.clear()
         return self

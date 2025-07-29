@@ -956,8 +956,6 @@ class LayoutView(BaseView):
         If ``None`` then there is no timeout.
     """
 
-    __discord_ui_layout_view__: ClassVar[bool] = True
-
     if TYPE_CHECKING:
 
         @classmethod
