@@ -91,11 +91,7 @@ class ActionRow(Item[V]):
     This is a top-level layout component that can only be used on :class:`LayoutView`
     and can contain :class:`Button`\s and :class:`Select`\s in it.
 
-    This can be inherited.
-
-    .. note::
-
-        Action rows can contain up to 5 components, which is, 5 buttons or 1 select.
+    Action rows can only have 5 children. This can be inherited.
 
     .. versionadded:: 2.6
 
