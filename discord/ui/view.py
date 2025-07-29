@@ -56,9 +56,6 @@ from .dynamic import DynamicItem
 from ..components import (
     Component,
     ActionRow as ActionRowComponent,
-    MediaGalleryItem,
-    SelectDefaultValue,
-    UnfurledMediaItem,
     _component_factory,
     Button as ButtonComponent,
     SelectMenu as SelectComponent,
@@ -68,12 +65,9 @@ from ..components import (
     FileComponent,
     SeparatorComponent,
     ThumbnailComponent,
-    SelectOption,
     Container as ContainerComponent,
 )
-from ..utils import get as _utils_get, _get_as_snowflake, find as _utils_find
-from ..enums import SeparatorSpacing, TextStyle, try_enum, ButtonStyle
-from ..emoji import PartialEmoji
+from ..utils import get as _utils_get, find as _utils_find
 
 # fmt: off
 __all__ = (
@@ -102,8 +96,13 @@ _log = logging.getLogger(__name__)
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
     for item in components:
-        if isinstance(item, (ActionRowComponent, ContainerComponent, SectionComponent)):
+        if isinstance(item, ActionRowComponent):
             yield from item.children
+        elif isinstance(item, ContainerComponent):
+            yield from _walk_all_components(item.children)
+        elif isinstance(item, SectionComponent):
+            yield from item.children
+            yield item.accessory
         else:
             yield item
 
@@ -151,138 +150,6 @@ def _component_to_item(component: Component, parent: Optional[Item] = None) -> I
         item = Container.from_component(component)
     else:
         item = Item.from_component(component)
-
-    item._parent = parent
-    return item
-
-
-def _component_data_to_item(data: ComponentPayload, parent: Optional[Item] = None) -> Item:
-    if data['type'] == 1:
-        from .action_row import ActionRow
-
-        item = ActionRow(
-            *(_component_data_to_item(c) for c in data['components']),
-            id=data.get('id'),
-        )
-    elif data['type'] == 2:
-        from .button import Button
-
-        emoji = data.get('emoji')
-
-        item = Button(
-            style=try_enum(ButtonStyle, data['style']),
-            custom_id=data.get('custom_id'),
-            url=data.get('url'),
-            disabled=data.get('disabled', False),
-            emoji=PartialEmoji.from_dict(emoji) if emoji else None,
-            label=data.get('label'),
-            sku_id=_get_as_snowflake(data, 'sku_id'),
-        )
-    elif data['type'] == 3:
-        from .select import Select
-
-        item = Select(
-            custom_id=data['custom_id'],
-            placeholder=data.get('placeholder'),
-            min_values=data.get('min_values', 1),
-            max_values=data.get('max_values', 1),
-            disabled=data.get('disabled', False),
-            id=data.get('id'),
-            options=[SelectOption.from_dict(o) for o in data.get('options', [])],
-        )
-    elif data['type'] == 4:
-        from .text_input import TextInput
-
-        item = TextInput(
-            label=data['label'],
-            style=try_enum(TextStyle, data['style']),
-            custom_id=data['custom_id'],
-            placeholder=data.get('placeholder'),
-            default=data.get('value'),
-            required=data.get('required', True),
-            min_length=data.get('min_length'),
-            max_length=data.get('max_length'),
-            id=data.get('id'),
-        )
-    elif data['type'] in (5, 6, 7, 8):
-        from .select import (
-            UserSelect,
-            RoleSelect,
-            MentionableSelect,
-            ChannelSelect,
-        )
-
-        cls_map: Dict[int, Type[Union[UserSelect, RoleSelect, MentionableSelect, ChannelSelect]]] = {
-            5: UserSelect,
-            6: RoleSelect,
-            7: MentionableSelect,
-            8: ChannelSelect,
-        }
-
-        item = cls_map[data['type']](
-            custom_id=data['custom_id'],  # type: ignore # will always be present in this point
-            placeholder=data.get('placeholder'),
-            min_values=data.get('min_values', 1),
-            max_values=data.get('max_values', 1),
-            disabled=data.get('disabled', False),
-            default_values=[SelectDefaultValue.from_dict(v) for v in data.get('default_values', [])],
-            id=data.get('id'),
-        )
-    elif data['type'] == 9:
-        from .section import Section
-
-        item = Section(
-            *(_component_data_to_item(c) for c in data['components']),
-            accessory=_component_data_to_item(data['accessory']),
-            id=data.get('id'),
-        )
-    elif data['type'] == 10:
-        from .text_display import TextDisplay
-
-        item = TextDisplay(data['content'], id=data.get('id'))
-    elif data['type'] == 11:
-        from .thumbnail import Thumbnail
-
-        item = Thumbnail(
-            UnfurledMediaItem._from_data(data['media'], None),
-            description=data.get('description'),
-            spoiler=data.get('spoiler', False),
-            id=data.get('id'),
-        )
-    elif data['type'] == 12:
-        from .media_gallery import MediaGallery
-
-        item = MediaGallery(
-            *(MediaGalleryItem._from_data(m, None) for m in data['items']),
-            id=data.get('id'),
-        )
-    elif data['type'] == 13:
-        from .file import File
-
-        item = File(
-            UnfurledMediaItem._from_data(data['file'], None),
-            spoiler=data.get('spoiler', False),
-            id=data.get('id'),
-        )
-    elif data['type'] == 14:
-        from .separator import Separator
-
-        item = Separator(
-            visible=data.get('divider', True),
-            spacing=try_enum(SeparatorSpacing, data.get('spacing', 1)),
-            id=data.get('id'),
-        )
-    elif data['type'] == 17:
-        from .container import Container
-
-        item = Container(
-            *(_component_data_to_item(c) for c in data['components']),
-            accent_colour=data.get('accent_color'),
-            spoiler=data.get('spoiler', False),
-            id=data.get('type'),
-        )
-    else:
-        raise ValueError(f'invalid item with type {data["type"]} provided')
 
     item._parent = parent
     return item
@@ -455,7 +322,7 @@ class BaseView:
         return self._children.copy()
 
     @classmethod
-    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Any:
+    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Self:
         """Converts a message's components into a :class:`View`.
 
         The :attr:`.Message.components` of a message are read-only
@@ -485,7 +352,6 @@ class BaseView:
             The converted view. This will always return one of :class:`View` or
             :class:`LayoutView`, and not one of its subclasses.
         """
-        cls = cls._to_minimal_cls()
         view = cls(timeout=timeout)
         row = 0
 
@@ -795,51 +661,6 @@ class BaseView:
                 # if it has this attribute then it can contain children
                 yield from child.walk_children()  # type: ignore
 
-    @classmethod
-    def _to_minimal_cls(cls) -> Type[Union[View, LayoutView]]:
-        if issubclass(cls, View):
-            return View
-        elif issubclass(cls, LayoutView):
-            return LayoutView
-        raise RuntimeError
-
-    @classmethod
-    def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> Any:
-        r"""Converts a :class:`list` of :class:`dict`\s to a :class:`View` or :class:`LayoutView`,
-        provided as in the format that Discord expects it to be in.
-
-        You can find out about this format in the :ddocs:`official Discord documentation <components/reference#anatomy-of-a-component>`.
-
-        This method should be called on the respective class (or subclass), so if you
-        want to convert v2 items, you should call :meth:`LayoutView.from_dict`, or the same
-        method from any subclass of it; and not :meth:`View.from_message`, or the same
-        method from any subclass of it.
-
-        Parameters
-        ----------
-        data: List[:class:`dict`]
-            The array of dictionaries to convert into a LayoutView
-        timeout: Optional[:class:`float`]
-            The timeout of the converted view.
-
-        Returns
-        -------
-        Union[:class:`View`, :class:`LayoutView`]
-            The converted view. This will always return one of :class:`View` or
-            :class:`LayoutView`, and not one of its subclasses.
-        """
-        cls = cls._to_minimal_cls()
-        self = cls(timeout=timeout)
-
-        for raw in data:
-            item = _component_data_to_item(raw)
-
-            if item._is_v2() and not self._is_layout():
-                continue
-
-            self.add_item(item)
-        return self
-
 
 class View(BaseView):
     """Represents a UI view.
@@ -988,7 +809,7 @@ class LayoutView(BaseView):
         children.update(callback_children)
         cls.__view_children_items__ = children
 
-    def _is_layout(self) -> bool:
+    def _is_layout(self) -> TypeGuard[LayoutView]:
         return True
 
     def to_components(self):
