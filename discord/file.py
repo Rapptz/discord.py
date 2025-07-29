@@ -120,7 +120,7 @@ class File:
         description: Optional[str] = None,
         voice: bool = MISSING,
         duration: Optional[float] = None,
-        waveform: Optional[str] = None,
+        waveform: Optional[list[int]] = None,
     ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
@@ -153,6 +153,13 @@ class File:
         self.spoiler: bool = spoiler
         self.description: Optional[str] = description
         self.duration = duration
+        if waveform is not None:
+            if len(waveform) > 256:
+                raise ValueError("Waveforms have a maximum of 256 values")
+            elif max(waveform) > 255:
+                raise ValueError("Maximum value of ints is 255 for waveforms")
+            elif min(waveform) < 0:
+                raise ValueError("Minimum value of ints is 0 for waveforms")
         self._waveform = waveform
 
         if voice is MISSING:
@@ -171,8 +178,8 @@ class File:
         return 'SPOILER_' + self._filename if self.spoiler else self._filename
 
     @property
-    def waveform(self) -> str:
-        """:class:`str`: The waveform data for the voice message.
+    def waveform(self) -> list[int]:
+        """:class:`list[int]`: The waveform data for the voice message.
 
         .. note::
             If a waveform was not given, it will be generated
@@ -184,7 +191,7 @@ class File:
             try:
                 self._waveform = self.generate_waveform()
             except Exception:
-                self._waveform = base64.b64encode(os.urandom(256)).decode('utf-8')
+                self._waveform = list(os.urandom(256))
             self.reset()
         return self._waveform
 
@@ -220,11 +227,11 @@ class File:
 
         if self.voice:
             payload['duration_secs'] = self.duration
-            payload['waveform'] = self.waveform
+            payload['waveform'] = base64.b64encode(bytes(self.waveform)).decode('utf-8')
 
         return payload
 
-    def generate_waveform(self) -> str:
+    def generate_waveform(self) -> list[int]:
         if not self.voice:
             raise ValueError("Cannot produce waveform for non voice file")
         self.reset()
@@ -276,5 +283,4 @@ class File:
         for i in range(len(sample_waveform)):
             sample_waveform[i] = int(sample_waveform[i] * mult)
 
-        print(len(sample_waveform))
-        return base64.b64encode(bytes(sample_waveform)).decode('utf-8')
+        return sample_waveform
