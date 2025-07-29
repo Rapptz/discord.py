@@ -159,7 +159,7 @@ class Container(Item[V]):
         self.id = id
 
     def __repr__(self) -> str:
-        return f'<{super().__repr__()[:-1]} children={len(self._children)}>'
+        return f'<{self.__class__.__name__} children={len(self._children)}>'
 
     def _init_children(self) -> List[Item[Any]]:
         children = []
