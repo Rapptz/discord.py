@@ -90,7 +90,7 @@ class MediaGallery(Item[V]):
         self.id = id
 
     def __repr__(self) -> str:
-        return f'<{super().__repr__()[:-1]} items={len(self._underlying.items)}>'
+        return f'<{self.__class__.__name__} items={len(self._underlying.items)}>'
 
     @property
     def items(self) -> List[MediaGalleryItem]:
