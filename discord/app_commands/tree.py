@@ -248,6 +248,13 @@ class CommandTree(Generic[ClientT]):
 
         Note that this method will *override* pre-existing guild commands that would conflict.
 
+        .. note::
+
+            You probably do not want to use this. This is mainly for development purposes.
+
+            See other ways of declaring a guild specific command in the FAQ.
+
+
         Parameters
         -----------
         guild: :class:`~discord.abc.Snowflake`
