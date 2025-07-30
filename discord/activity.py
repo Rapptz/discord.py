@@ -200,11 +200,11 @@ class Activity(BaseActivity):
     details_url: Optional[:class:`str`]
         A URL that is linked to when clicking on the details text of the activity.
 
-        ... versionadded:: 2.6
+        .. versionadded:: 2.6
     state_url: Optional[:class:`str`]
         A URL that is linked to when clicking on the state text of the activity.
 
-        ... versionadded:: 2.6
+        .. versionadded:: 2.6
     status_display_type: Optional[:class:`StatusDisplayType`]
         Determines which field from the user's status text is displayed
         in the members list.
@@ -265,6 +265,7 @@ class Activity(BaseActivity):
             status_display_type
             if isinstance(status_display_type, StatusDisplayType)
             else try_enum(StatusDisplayType, status_display_type)
+            if status_display_type is not None else None
         )
 
     def __repr__(self) -> str:
@@ -283,14 +284,10 @@ class Activity(BaseActivity):
 
     def to_dict(self) -> Dict[str, Any]:
         ret: Dict[str, Any] = {}
-        enums = ('status_display_type',)
         for attr in self.__slots__:
             value = getattr(self, attr, None)
             if value is None:
                 continue
-
-            if attr in enums:
-                value = int(value.value)
 
             if isinstance(value, dict) and len(value) == 0:
                 continue
@@ -299,6 +296,8 @@ class Activity(BaseActivity):
         ret['type'] = int(self.type)
         if self.emoji:
             ret['emoji'] = self.emoji.to_dict()
+        if self.status_display_type:
+            ret['status_display_type'] = int(self.status_display_type.value)
         return ret
 
     @property
