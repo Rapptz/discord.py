@@ -1986,11 +1986,15 @@ class Guild(Hashable):
         """
         await self._state.http.leave_guild(self.id)
 
+    @utils.deprecated()
     async def delete(self) -> None:
         """|coro|
 
         Deletes the guild. You must be the guild owner to delete the
         guild.
+
+        .. deprecated:: 2.6
+           This method is deprecated and will be removed in a future version.
 
         Raises
         --------
