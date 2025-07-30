@@ -257,8 +257,8 @@ class Activity(BaseActivity):
         emoji = kwargs.pop('emoji', None)
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
 
-        self.state_url: Optional[str] = kwargs.pop('state_url')
-        self.details_url: Optional[str] = kwargs.pop('details_url')
+        self.state_url: Optional[str] = kwargs.pop('state_url', None)
+        self.details_url: Optional[str] = kwargs.pop('details_url', None)
 
         status_display_type = kwargs.pop('status_display_type', None)
         self.status_display_type: Optional[StatusDisplayType] = (
