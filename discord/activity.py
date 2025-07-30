@@ -265,7 +265,8 @@ class Activity(BaseActivity):
             status_display_type
             if isinstance(status_display_type, StatusDisplayType)
             else try_enum(StatusDisplayType, status_display_type)
-            if status_display_type is not None else None
+            if status_display_type is not None
+            else None
         )
 
     def __repr__(self) -> str:
