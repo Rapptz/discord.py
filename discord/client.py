@@ -42,6 +42,7 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    TypedDict,
     Union,
     overload,
 )
@@ -82,7 +83,7 @@ from .soundboard import SoundboardDefaultSound, SoundboardSound
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
     from .app_commands import Command, ContextMenu
@@ -120,6 +121,28 @@ if TYPE_CHECKING:
     from .audit_logs import AuditLogEntry
     from .poll import PollAnswer
     from .subscription import Subscription
+    from .flags import MemberCacheFlags
+
+    class _ClientOptions(TypedDict, total=False):
+        max_messages: int
+        proxy: str
+        proxy_auth: aiohttp.BasicAuth
+        shard_id: int
+        shard_count: int
+        application_id: int
+        member_cache_flags: MemberCacheFlags
+        chunk_guilds_at_startup: bool
+        status: Status
+        activity: BaseActivity
+        allowed_mentions: AllowedMentions
+        heartbeat_timeout: float
+        guild_ready_timeout: float
+        assume_unsync_clock: bool
+        enable_debug_events: bool
+        enable_raw_presences: bool
+        http_trace: aiohttp.TraceConfig
+        max_ratelimit_timeout: float
+        connector: aiohttp.BaseConnector
 
 
 # fmt: off
@@ -272,7 +295,7 @@ class Client:
         The websocket gateway the client is currently connected to. Could be ``None``.
     """
 
-    def __init__(self, *, intents: Intents, **options: Any) -> None:
+    def __init__(self, *, intents: Intents, **options: Unpack[_ClientOptions]) -> None:
         self.loop: asyncio.AbstractEventLoop = _loop
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore

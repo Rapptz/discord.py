@@ -61,7 +61,7 @@ from ..permissions import Permissions
 from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all, _shorten, _to_kebab_case
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec, Concatenate
+    from typing_extensions import ParamSpec, Concatenate, Unpack
     from ..interactions import Interaction
     from ..abc import Snowflake
     from .namespace import Namespace
@@ -73,6 +73,7 @@ if TYPE_CHECKING:
     # However, for type hinting purposes it's unfortunately necessary for one to
     # reference the other to prevent type checking errors in callbacks
     from discord.ext import commands
+    from discord.permissions import _PermissionsKwargs
 
     ErrorFunc = Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
 
@@ -2840,7 +2841,7 @@ def allowed_installs(
     return inner
 
 
-def default_permissions(perms_obj: Optional[Permissions] = None, /, **perms: bool) -> Callable[[T], T]:
+def default_permissions(perms_obj: Optional[Permissions] = None, /, **perms: Unpack[_PermissionsKwargs]) -> Callable[[T], T]:
     r"""A decorator that sets the default permissions needed to execute this command.
 
     When this decorator is used, by default users must have these permissions to execute the command.
