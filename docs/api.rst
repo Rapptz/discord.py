@@ -1306,6 +1306,7 @@ Scheduled Events
     - The description is changed.
     - The status is changed.
     - The image is changed.
+    - The recurrence rule is changed.
 
     .. versionadded:: 2.0
 
@@ -3838,6 +3839,29 @@ of :class:`enum.Enum`.
         A burst reaction, also known as a "super reaction".
 
 
+.. class:: ScheduledEventRecurrenceFrequency
+
+    Represents the frequency of a scheduled event recurrence rule.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: yearly
+
+        The event repeats yearly.
+
+    .. attribute:: monthly
+
+        The event repeats monthly.
+
+    .. attribute:: weekly
+
+        The event repeats weekly.
+
+    .. attribute:: daily
+
+        The event repeats daily.
+
+
 .. class:: VoiceChannelEffectAnimationType
 
     Represents the animation type of a voice channel effect.
@@ -5823,6 +5847,15 @@ CallMessage
 .. attributetable:: CallMessage
 
 .. autoclass:: CallMessage()
+    :members:
+
+
+ScheduledEventRecurrenceRule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ScheduledEventRecurrenceRule
+
+.. autoclass:: ScheduledEventRecurrenceRule
     :members:
 
 
