@@ -31,6 +31,7 @@ from .snowflake import Snowflake
 
 
 StatusType = Literal['idle', 'dnd', 'online', 'offline']
+StatusDisplayType = Literal[0, 1, 2]
 
 
 class PartialPresenceUpdate(TypedDict):
@@ -62,6 +63,8 @@ class ActivityAssets(TypedDict, total=False):
     large_text: str
     small_image: str
     small_text: str
+    large_url: str
+    small_url: str
 
 
 class ActivitySecrets(TypedDict, total=False):
@@ -104,3 +107,6 @@ class Activity(_BaseActivity, total=False):
     instance: bool
     buttons: List[str]
     sync_id: str
+    state_url: str
+    details_url: str
+    status_display_type: Optional[StatusDisplayType]
