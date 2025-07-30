@@ -1101,6 +1101,12 @@ class ConnectionState(Generic[ClientT]):
             _log.debug('GUILD_MEMBER_ADD referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
+        member_id = int(data['user']['id'])
+        member = guild.get_member(member_id)
+        if member is not None:
+            _log.debug('GUILD_MEMBER_ADD referencing an already cached member ID: %s. Discarding.', member_id)
+            return
+
         member = Member(guild=guild, data=data, state=self)
         if self.member_cache_flags.joined:
             guild._add_member(member)
