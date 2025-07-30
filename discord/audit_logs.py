@@ -409,8 +409,8 @@ class AuditLogChanges:
 
             # special case for colors to set secondary and tertiary colos/colour attributes
             if attr == 'colors':
-                self._handle_colours(self.before, elem['old_value'])  # type: ignore  # should be a RoleColours dict
-                self._handle_colours(self.after, elem['new_value'])  # type: ignore  # should be a RoleColours dict
+                self._handle_colours(self.before, elem.get('old_value'))  # type: ignore  # should be a RoleColours dict
+                self._handle_colours(self.after, elem.get('new_value'))  # type: ignore  # should be a RoleColours dict
                 continue
 
             try:
@@ -545,13 +545,18 @@ class AuditLogChanges:
         except (AttributeError, TypeError):
             pass
 
-    def _handle_colours(self, diff: AuditLogDiff, colours: RoleColours):
-        # handle colours to multiple colour attributes
-        diff.color = diff.colour = Colour(colours['primary_color'])
+    def _handle_colours(self, diff: AuditLogDiff, colours: Optional[RoleColours]):
+        if colours is not None:
+            # handle colours to multiple colour attributes
+            colour = Colour(colours['primary_color'])
+            secondary_colour = colours['secondary_color']
+            tertiary_colour = colours['tertiary_color']
+        else:
+            colour = None
+            secondary_colour = None
+            tertiary_colour = None
 
-        secondary_colour = colours['secondary_color']
-        tertiary_colour = colours['tertiary_color']
-
+        diff.color = diff.colour = colour
         diff.secondary_color = diff.secondary_colour = Colour(secondary_colour) if secondary_colour is not None else None
         diff.tertiary_color = diff.tertiary_colour = Colour(tertiary_colour) if tertiary_colour is not None else None
 
@@ -607,6 +612,11 @@ class _AuditLogProxyAutoModAction(_AuditLogProxy):
     automod_rule_name: str
     automod_rule_trigger_type: str
     channel: Optional[Union[abc.GuildChannel, Thread]]
+
+
+class _AuditLogProxyAutoModActionQuarantineUser(_AuditLogProxy):
+    automod_rule_name: str
+    automod_rule_trigger_type: str
 
 
 class _AuditLogProxyMemberKickOrMemberRoleUpdate(_AuditLogProxy):
@@ -699,6 +709,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyStageInstanceAction,
             _AuditLogProxyMessageBulkDelete,
             _AuditLogProxyAutoModAction,
+            _AuditLogProxyAutoModActionQuarantineUser,
             _AuditLogProxyMemberKickOrMemberRoleUpdate,
             Member, User, None, PartialIntegration,
             Role, Object
@@ -750,9 +761,16 @@ class AuditLogEntry(Hashable):
                 self.extra = _AuditLogProxyAutoModAction(
                     automod_rule_name=extra['auto_moderation_rule_name'],
                     automod_rule_trigger_type=enums.try_enum(
-                        enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
+                        enums.AutoModRuleTriggerType, int(extra['auto_moderation_rule_trigger_type'])
                     ),
                     channel=channel,
+                )
+            elif self.action is enums.AuditLogAction.automod_quarantine_user:
+                self.extra = _AuditLogProxyAutoModActionQuarantineUser(
+                    automod_rule_name=extra['auto_moderation_rule_name'],
+                    automod_rule_trigger_type=enums.try_enum(
+                        enums.AutoModRuleTriggerType, int(extra['auto_moderation_rule_trigger_type'])
+                    ),
                 )
 
             elif self.action.name.startswith('overwrite_'):
