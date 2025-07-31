@@ -57,9 +57,7 @@ class Separator(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
-    __slots__ = (
-        '_underlying',
-    )
+    __slots__ = ('_underlying',)
     __item_repr_attributes__ = (
         'visible',
         'spacing',

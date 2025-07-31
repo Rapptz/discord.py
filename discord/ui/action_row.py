@@ -131,9 +131,7 @@ class ActionRow(Item[V]):
     __action_row_children_items__: ClassVar[List[ItemCallbackType[Any]]] = []
     __discord_ui_action_row__: ClassVar[bool] = True
     __discord_ui_update_view__: ClassVar[bool] = True
-    __item_repr_attributes__ = (
-        'id',
-    )
+    __item_repr_attributes__ = ('id',)
 
     def __init__(
         self,
