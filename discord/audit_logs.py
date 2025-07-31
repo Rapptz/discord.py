@@ -995,3 +995,6 @@ class AuditLogEntry(Hashable):
         from .webhook import Webhook
 
         return self._webhooks.get(target_id) or Object(target_id, type=Webhook)
+
+    def _convert_target_onboarding_prompt(self, target_id: int) -> Object:
+        return Object(target_id, type=OnboardingPrompt)

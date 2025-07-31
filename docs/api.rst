@@ -3124,6 +3124,9 @@ of :class:`enum.Enum`.
 
         A guild onboarding prompt was created.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the prompt that the options belong to.
+
         Possible attributes for :class:`AuditLogDiff`:
 
         - :attr:`~AuditLogDiff.type`
@@ -3138,6 +3141,9 @@ of :class:`enum.Enum`.
     .. attribute:: onboarding_prompt_update
 
         A guild onboarding prompt was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the prompt that the options belong to.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -3154,6 +3160,9 @@ of :class:`enum.Enum`.
 
         A guild onboarding prompt was deleted.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the prompt that the options belong to.
+
         Possible attributes for :class:`AuditLogDiff`:
 
         - :attr:`~AuditLogDiff.type`
@@ -3169,6 +3178,9 @@ of :class:`enum.Enum`.
 
         The guild's onboarding configuration was created.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        always ``None``. Use :attr:`~AuditLogEntry.guild` to access the guild.
+
         Possible attributes for :class:`AuditLogDiff`:
 
         - :attr:`~AuditLogDiff.enabled`
@@ -3181,6 +3193,9 @@ of :class:`enum.Enum`.
     .. attribute:: onboarding_update
 
         The guild's onboarding configuration was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        always ``None``. Use :attr:`~AuditLogEntry.guild` to access the guild.
 
         Possible attributes for :class:`AuditLogDiff`:
 
