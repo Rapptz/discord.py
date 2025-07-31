@@ -78,6 +78,7 @@ __all__ = (
     'VoiceChannelEffectAnimationType',
     'SubscriptionStatus',
     'MessageReferenceType',
+    'StatusDisplayType',
     'SeparatorSpacing',
     'MediaItemLoadingState',
 )
@@ -921,6 +922,12 @@ class SubscriptionStatus(Enum):
     active = 0
     ending = 1
     inactive = 2
+
+
+class StatusDisplayType(Enum):
+    name = 0  # pyright: ignore[reportAssignmentType]
+    state = 1
+    details = 2
 
 
 class SeparatorSpacing(Enum):

@@ -3898,6 +3898,25 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`.default`.
 
+.. class:: StatusDisplayType
+
+    Represents which field is of the user's activity is 
+    displayed in the members list.
+
+    .. versionadded:: 2.6
+
+    .. attribute:: name
+
+        The name of the activity is displayed.
+
+    .. attribute:: state
+
+        The state of the activity is displayed.
+
+    .. attribute:: details
+
+        The details of the activity are displayed.
+
 
 .. class:: MediaItemLoadingState
 
