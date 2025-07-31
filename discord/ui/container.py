@@ -194,7 +194,7 @@ class Container(Item[V]):
 
         cls.__container_children_items__ = children
 
-    def _update_children_view(self, view: V) -> None:
+    def _update_children_view(self, view: V) -> None:  # type: ignore
         if not view._is_layout():
             return
 
