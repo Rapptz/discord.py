@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import copy
 import os
-import sys
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -43,7 +42,7 @@ from typing import (
 from .item import Item, ItemCallbackType
 from .view import _component_to_item, LayoutView
 from ..enums import ComponentType
-from ..utils import MISSING, get as _utils_get
+from ..utils import get as _utils_get
 from ..colour import Colour, Color
 
 if TYPE_CHECKING:
