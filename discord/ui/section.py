@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
@@ -79,7 +78,7 @@ class Section(Item[V]):
     ) -> None:
         super().__init__()
         self._children: List[Item[V]] = []
-        if children is not MISSING:
+        if children:
             if len(children) > 3:
                 raise ValueError('maximum number of children exceeded')
             self._children.extend(

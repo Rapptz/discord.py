@@ -138,10 +138,8 @@ class Container(Item[V]):
     ) -> None:
         super().__init__()
         self._children: List[Item[V]] = self._init_children()
-
-        if children is not MISSING:
-            for child in children:
-                self.add_item(child)
+        for child in children:
+            self.add_item(child)
 
         self.spoiler: bool = spoiler
         self._colour = accent_colour if accent_colour is not None else accent_color
@@ -197,7 +195,10 @@ class Container(Item[V]):
 
         cls.__container_children_items__ = children
 
-    def _update_children_view(self, view) -> None:
+    def _update_children_view(self, view: V) -> None:
+        if not view._is_layout():
+            return
+
         for child in self._children:
             child._view = view
             if getattr(child, '__discord_ui_update_view__', False):
