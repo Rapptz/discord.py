@@ -650,7 +650,6 @@ class BaseView:
             yield child
 
             if child._has_nested():
-                # if it has this attribute then it can contain children
                 yield from child.walk_children()  # type: ignore
 
 
