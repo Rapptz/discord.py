@@ -44,7 +44,7 @@ __all__ = ('Section',)
 class Section(Item[V]):
     r"""Represents a UI section.
 
-    This is a top-level layout component that can only be used on :class:`LayoutView`
+    This is a top-level layout component that can only be used on :class:`LayoutView`.
 
     .. versionadded:: 2.6
 
@@ -63,7 +63,6 @@ class Section(Item[V]):
         'id',
     )
     __discord_ui_section__: ClassVar[bool] = True
-    __discord_ui_update_view__: ClassVar[bool] = True
 
     __slots__ = (
         '_children',
@@ -120,8 +119,14 @@ class Section(Item[V]):
             yield child
         yield self.accessory
 
-    def _update_children_view(self, view) -> None:
+    def _update_view(self, view) -> None:
+        self._view = view
         self.accessory._view = view
+        for child in self._children:
+            child._view = view
+
+    def _has_nested(self) -> bool:
+        return True
 
     def add_item(self, item: Union[str, Item[Any]]) -> Self:
         """Adds an item to this section.
@@ -150,7 +155,7 @@ class Section(Item[V]):
             raise TypeError(f'expected Item or str not {item.__class__.__name__}')
 
         item = item if isinstance(item, Item) else TextDisplay(item)
-        item._view = self.view
+        item._update_view(self.view)
         item._parent = self
         self._children.append(item)
 

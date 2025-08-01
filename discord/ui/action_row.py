@@ -129,7 +129,6 @@ class ActionRow(Item[V]):
 
     __action_row_children_items__: ClassVar[List[ItemCallbackType[Any]]] = []
     __discord_ui_action_row__: ClassVar[bool] = True
-    __discord_ui_update_view__: ClassVar[bool] = True
     __item_repr_attributes__ = ('id',)
 
     def __init__(
@@ -175,9 +174,13 @@ class ActionRow(Item[V]):
             children.append(item)
         return children
 
-    def _update_children_view(self, view: LayoutView) -> None:
+    def _update_view(self, view) -> None:
+        self._view = view
         for child in self._children:
-            child._view = view  # pyright: ignore[reportAttributeAccessIssue]
+            child._view = view
+
+    def _has_nested(self):
+        return True
 
     def _is_v2(self) -> bool:
         # although it is not really a v2 component the only usecase here is for
@@ -238,7 +241,7 @@ class ActionRow(Item[V]):
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
-        item._view = self._view
+        item._update_view(self.view)
         item._parent = self
         self._weight += 1
         self._children.append(item)

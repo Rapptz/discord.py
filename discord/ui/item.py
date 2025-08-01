@@ -159,6 +159,12 @@ class Item(Generic[V]):
 
         return can_run
 
+    def _update_view(self, view) -> None:
+        self._view = view
+
+    def _has_nested(self) -> bool:
+        return False
+
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
         """|coro|
 

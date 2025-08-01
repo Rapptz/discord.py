@@ -119,7 +119,6 @@ class Container(Item[V]):
     """
 
     __container_children_items__: ClassVar[Dict[str, Union[ItemCallbackType[Any], Item[Any]]]] = {}
-    __discord_ui_update_view__: ClassVar[bool] = True
     __discord_ui_container__: ClassVar[bool] = True
     __item_repr_attributes__ = (
         'accent_colour',
@@ -194,15 +193,14 @@ class Container(Item[V]):
 
         cls.__container_children_items__ = children
 
-    def _update_children_view(self, view: V) -> None:  # type: ignore
-        if not view._is_layout():
-            return
-
+    def _update_view(self, view) -> bool:
+        self._view = view
         for child in self._children:
-            child._view = view
-            if getattr(child, '__discord_ui_update_view__', False):
-                # if the item is an action row which child's view can be updated, then update it
-                child._update_children_view(view)  # type: ignore
+            child._update_view(view)
+        return True
+
+    def _has_nested(self):
+        return True
 
     @property
     def children(self) -> List[Item[V]]:
@@ -284,8 +282,7 @@ class Container(Item[V]):
         for child in self.children:
             yield child
 
-            if getattr(child, '__discord_ui_update_view__', False):
-                # if it has this attribute then it can contain children
+            if child._has_nested():
                 yield from child.walk_children()  # type: ignore
 
     def add_item(self, item: Item[Any]) -> Self:
@@ -308,18 +305,13 @@ class Container(Item[V]):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
         self._children.append(item)
-        is_layout_view = self._view and self._view._is_layout()
-
-        if getattr(item, '__discord_ui_update_view__', False):
-            item._update_children_view(self.view)  # type: ignore
-
-            if is_layout_view:
-                self._view._total_children += sum(1 for _ in item.walk_children())  # type: ignore
-        elif is_layout_view:
-            self._view._total_children += 1  # type: ignore
-
-        item._view = self.view
+        item._update_view(self.view)
         item._parent = self
+
+        if item._has_nested():
+            self._view._total_children += sum(1 for _ in item.walk_children())  # type: ignore
+        else:
+            self._view._total_children += 1  # type: ignore
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:
@@ -340,7 +332,7 @@ class Container(Item[V]):
             pass
         else:
             if self._view and self._view._is_layout():
-                if getattr(item, '__discord_ui_update_view__', False):
+                if item._has_nested():
                     self._view._total_children -= len(tuple(item.walk_children()))  # type: ignore
                 else:
                     self._view._total_children -= 1

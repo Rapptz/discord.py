@@ -241,12 +241,10 @@ class BaseView:
             if isinstance(raw, Item):
                 item = copy.deepcopy(raw)
                 setattr(self, name, item)
-                item._view = self
+                item._update_view(self)
                 parent = getattr(item, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
                     parent._view = self
-                if getattr(item, '__discord_ui_update_view__', False):
-                    item._update_children_view(self)  # type: ignore
                 children.append(item)
                 parents[raw] = item
             else:
@@ -358,7 +356,7 @@ class BaseView:
                     # this error should never be raised, because ActionRows can only
                     # contain items that View accepts, but check anyways
                     if item._is_v2():
-                        raise RuntimeError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
+                        raise ValueError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
                     view.add_item(item)
                     row += 1
                 continue
@@ -367,7 +365,7 @@ class BaseView:
             item.row = row
 
             if item._is_v2() and not view._is_layout():
-                raise RuntimeError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
+                raise ValueError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
 
             view.add_item(item)
             row += 1
@@ -400,11 +398,10 @@ class BaseView:
         if item._is_v2() and not self._is_layout():
             raise ValueError('v2 items cannot be added to this view')
 
-        item._view = self
+        item._update_view(self)
         added = 1
 
-        if getattr(item, '__discord_ui_update_view__', False):
-            item._update_children_view(self)  # type: ignore
+        if item._has_nested():
             added += len(tuple(item.walk_children()))  # type: ignore
 
         if self._is_layout() and self._total_children + added > 40:
@@ -431,7 +428,7 @@ class BaseView:
             pass
         else:
             removed = 1
-            if getattr(item, '__discord_ui_update_view__', False):
+            if item._has_nested():
                 removed += len(tuple(item.walk_children()))  # type: ignore
 
             if self._total_children - removed < 0:
@@ -652,7 +649,7 @@ class BaseView:
         for child in self.children:
             yield child
 
-            if getattr(child, '__discord_ui_update_view__', False):
+            if child._has_nested():
                 # if it has this attribute then it can contain children
                 yield from child.walk_children()  # type: ignore
 
