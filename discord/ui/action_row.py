@@ -246,7 +246,7 @@ class ActionRow(Item[V]):
         self._weight += 1
         self._children.append(item)
 
-        if self._view and self._view._is_layout():
+        if self._view:
             self._view._total_children += 1
 
         return self

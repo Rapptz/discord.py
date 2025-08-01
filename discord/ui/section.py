@@ -159,7 +159,7 @@ class Section(Item[V]):
         item._parent = self
         self._children.append(item)
 
-        if self._view and self._view._is_layout():
+        if self._view:
             self._view._total_children += 1
 
         return self
@@ -181,7 +181,7 @@ class Section(Item[V]):
         except ValueError:
             pass
         else:
-            if self._view and self._view._is_layout():
+            if self._view:
                 self._view._total_children -= 1
 
         return self

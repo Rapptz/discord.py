@@ -308,10 +308,10 @@ class Container(Item[V]):
         item._update_view(self.view)
         item._parent = self
 
-        if item._has_nested():
+        if item._has_nested() and self._view:
             self._view._total_children += sum(1 for _ in item.walk_children())  # type: ignore
-        else:
-            self._view._total_children += 1  # type: ignore
+        elif self._view:
+            self._view._total_children += 1
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:
