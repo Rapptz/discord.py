@@ -151,6 +151,13 @@ class Item(Generic[V]):
     def id(self, value: Optional[int]) -> None:
         self._id = value
 
+    @property
+    def parent(self) -> Optional[Item[V]]:
+        """Optional[:class:`Item`]: This item's parent. If this item is a :class:`View` this will
+        always be ``None``.
+        """
+        return self._parent
+
     async def _run_checks(self, interaction: Interaction[ClientT]) -> bool:
         can_run = await self.interaction_check(interaction)
 
