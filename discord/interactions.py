@@ -546,9 +546,9 @@ class Interaction(Generic[ClientT]):
 
             .. note::
 
-                To update the message to add a :class:`~discord.ui.LayoutView`, you
-                must explicitly set the ``content``, ``embed``, ``embeds``, and
-                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
+                explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
+                ``None`` if the previous message had any.
 
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
@@ -1557,9 +1557,9 @@ class InteractionMessage(Message):
 
             .. note::
 
-                To update the message to add a :class:`~discord.ui.LayoutView`, you
-                must explicitly set the ``content``, ``embed``, ``embeds``, and
-                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
+                explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
+                ``None`` if the previous message had any.
 
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
@@ -1600,7 +1600,7 @@ class InteractionMessage(Message):
             embeds=embeds,
             embed=embed,
             attachments=attachments,
-            view=view,  # type: ignore
+            view=view,
             allowed_mentions=allowed_mentions,
             poll=poll,
         )

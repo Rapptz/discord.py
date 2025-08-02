@@ -1408,8 +1408,8 @@ class PartialMessage(Hashable):
             .. note::
 
                 If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
-                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
-                ``embeds``, and ``attachments`` parameters.
+                explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
+                ``None`` if the previous message had any.
 
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
@@ -3000,8 +3000,8 @@ class Message(PartialMessage, Hashable):
             .. note::
 
                 If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
-                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
-                ``embeds``, and ``attachments`` parameters.
+                explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
+                ``None`` if the previous message had any.
 
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
