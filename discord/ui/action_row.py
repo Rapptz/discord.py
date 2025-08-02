@@ -179,7 +179,7 @@ class ActionRow(Item[V]):
         for child in self._children:
             child._view = view
 
-    def _has_nested(self):
+    def _has_children(self):
         return True
 
     def _is_v2(self) -> bool:
@@ -234,6 +234,9 @@ class ActionRow(Item[V]):
         ValueError
             Maximum number of children has been exceeded (5).
         """
+
+        if (self._weight + item.width) > 5:
+            raise ValueError('maximum number of children exceeded')
 
         if len(self._children) >= 5:
             raise ValueError('maximum number of children exceeded')
