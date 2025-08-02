@@ -47,6 +47,7 @@ if TYPE_CHECKING:
         def walk_children(self) -> Generator[Item['V'], None, None]:
             ...
 
+
 I = TypeVar('I', bound='Item[Any]')
 V = TypeVar('V', bound='BaseView', covariant=True)
 ItemCallbackType = Callable[[Any, Interaction[Any], I], Coroutine[Any, Any, Any]]
@@ -163,7 +164,7 @@ class Item(Generic[V]):
         """Optional[:class:`Item`]: This item's parent. Only components that can have children
         can be parents. Any item that has :class:`View` as a view will have this set to `None`
         since only :class:`LayoutView` component v2 items can contain "container" like items.
-        
+
         .. versionadded:: 2.6
         """
         return self._parent
