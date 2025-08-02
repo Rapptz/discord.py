@@ -159,7 +159,7 @@ class MediaGallery(Item[V]):
             raise ValueError('maximum number of items has been exceeded')
 
         if not isinstance(item, MediaGalleryItem):
-            raise TypeError(f'expected MediaGalleryItem not {item.__class__.__name__}')
+            raise TypeError(f'expected MediaGalleryItem, not {item.__class__.__name__!r}')
 
         self._underlying.items.append(item)
         return self
