@@ -102,7 +102,7 @@ class Thumbnail(Item[V]):
         elif isinstance(value, UnfurledMediaItem):
             self._media = value
         else:
-            raise TypeError(f'expected a str or UnfurledMediaItem, got {value.__class__.__name__!r}')
+            raise TypeError(f'expected a str or UnfurledMediaItem, not {value.__class__.__name__!r}')
 
     @property
     def type(self) -> Literal[ComponentType.thumbnail]:
