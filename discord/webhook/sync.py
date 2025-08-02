@@ -1035,7 +1035,7 @@ class SyncWebhook(BaseWebhook):
 
             .. versionadded:: 2.4
         view: Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]
-            The view to send with the message. This can only have non-interactible items, which donnot
+            The view to send with the message. This can only have non-interactible items, which do not
             require a state to be attached to it.
 
             If you want to send a view with any component attached to it, check :meth:`Webhook.send`.
@@ -1248,7 +1248,7 @@ class SyncWebhook(BaseWebhook):
 
             .. versionadded:: 2.0
         view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
-            The updated view to update this message with. This can only have non-interactible items, which donnot
+            The updated view to update this message with. This can only have non-interactible items, which do not
             require a state to be attached to it. If ``None`` is passed then the view is removed.
 
             If you want to edit a webhook message with any component attached to it, check :meth:`WebhookMessage.edit`.
