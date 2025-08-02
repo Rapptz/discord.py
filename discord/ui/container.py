@@ -175,7 +175,7 @@ class Container(Item[V]):
                 if parent is None:
                     raise RuntimeError(f'{raw.__name__} is not a valid item for a Container')
                 parents.get(parent, parent)._children.append(item)
-                # we donnot append it to the children list because technically these buttons and
+                # we do not append it to the children list because technically these buttons and
                 # selects are not from the container but the action row itself.
 
         return children
@@ -199,7 +199,7 @@ class Container(Item[V]):
             child._update_view(view)
         return True
 
-    def _has_nested(self):
+    def _has_children(self):
         return True
 
     @property
@@ -282,8 +282,8 @@ class Container(Item[V]):
         for child in self.children:
             yield child
 
-            if child._has_nested():
-                yield from child.walk_children()  # type: ignore
+            if child._has_children(child):
+                yield from child.walk_children()
 
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to this container.
@@ -308,8 +308,8 @@ class Container(Item[V]):
         item._update_view(self.view)
         item._parent = self
 
-        if item._has_nested() and self._view:
-            self._view._total_children += sum(1 for _ in item.walk_children())  # type: ignore
+        if item._has_children() and self._view:
+            self._view._total_children += len(tuple(item.walk_children()))  # type: ignore
         elif self._view:
             self._view._total_children += 1
         return self
@@ -332,7 +332,7 @@ class Container(Item[V]):
             pass
         else:
             if self._view and self._view._is_layout():
-                if item._has_nested():
+                if item._has_children():
                     self._view._total_children -= len(tuple(item.walk_children()))  # type: ignore
                 else:
                     self._view._total_children -= 1
@@ -366,6 +366,6 @@ class Container(Item[V]):
         """
 
         if self._view and self._view._is_layout():
-            self._view._total_children -= sum(1 for _ in self.walk_children())
+            self._view._total_children -= len(tuple(self.walk_children()))
         self._children.clear()
         return self

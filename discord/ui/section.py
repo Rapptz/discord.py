@@ -125,7 +125,7 @@ class Section(Item[V]):
         for child in self._children:
             child._view = view
 
-    def _has_nested(self) -> bool:
+    def _has_children(self):
         return True
 
     def add_item(self, item: Union[str, Item[Any]]) -> Self:

@@ -225,7 +225,7 @@ class BaseView:
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
-        self._total_children: int = sum(1 for _ in self.walk_children())
+        self._total_children: int = len(tuple(self.walk_children()))
 
     def _is_layout(self) -> TypeGuard[LayoutView]:  # type: ignore
         return False
@@ -401,7 +401,7 @@ class BaseView:
         item._update_view(self)
         added = 1
 
-        if item._has_nested():
+        if item._has_children():
             added += len(tuple(item.walk_children()))  # type: ignore
 
         if self._is_layout() and self._total_children + added > 40:
@@ -428,7 +428,7 @@ class BaseView:
             pass
         else:
             removed = 1
-            if item._has_nested():
+            if item._has_children():
                 removed += len(tuple(item.walk_children()))  # type: ignore
 
             if self._total_children - removed < 0:
@@ -649,7 +649,7 @@ class BaseView:
         for child in self.children:
             yield child
 
-            if child._has_nested():
+            if child._has_children():
                 yield from child.walk_children()  # type: ignore
 
 

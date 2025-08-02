@@ -36,9 +36,16 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
+    from typing import Generator
+    from typing_extensions import TypeGuard
+
     from ..enums import ComponentType
     from .view import BaseView
     from ..components import Component
+
+    class ContainerItem(Generic[V]):
+        def walk_children(self) -> Generator[Item['V'], None, None]:
+            ...
 
 I = TypeVar('I', bound='Item[Any]')
 V = TypeVar('V', bound='BaseView', covariant=True)
@@ -169,7 +176,7 @@ class Item(Generic[V]):
     def _update_view(self, view) -> None:
         self._view = view
 
-    def _has_nested(self) -> bool:
+    def _has_children(self) -> TypeGuard[ContainerItem[V]]:
         return False
 
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
