@@ -720,6 +720,14 @@ class AppCommandChannel(Hashable):
         return f'<#{self.id}>'
 
     @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.6
+        """
+        return f'https://discord.com/channels/{self.guild_id}/{self.id}'
+
+    @property
     def created_at(self) -> datetime:
         """:class:`datetime.datetime`: An aware timestamp of when this channel was created in UTC."""
         return snowflake_time(self.id)
@@ -841,6 +849,14 @@ class AppCommandThread(Hashable):
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the thread."""
         return f'<#{self.id}>'
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the thread.
+
+        .. versionadded:: 2.6
+        """
+        return f'https://discord.com/channels/{self.guild_id}/{self.id}'
 
     @property
     def created_at(self) -> Optional[datetime]:
