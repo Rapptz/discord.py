@@ -79,8 +79,8 @@ class PartialThread(_BasePartialChannel):
     thread_metadata: ThreadMetadata
     parent_id: Snowflake
     applied_tags: NotRequired[List[Snowflake]]
-    owner_id : Snowflake
-    message_count : int
+    owner_id: Snowflake
+    message_count: int
     member_count: int
     rate_limit_per_user: int
     last_message_id: NotRequired[Optional[Snowflake]]
