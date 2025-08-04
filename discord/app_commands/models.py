@@ -37,6 +37,7 @@ from ..enums import (
     Locale,
     try_enum,
 )
+import array
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
 from ..object import Object
@@ -84,7 +85,7 @@ if TYPE_CHECKING:
     from ..abc import Snowflake
     from ..state import ConnectionState
     from ..guild import GuildChannel, Guild
-    from ..channel import TextChannel
+    from ..channel import TextChannel, ForumChannel, ForumTag
     from ..threads import Thread
     from ..user import User
 
@@ -766,6 +767,30 @@ class AppCommandThread(Hashable):
         The name of the thread.
     parent_id: :class:`int`
         The parent text channel ID this thread belongs to.
+    owner_id: :class:`int`
+        The user's ID that created this thread.
+
+        .. versionadded:: 2.6
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this thread. It may
+        *not* point to an existing or valid message.
+
+        .. versionadded:: 2.6
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this thread. A value of ``0`` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
+
+        .. versionadded:: 2.6
+    message_count: :class:`int`
+        An approximate number of messages in this thread.
+
+        .. versionadded:: 2.6
+    member_count: :class:`int`
+        An approximate number of members in this thread. This caps at 50.
+
+        .. versionadded:: 2.6
     permissions: :class:`~discord.Permissions`
         The resolved permissions of the user who invoked
         the application command in that thread.
@@ -800,6 +825,13 @@ class AppCommandThread(Hashable):
         'archive_timestamp',
         'locked',
         'invitable',
+        'owner_id',
+        'message_count',
+        'member_count',
+        'slowmode_delay',
+        'last_message_id',
+        '_applied_tags',
+        '_flags',
         '_created_at',
         '_state',
     )
@@ -818,6 +850,13 @@ class AppCommandThread(Hashable):
         self.type: ChannelType = try_enum(ChannelType, data['type'])
         self.name: str = data['name']
         self.permissions: Permissions = Permissions(int(data['permissions']))
+        self.owner_id: int = int(data['owner_id'])
+        self.member_count: int = int(data['member_count'])
+        self.message_count: int = int(data['message_count'])
+        self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
+        self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
+        self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
+        self._flags: int = data.get('flags', 0)
         self._unroll_metadata(data['thread_metadata'])
 
     def __str__(self) -> str:
@@ -841,9 +880,43 @@ class AppCommandThread(Hashable):
         self._created_at: Optional[datetime] = parse_time(data.get('create_timestamp'))
 
     @property
-    def parent(self) -> Optional[TextChannel]:
-        """Optional[:class:`~discord.TextChannel`]: The parent channel this thread belongs to."""
+    def applied_tags(self) -> List[ForumTag]:
+        """List[:class:`ForumTag`]: A list of tags applied to this thread.
+
+        .. versionadded:: 2.6
+        """
+        tags = []
+        if self.parent is None or self.parent.type not in (ChannelType.forum, ChannelType.media):
+            return tags
+
+        parent = self.parent
+        for tag_id in self._applied_tags:
+            tag = parent.get_tag(tag_id)  # type: ignore # parent here will be ForumChannel instance
+            if tag is not None:
+                tags.append(tag)
+
+        return tags
+
+    @property
+    def parent(self) -> Optional[Union[ForumChannel, TextChannel]]:
+        """Optional[Union[:class:`~discord.ForumChannel`, :class:`~discord.TextChannel`]]: The parent channel this thread belongs to."""
         return self.guild.get_channel(self.parent_id)  # type: ignore
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`ChannelFlags`: The flags associated with this thread.
+
+        .. versionadded:: 2.6
+        """
+        return ChannelFlags._from_value(self._flags)
+
+    @property
+    def owner(self) -> Optional[Member]:
+        """Optional[:class:`Member`]: The member this thread belongs to.
+
+        .. versionadded:: 2.6
+        """
+        return self.guild.get_member(self.owner_id)
 
     @property
     def mention(self) -> str:
