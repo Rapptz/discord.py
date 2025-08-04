@@ -518,7 +518,7 @@ The most straightforward way is to use the :meth:`~app_commands.guilds` decorato
     async def ping(interaction: Interaction):
         await interaction.response.send_message("Pong!")
 
-    # For a GroupCog (applies to all subcommands):
+    # or GroupCog (applies to all subcommands):
 
     @app_commands.guilds(123456789012345678)
     class MyGroup(commands.GroupCog):
