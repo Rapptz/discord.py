@@ -3055,6 +3055,23 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.1
 
+    .. attribute:: automod_quarantine_user
+
+        An automod rule quarantined a member.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Member` with the ID of the person who triggered the automod rule.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with 2 attributes:
+
+        - ``automod_rule_name``: The name of the automod rule that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+
+        When this is the action, :attr:`AuditLogEntry.changes` is empty.
+
+        .. versionadded:: 2.6
+
     .. attribute:: creator_monetization_request_created
 
         A request to monetize the server was created.
@@ -3880,6 +3897,25 @@ of :class:`enum.Enum`.
     .. attribute:: reply
 
         An alias for :attr:`.default`.
+
+.. class:: StatusDisplayType
+
+    Represents which field is of the user's activity is 
+    displayed in the members list.
+
+    .. versionadded:: 2.6
+
+    .. attribute:: name
+
+        The name of the activity is displayed.
+
+    .. attribute:: state
+
+        The state of the activity is displayed.
+
+    .. attribute:: details
+
+        The details of the activity are displayed.
 
 .. _discord-api-audit-logs:
 

@@ -1986,11 +1986,15 @@ class Guild(Hashable):
         """
         await self._state.http.leave_guild(self.id)
 
+    @utils.deprecated()
     async def delete(self) -> None:
         """|coro|
 
         Deletes the guild. You must be the guild owner to delete the
         guild.
+
+        .. deprecated:: 2.6
+           This method is deprecated and will be removed in a future version.
 
         Raises
         --------
@@ -2091,6 +2095,9 @@ class Guild(Hashable):
         owner: :class:`Member`
             The new owner of the guild to transfer ownership to. Note that you must
             be owner of the guild to do this.
+
+            .. deprecated:: 2.6
+               This parameter is deprecated and will be removed in a future version as bots can no longer own guilds.
         verification_level: :class:`VerificationLevel`
             The new verification level for the guild.
         default_notifications: :class:`NotificationLevel`
@@ -2099,6 +2106,9 @@ class Guild(Hashable):
             The new explicit content filter for the guild.
         vanity_code: :class:`str`
             The new vanity code for the guild.
+
+            .. deprecated:: 2.6
+               This parameter is deprecated and will be removed in a future version as bots can no longer set this.
         system_channel: Optional[:class:`TextChannel`]
             The new channel that is used for the system channel. Could be ``None`` for no system channel.
         system_channel_flags: :class:`SystemChannelFlags`
@@ -2146,6 +2156,8 @@ class Guild(Hashable):
             Note that you must be owner of the guild to do this.
 
             .. versionadded:: 2.3
+            .. deprecated:: 2.6
+               This parameter is deprecated and will be removed in a future version as bots can no longer own guilds.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 

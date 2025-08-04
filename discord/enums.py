@@ -78,6 +78,7 @@ __all__ = (
     'VoiceChannelEffectAnimationType',
     'SubscriptionStatus',
     'MessageReferenceType',
+    'StatusDisplayType',
 )
 
 
@@ -398,6 +399,7 @@ class AuditLogAction(Enum):
     automod_block_message                             = 143
     automod_flag_message                              = 144
     automod_timeout_member                            = 145
+    automod_quarantine_user                           = 146
     creator_monetization_request_created              = 150
     creator_monetization_terms_accepted               = 151
     # fmt: on
@@ -460,6 +462,7 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_block_message:                    None,
             AuditLogAction.automod_flag_message:                     None,
             AuditLogAction.automod_timeout_member:                   None,
+            AuditLogAction.automod_quarantine_user:                  None,
             AuditLogAction.creator_monetization_request_created:     None,
             AuditLogAction.creator_monetization_terms_accepted:      None,
             AuditLogAction.soundboard_sound_create:                  AuditLogActionCategory.create,
@@ -506,7 +509,7 @@ class AuditLogAction(Enum):
             return 'integration_or_app_command'
         elif 139 < v < 143:
             return 'auto_moderation'
-        elif v < 146:
+        elif v < 147:
             return 'user'
         elif v < 152:
             return 'creator_monetization'
@@ -910,6 +913,12 @@ class SubscriptionStatus(Enum):
     active = 0
     ending = 1
     inactive = 2
+
+
+class StatusDisplayType(Enum):
+    name = 0  # pyright: ignore[reportAssignmentType]
+    state = 1
+    details = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
