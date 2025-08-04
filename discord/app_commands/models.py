@@ -899,7 +899,8 @@ class AppCommandThread(Hashable):
 
     @property
     def parent(self) -> Optional[Union[ForumChannel, TextChannel]]:
-        """Optional[Union[:class:`~discord.ForumChannel`, :class:`~discord.TextChannel`]]: The parent channel this thread belongs to."""
+        """Optional[Union[:class:`~discord.ForumChannel`, :class:`~discord.TextChannel`]]: The parent channel
+        this thread belongs to."""
         return self.guild.get_channel(self.parent_id)  # type: ignore
 
     @property
