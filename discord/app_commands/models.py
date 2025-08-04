@@ -779,8 +779,8 @@ class AppCommandThread(Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this thread. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~discord.Permissions.manage_channels` or
+        :attr:`~discord.Permissions.manage_messages` bypass slowmode.
 
         .. versionadded:: 2.6
     message_count: :class:`int`
@@ -881,7 +881,7 @@ class AppCommandThread(Hashable):
 
     @property
     def applied_tags(self) -> List[ForumTag]:
-        """List[:class:`ForumTag`]: A list of tags applied to this thread.
+        """List[:class:`~discord.ForumTag`]: A list of tags applied to this thread.
 
         .. versionadded:: 2.6
         """
@@ -904,7 +904,7 @@ class AppCommandThread(Hashable):
 
     @property
     def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this thread.
+        """:class:`~discord.ChannelFlags`: The flags associated with this thread.
 
         .. versionadded:: 2.6
         """
@@ -912,7 +912,7 @@ class AppCommandThread(Hashable):
 
     @property
     def owner(self) -> Optional[Member]:
-        """Optional[:class:`Member`]: The member this thread belongs to.
+        """Optional[:class:`~discord.Member`]: The member this thread belongs to.
 
         .. versionadded:: 2.6
         """
