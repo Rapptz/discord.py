@@ -916,7 +916,7 @@ class AppCommandThread(Hashable):
 
         .. versionadded:: 2.6
         """
-        return self.guild.get_member(self.owner_id)
+        return self.guild.get_member(self.owner_id)  # type: ignore
 
     @property
     def mention(self) -> str:
