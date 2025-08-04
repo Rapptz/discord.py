@@ -501,36 +501,48 @@ My bot's commands are not showing up!
    Alternatively, if you use :func:`utils.oauth_url`, you can call the function as such:
    ``oauth_url(<other options>, scopes=("bot", "applications.commands"))``.
 
+How do I restrict a command to a specific guild?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-How do I declare a command to one or multiple guilds?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To restrict an application command to one or more guilds, you must register it as a **guild command** instead of a 
+global command. Guild commands are only available in the specified guild(s).
 
-There are four to five ways to declare a command to one or multiple guilds.
+The most straightforward way is to use the :meth:`~app_commands.guilds` decorator on your command or GroupCog.
 
-.. note::
+``123456789012345678`` should be replaced with the actual guild ID you want to restrict the command to.
 
-    Remember that you still need to sync the command tree after using each of the methods below.
-    Use :meth:`~app_commands.CommandTree.sync` with the ``guild`` parameter for each guild you want to sync.
+.. code-block:: python3
 
-    .. code-block:: python3
+    @app_commands.command()  # or @tree.command()
+    @app_commands.guilds(123456789012345678)  # or @app_commands.guilds(discord.Object(123456789012345678))
+    async def ping(interaction: Interaction):
+        await interaction.response.send_message("Pong!")
 
-        await tree.sync(guild=discord.Object(123456789012345678))
-        # or multiple guilds (watch out for rate limits):
-        await tree.sync(guild=discord.Object(123456789012345678))
-        await tree.sync(guild=discord.Object(987654321098765432))
+    # For a GroupCog (applies to all subcommands):
 
-1. Using the ``guild`` or ``guilds`` parameters in :meth:`~app_commands.CommandTree.command` decorator.
-    The first and foremost way is to use the ``guild`` or ``guilds`` parameters in the decorator itself.
+    @app_commands.guilds(123456789012345678)
+    class MyGroup(commands.GroupCog):
+        @app_commands.command()
+        async def pong(self, interaction: Interaction):
+            await interaction.response.send_message("Ping!")
+
+After that, you must :meth:`~app_commands.CommandTree.sync` the command tree for each guild:
+
+.. code-block:: python3
+
+    await tree.sync(guild=discord.Object(123456789012345678))
+
+Other methods to restrict commands to specific guilds include:
+
+- Using the ``guild`` or ``guilds`` argument in the :meth:`~app_commands.CommandTree.command` decorator:
 
     .. code-block:: python3
 
         @tree.command(guild=discord.Object(123456789012345678))
-        # or multiple:
-        # @tree.command(guilds=[discord.Object(123456789012345678), discord.Object(987654321098765432)])
         async def ping(interaction: Interaction):
             await interaction.response.send_message("Pong!")
 
-2. Using the :meth:`~app_commands.CommandTree.add_command` method with the ``guild`` or ``guilds`` parameters.
+- Adding commands with :meth:`~app_commands.CommandTree.add_command` and specifying ``guild`` or ``guilds``:
 
     .. code-block:: python3
 
@@ -539,39 +551,16 @@ There are four to five ways to declare a command to one or multiple guilds.
             await interaction.response.send_message("Pong!")
 
         tree.add_command(ping, guild=discord.Object(123456789012345678))
-        # or multiple:
-        # tree.add_command(ping, guilds=[discord.Object(123456789012345678), discord.Object(987654321098765432)])
 
     .. warning::
 
-        Do not use this method with the :meth:`~app_commands.CommandTree.command` decorator.
-        That one already adds the command to the tree, so using this method will result in a duplicate command.
+        Do not combine this method with the :meth:`~app_commands.CommandTree.command` decorator,
+        as it will cause duplicate commands.
 
+- Using ``guild`` or ``guilds`` in :meth:`~ext.commands.Bot.add_cog`:
 
-3. Using the :meth:`~app_commands.guilds` decorator.
-    This one can also be used with the :meth:`~app_commands.CommandTree.command` decorator and 
-    on top of a :class:`~ext.commands.GroupCog`.
-
-    .. code-block:: python3
-
-        @app_commands.command()
-        @app_commands.guilds(123456789012345678) # or @app_commands.guilds(discord.Object(123456789012345678))
-        # or multiple:
-        # @app_commands.guilds(123456789012345678, 987654321098765432)
-        async def ping(interaction: Interaction):
-            await interaction.response.send_message("Pong!")
-
-        # or with a GroupCog
-        
-        @app_commands.guilds(123456789012345678)
-        class MyGroup(commands.GroupCog):
-            @app_commands.command()
-            async def pong(self, interaction: Interaction):
-                await interaction.response.send_message("Ping!")
-
-4. Using the ``guild`` or ``guilds`` parameters in the :meth:`~ext.commands.Bot.add_cog` method.
-    This is primarily intended for a :class:`~ext.commands.GroupCog`, but can also be used for a regular cog that
-    contains application commands. Note however that this does not work with hybrid app commands (:issue:`9366`).
+    This is mainly for :class:`~ext.commands.GroupCog`, but also works for cogs with application commands.
+    Note: This does not work with hybrid app commands (:issue:`9366`).
 
     .. code-block:: python3
 
@@ -582,14 +571,11 @@ There are four to five ways to declare a command to one or multiple guilds.
 
         async def setup(bot: commands.Bot) -> None:
             await bot.add_cog(MyCog(...), guild=discord.Object(123456789012345678))
-            # or multiple:
-            # await bot.add_cog(MyCog(...), guilds=[discord.Object(123456789012345678), discord.Object(987654321098765432)])
 
-5. Using the :meth:`~app_commands.CommandTree.copy_global_to` method.
-    This one is intended for development purposes and is not recommended for production use.
-    It will copy all global and guild commands to the specified guild.
+- Using :meth:`~app_commands.CommandTree.copy_global_to`:
+
+    This copies all global commands to a specific guild. This is mainly for development purposes.
 
     .. code-block:: python3
 
         tree.copy_global_to(guild=discord.Object(123456789012345678))
-
