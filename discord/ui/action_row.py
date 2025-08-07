@@ -549,9 +549,9 @@ class ActionRow(Item[V]):
             If ``cls`` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
             Number of items must be in range of ``min_values`` and ``max_values``.
         id: Optional[:class:`int`]
-        The ID of the component. This must be unique across the view.
+            The ID of the component. This must be unique across the view.
 
-        .. versionadded:: 2.6
+            .. versionadded:: 2.6
         """
 
         def decorator(func: ItemCallbackType[BaseSelectT]) -> ItemCallbackType[BaseSelectT]:
