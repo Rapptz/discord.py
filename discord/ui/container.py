@@ -73,7 +73,7 @@ class Container(Item[V]):
 
     This is a top-level layout component that can only be used on :class:`LayoutView`
     and can contain :class:`ActionRow`\s, :class:`TextDisplay`\s, :class:`Section`\s,
-    :class:`MediaGallery`\s, and :class:`File`\s in it.
+    :class:`MediaGallery`\s, :class:`File`\s, and :class:`Separator`\s in it.
 
     This can be inherited.
 
