@@ -282,8 +282,8 @@ class Container(Item[V]):
         for child in self.children:
             yield child
 
-            if child._has_children(child):
-                yield from child.walk_children()
+            if child._has_children():
+                yield from child.walk_children()  # type: ignore
 
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to this container.
