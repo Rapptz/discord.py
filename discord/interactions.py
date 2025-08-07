@@ -475,17 +475,6 @@ class Interaction(Generic[ClientT]):
         self._original_response = message
         return message
 
-    @overload
-    async def edit_original_response(
-        self,
-        *,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: LayoutView,
-        allowed_mentions: Optional[AllowedMentions] = None,
-    ) -> InteractionMessage:
-        ...
-
-    @overload
     async def edit_original_response(
         self,
         *,
@@ -493,20 +482,7 @@ class Interaction(Generic[ClientT]):
         embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
-        allowed_mentions: Optional[AllowedMentions] = None,
-        poll: Poll = MISSING,
-    ) -> InteractionMessage:
-        ...
-
-    async def edit_original_response(
-        self,
-        *,
-        content: Optional[str] = MISSING,
-        embeds: Sequence[Embed] = MISSING,
-        embed: Optional[Embed] = MISSING,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[BaseView] = MISSING,
+        view: Optional[Union[View, LayoutView]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
         poll: Poll = MISSING,
     ) -> InteractionMessage:
@@ -1522,7 +1498,7 @@ class InteractionMessage(Message):
         embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[BaseView] = MISSING,
+        view: Optional[Union[View, LayoutView]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
