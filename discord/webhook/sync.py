@@ -1041,8 +1041,6 @@ class SyncWebhook(BaseWebhook):
             If you want to send a view with any component attached to it, check :meth:`Webhook.send`.
 
             .. versionadded:: 2.5
-            .. versionchanged:: 2.6
-                This now accepts :class:`discord.ui.LayoutView` instances.
 
         Raises
         --------

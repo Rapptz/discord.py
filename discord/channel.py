@@ -2950,9 +2950,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             A list of tags to apply to the thread.
         view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             A Discord UI View to add to the message.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`discord.ui.LayoutView` instances.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
         suppress_embeds: :class:`bool`

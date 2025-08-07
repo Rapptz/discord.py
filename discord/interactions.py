@@ -525,9 +525,6 @@ class Interaction(Generic[ClientT]):
                 If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
                 explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
                 ``None`` if the previous message had any.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`~discord.ui.LayoutView` instances.
         poll: :class:`Poll`
             The poll to create when editing the message.
 
@@ -984,9 +981,6 @@ class InteractionResponse(Generic[ClientT]):
             Indicates if the message should be sent using text-to-speech.
         view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             The view to send with the message.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`discord.ui.LayoutView` instances.
         ephemeral: :class:`bool`
             Indicates if the message should only be visible to the user who started the interaction.
             If a view is sent with an ephemeral message and it has no timeout set then the timeout
@@ -1095,19 +1089,6 @@ class InteractionResponse(Generic[ClientT]):
             type=self._response_type,
         )
 
-    @overload
-    async def edit_message(
-        self,
-        *,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: LayoutView,
-        allowed_mentions: Optional[AllowedMentions] = MISSING,
-        delete_after: Optional[float] = None,
-        suppress_embeds: bool = MISSING,
-    ) -> Optional[InteractionCallbackResponse[ClientT]]:
-        ...
-
-    @overload
     async def edit_message(
         self,
         *,
@@ -1115,21 +1096,7 @@ class InteractionResponse(Generic[ClientT]):
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
-        allowed_mentions: Optional[AllowedMentions] = MISSING,
-        delete_after: Optional[float] = None,
-        suppress_embeds: bool = MISSING,
-    ) -> Optional[InteractionCallbackResponse[ClientT]]:
-        ...
-
-    async def edit_message(
-        self,
-        *,
-        content: Optional[Any] = MISSING,
-        embed: Optional[Embed] = MISSING,
-        embeds: Sequence[Embed] = MISSING,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[BaseView] = MISSING,
+        view: Optional[Union[View, LayoutView]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
         suppress_embeds: bool = MISSING,
@@ -1168,9 +1135,6 @@ class InteractionResponse(Generic[ClientT]):
                 To update the message to add a :class:`~discord.ui.LayoutView`, you
                 must explicitly set the ``content``, ``embed``, ``embeds``, and
                 ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`~discord.ui.LayoutView` instances.
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
             Controls the mentions being processed in this message. See :meth:`.Message.edit`
             for more information.
@@ -1536,9 +1500,6 @@ class InteractionMessage(Message):
                 If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
                 explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
                 ``None`` if the previous message had any.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`~discord.ui.LayoutView` instances.
         delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,

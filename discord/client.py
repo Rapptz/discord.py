@@ -3166,9 +3166,6 @@ class Client:
         ------------
         view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             The view to register for dispatching.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`discord.ui.LayoutView` instances.
         message_id: Optional[:class:`int`]
             The message ID that the view is attached to. This is currently used to
             refresh the view's state during message update events. If not given

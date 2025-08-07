@@ -1305,43 +1305,6 @@ class PartialMessage(Hashable):
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
-    @overload
-    async def edit(
-        self,
-        *,
-        view: LayoutView,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> Message:
-        ...
-
-    @overload
-    async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
-    ) -> Message:
-        ...
-
-    @overload
-    async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embeds: Sequence[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
-    ) -> Message:
-        ...
-
     async def edit(
         self,
         *,
@@ -1351,7 +1314,7 @@ class PartialMessage(Hashable):
         attachments: Sequence[Union[Attachment, File]] = MISSING,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
-        view: Optional[BaseView] = MISSING,
+        view: Optional[Union[View, LayoutView]] = MISSING,
     ) -> Message:
         """|coro|
 
@@ -1410,9 +1373,6 @@ class PartialMessage(Hashable):
                 If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
                 explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
                 ``None`` if the previous message had any.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`~discord.ui.LayoutView` instances.
 
         Raises
         -------
@@ -2897,34 +2857,6 @@ class Message(PartialMessage, Hashable):
         # Fallback for unknown message types
         return ''
 
-    @overload
-    async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        suppress: bool = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[BaseView] = ...,
-    ) -> Message:
-        ...
-
-    @overload
-    async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embeds: Sequence[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        suppress: bool = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[BaseView] = ...,
-    ) -> Message:
-        ...
-
     async def edit(
         self,
         *,
@@ -2935,7 +2867,7 @@ class Message(PartialMessage, Hashable):
         suppress: bool = False,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
-        view: Optional[BaseView] = MISSING,
+        view: Optional[Union[View, LayoutView]] = MISSING,
     ) -> Message:
         """|coro|
 
@@ -3002,9 +2934,6 @@ class Message(PartialMessage, Hashable):
                 If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
                 explicitly set the ``content``, ``embed``, ``embeds``, and ``attachments`` parameters to
                 ``None`` if the previous message had any.
-
-            .. versionchanged:: 2.6
-                This now accepts :class:`~discord.ui.LayoutView` instances.
 
         Raises
         -------

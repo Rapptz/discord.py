@@ -1780,8 +1780,6 @@ class Webhook(BaseWebhook):
             Otherwise, you can send views with any type of components.
 
             .. versionadded:: 2.0
-            .. versionchanged:: 2.6
-                This now accepts :class:`discord.ui.LayoutView` instances.
         thread: :class:`~discord.abc.Snowflake`
             The thread to send this webhook to.
 
@@ -2066,8 +2064,6 @@ class Webhook(BaseWebhook):
                 ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
 
             .. versionadded:: 2.0
-            .. versionchanged:: 2.6
-                This now accepts :class:`~discord.ui.LayoutView` instances.
         thread: :class:`~discord.abc.Snowflake`
             The thread the webhook message belongs to.
 

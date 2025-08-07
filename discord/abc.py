@@ -1594,8 +1594,6 @@ class Messageable:
             A Discord UI View to add to the message.
 
             .. versionadded:: 2.0
-            .. versionchanged:: 2.6
-                This now accepts :class:`discord.ui.LayoutView` instances.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
