@@ -101,7 +101,7 @@ if TYPE_CHECKING:
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
-    from .ui.view import BaseView, View, LayoutView
+    from .ui.view import View, LayoutView
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
