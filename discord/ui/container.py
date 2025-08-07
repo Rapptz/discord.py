@@ -173,7 +173,7 @@ class Container(Item[V]):
                 # guarding it
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent is None:
-                    raise RuntimeError(f'{raw.__name__} is not a valid item for a Container')
+                    raise ValueError(f'{raw.__name__} is not a valid item for a Container')
                 parents.get(parent, parent)._children.append(item)
                 # we do not append it to the children list because technically these buttons and
                 # selects are not from the container but the action row itself.
