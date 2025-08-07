@@ -76,7 +76,6 @@ class MediaGallery(Item[V]):
             items=list(items),
             id=id,
         )
-        self.id = id
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} items={len(self._underlying.items)}>'
@@ -92,6 +91,15 @@ class MediaGallery(Item[V]):
             raise ValueError('media gallery only accepts up to 10 items')
 
         self._underlying.items = value
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this component."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
 
     def to_component_dict(self):
         return self._underlying.to_dict()
