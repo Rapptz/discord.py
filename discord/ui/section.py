@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
@@ -84,6 +85,10 @@ class Section(Item[V]):
                 [c if isinstance(c, Item) else TextDisplay(c) for c in children],
             )
         self.accessory: Item[V] = accessory
+
+        if self.accessory.is_dispatchable() and not self.accessory._provided_custom_id:
+            self.accessory.custom_id = os.urandom(16).hex()  # type: ignore
+
         self.id = id
 
     def __repr__(self) -> str:

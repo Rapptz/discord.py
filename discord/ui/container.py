@@ -154,10 +154,6 @@ class Container(Item[V]):
             if isinstance(raw, Item):
                 item = copy.deepcopy(raw)
                 item._parent = self
-                if getattr(item, '__discord_ui_section__', False) and item.accessory.is_dispatchable():  # type: ignore
-                    if item.accessory._provided_custom_id is False:  # type: ignore
-                        item.accessory.custom_id = os.urandom(16).hex()  # type: ignore
-
                 setattr(self, name, item)
                 children.append(item)
 
