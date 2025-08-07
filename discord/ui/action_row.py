@@ -330,6 +330,7 @@ class ActionRow(Item[V]):
         disabled: bool = False,
         style: ButtonStyle = ButtonStyle.secondary,
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
+        id: Optional[int] = None,
     ) -> Callable[[ItemCallbackType[Button[V]]], Button[V]]:
         """A decorator that attaches a button to a component.
 
@@ -361,6 +362,10 @@ class ActionRow(Item[V]):
         emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
             The emoji of the button. This can be in string form or a :class:`.PartialEmoji`
             or a full :class:`.Emoji`.
+        id: Optional[:class:`int`]
+            The ID of the component. This must be unique across the view.
+
+            .. versionadded:: 2.6
         """
 
         def decorator(func: ItemCallbackType[Button[V]]) -> ItemCallbackType[Button[V]]:
@@ -371,6 +376,7 @@ class ActionRow(Item[V]):
                 style=style,
                 emoji=emoji,
                 row=None,
+                id=id,
             )(func)
             ret.__discord_ui_parent__ = self  # type: ignore
             return ret  # type: ignore
@@ -389,6 +395,7 @@ class ActionRow(Item[V]):
         min_values: int = ...,
         max_values: int = ...,
         disabled: bool = ...,
+        id: Optional[int] = ...,
     ) -> SelectCallbackDecorator[SelectT]:
         ...
 
@@ -405,6 +412,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
+        id: Optional[int] = ...,
     ) -> SelectCallbackDecorator[UserSelectT]:
         ...
 
@@ -421,6 +429,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
+        id: Optional[int] = ...,
     ) -> SelectCallbackDecorator[RoleSelectT]:
         ...
 
@@ -437,6 +446,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
+        id: Optional[int] = ...,
     ) -> SelectCallbackDecorator[ChannelSelectT]:
         ...
 
@@ -453,6 +463,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
+        id: Optional[int] = ...,
     ) -> SelectCallbackDecorator[MentionableSelectT]:
         ...
 
@@ -468,6 +479,7 @@ class ActionRow(Item[V]):
         max_values: int = 1,
         disabled: bool = False,
         default_values: Sequence[ValidDefaultValues] = MISSING,
+        id: Optional[int] = None,
     ) -> SelectCallbackDecorator[BaseSelectT]:
         """A decorator that attaches a select menu to a component.
 
@@ -536,6 +548,10 @@ class ActionRow(Item[V]):
             A list of objects representing the default values for the select menu. This cannot be used with regular :class:`Select` instances.
             If ``cls`` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
             Number of items must be in range of ``min_values`` and ``max_values``.
+        id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
         """
 
         def decorator(func: ItemCallbackType[BaseSelectT]) -> ItemCallbackType[BaseSelectT]:
@@ -549,6 +565,7 @@ class ActionRow(Item[V]):
                 channel_types=channel_types,
                 disabled=disabled,
                 default_values=default_values,
+                id=id,
             )(func)
             r.__discord_ui_parent__ = self
             return r
