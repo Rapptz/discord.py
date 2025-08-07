@@ -169,6 +169,9 @@ class Item(Generic[V]):
     def _update_view(self, view) -> None:
         self._view = view
 
+    def _update_custom_ids(self) -> None:
+        pass
+
     def _has_children(self) -> bool:
         return False
 

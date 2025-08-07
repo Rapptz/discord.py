@@ -154,9 +154,9 @@ class Container(Item[V]):
             if isinstance(raw, Item):
                 item = copy.deepcopy(raw)
                 item._parent = self
+                item._update_custom_ids()
                 setattr(self, name, item)
                 children.append(item)
-
                 parents[raw] = item
             else:
                 # action rows can be created inside containers, and then callbacks can exist here

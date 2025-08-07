@@ -157,6 +157,10 @@ class Button(Item[V]):
         )
         self.row = row
 
+    def _update_custom_ids(self) -> None:
+        if not self._provided_custom_id and self._underlying.custom_id is not None:
+            self._underlying.custom_id = os.urandom(16).hex()
+
     @property
     def id(self) -> Optional[int]:
         """Optional[:class:`int`]: The ID of this button."""

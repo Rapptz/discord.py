@@ -85,10 +85,6 @@ class Section(Item[V]):
                 [c if isinstance(c, Item) else TextDisplay(c) for c in children],
             )
         self.accessory: Item[V] = accessory
-
-        if self.accessory.is_dispatchable() and not self.accessory._provided_custom_id:
-            self.accessory.custom_id = os.urandom(16).hex()  # type: ignore
-
         self.id = id
 
     def __repr__(self) -> str:
@@ -129,6 +125,9 @@ class Section(Item[V]):
         self.accessory._view = view
         for child in self._children:
             child._view = view
+
+    def _update_custom_ids(self) -> None:
+        self.accessory._update_custom_ids()
 
     def _has_children(self):
         return True
