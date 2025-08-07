@@ -262,8 +262,16 @@ class BaseSelect(Item[V]):
         )
 
         self.row = row
-        self.id = id
         self._values: List[PossibleValue] = []
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this select."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
 
     @property
     def values(self) -> List[PossibleValue]:
