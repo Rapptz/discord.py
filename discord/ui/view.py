@@ -688,7 +688,7 @@ class View(BaseView):
                 if hasattr(member, '__discord_ui_model_type__'):
                     children[name] = member
                 elif isinstance(member, Item) and member._is_v2():
-                    raise RuntimeError(f'{name} cannot be added to this View')
+                    raise ValueError(f'{name} cannot be added to this View')
 
         if len(children) > 25:
             raise TypeError('View cannot have more than 25 children')
