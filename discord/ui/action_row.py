@@ -508,9 +508,10 @@ class ActionRow(Item[V]):
         ---------
         .. code-block:: python3
 
-            class ActionRow(discord.ui.ActionRow):
+            class MyView(discord.ui.LayoutView):
+                action_row = discord.ui.ActionRow()
 
-                @discord.ui.select(cls=ChannelSelect, channel_types=[discord.ChannelType.text])
+                @action_row.select(cls=ChannelSelect, channel_types=[discord.ChannelType.text])
                 async def select_channels(self, interaction: discord.Interaction, select: ChannelSelect):
                     return await interaction.response.send_message(f'You selected {select.values[0].mention}')
 
