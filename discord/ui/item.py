@@ -130,9 +130,6 @@ class Item(Generic[V]):
         else:
             raise ValueError('row cannot be negative or greater than or equal to 5')
 
-        if self._rendered_row is None:
-            self._rendered_row = value
-
     @property
     def width(self) -> int:
         return 1
