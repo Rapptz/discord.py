@@ -48,7 +48,6 @@ import logging
 import sys
 import time
 import os
-import copy
 
 from .item import Item, ItemCallbackType
 from .select import Select
@@ -239,7 +238,7 @@ class BaseView:
 
         for name, raw in self.__view_children_items__.items():
             if isinstance(raw, Item):
-                item = copy.deepcopy(raw)
+                item = raw.copy()
                 setattr(self, name, item)
                 item._update_view(self)
                 parent = getattr(item, '__discord_ui_parent__', None)

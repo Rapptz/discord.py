@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
@@ -125,9 +124,6 @@ class Section(Item[V]):
         self.accessory._view = view
         for child in self._children:
             child._view = view
-
-    def _update_custom_ids(self) -> None:
-        self.accessory._update_custom_ids()
 
     def _has_children(self):
         return True

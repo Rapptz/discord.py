@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import copy
 from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
@@ -36,6 +37,8 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..enums import ComponentType
     from .view import BaseView
     from ..components import Component
@@ -169,8 +172,8 @@ class Item(Generic[V]):
     def _update_view(self, view) -> None:
         self._view = view
 
-    def _update_custom_ids(self) -> None:
-        pass
+    def copy(self) -> Self:
+        return copy.deepcopy(self)
 
     def _has_children(self) -> bool:
         return False

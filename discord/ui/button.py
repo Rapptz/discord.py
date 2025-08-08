@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import copy
 from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import inspect
 import os
@@ -157,10 +158,6 @@ class Button(Item[V]):
         )
         self.row = row
 
-    def _update_custom_ids(self) -> None:
-        if not self._provided_custom_id and self._underlying.custom_id is not None:
-            self._underlying.custom_id = os.urandom(16).hex()
-
     @property
     def id(self) -> Optional[int]:
         """Optional[:class:`int`]: The ID of this button."""
@@ -286,6 +283,28 @@ class Button(Item[V]):
 
     def _refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
+
+    def copy(self) -> Self:
+        new = copy.copy(self)
+        custom_id = self.custom_id
+
+        if self.custom_id is not None and not self._provided_custom_id:
+            custom_id = os.urandom(16).hex()
+
+        new._underlying = ButtonComponent._raw_construct(
+            custom_id=custom_id,
+            url=self.url,
+            disabled=self.disabled,
+            label=self.label,
+            style=self.style,
+            emoji=self.emoji,
+            sku_id=self.sku_id,
+            id=self.id,
+        )
+        return new
+
+    def __deepcopy__(self, memo) -> Self:
+        return self.copy()
 
 
 def button(

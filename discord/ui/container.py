@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
-import os
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -152,9 +151,8 @@ class Container(Item[V]):
 
         for name, raw in self.__container_children_items__.items():
             if isinstance(raw, Item):
-                item = copy.deepcopy(raw)
+                item = raw.copy()
                 item._parent = self
-                item._update_custom_ids()
                 setattr(self, name, item)
                 children.append(item)
                 parents[raw] = item
