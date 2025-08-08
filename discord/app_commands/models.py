@@ -901,7 +901,7 @@ class AppCommandThread(Hashable):
     def parent(self) -> Optional[Union[ForumChannel, TextChannel]]:
         """Optional[Union[:class:`~discord.ForumChannel`, :class:`~discord.TextChannel`]]: The parent channel
         this thread belongs to."""
-        return self.guild.get_channel(self.parent_id)  # type: ignore
+        return self.guild and self.guild.get_channel(self.parent_id)  # type: ignore
 
     @property
     def flags(self) -> ChannelFlags:
@@ -917,7 +917,7 @@ class AppCommandThread(Hashable):
 
         .. versionadded:: 2.6
         """
-        return self.guild.get_member(self.owner_id)  # type: ignore
+        return self.guild and self.guild.get_member(self.owner_id)
 
     @property
     def mention(self) -> str:
