@@ -3120,6 +3120,104 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.5
 
+    .. attribute:: onboarding_prompt_create
+
+        A guild onboarding prompt was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the prompt that the options belong to.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.title`
+        - :attr:`~AuditLogDiff.options`
+        - :attr:`~AuditLogDiff.single_select`
+        - :attr:`~AuditLogDiff.required`
+        - :attr:`~AuditLogDiff.in_onboarding`
+
+        .. versionadded:: 2.6
+
+    .. attribute:: onboarding_prompt_update
+
+        A guild onboarding prompt was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the prompt that the options belong to.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.title`
+        - :attr:`~AuditLogDiff.options`
+        - :attr:`~AuditLogDiff.single_select`
+        - :attr:`~AuditLogDiff.required`
+        - :attr:`~AuditLogDiff.in_onboarding`
+
+        .. versionadded:: 2.6
+
+    .. attribute:: onboarding_prompt_delete
+
+        A guild onboarding prompt was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the prompt that the options belong to.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.title`
+        - :attr:`~AuditLogDiff.options`
+        - :attr:`~AuditLogDiff.single_select`
+        - :attr:`~AuditLogDiff.required`
+        - :attr:`~AuditLogDiff.in_onboarding`
+
+        .. versionadded:: 2.6
+
+    .. attribute:: onboarding_create
+
+        The guild's onboarding configuration was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        always ``None``. Use :attr:`~AuditLogEntry.guild` to access the guild.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.default_channels`
+        - :attr:`~AuditLogDiff.prompts`
+        - :attr:`~AuditLogDiff.mode`
+
+        .. versionadded:: 2.6
+
+    .. attribute:: onboarding_update
+
+        The guild's onboarding configuration was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        always ``None``. Use :attr:`~AuditLogEntry.guild` to access the guild.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.default_channels`
+        - :attr:`~AuditLogDiff.prompts`
+        - :attr:`~AuditLogDiff.mode`
+
+        .. versionadded:: 2.6
+
+    .. attribute:: home_settings_create
+
+        The guild's server guide was created.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: home_settings_update
+
+        The guild's server guide was updated.
+
+        .. versionadded:: 2.6
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -3917,6 +4015,35 @@ of :class:`enum.Enum`.
 
         The details of the activity are displayed.
 
+.. class:: OnboardingPromptType
+
+    Represents the type of onboarding prompt.
+
+    .. versionadded:: 2.6
+
+    .. attribute:: multiple_choice
+
+        Prompt options are multiple choice.
+
+    .. attribute:: dropdown
+
+        Prompt options are displayed as a drop-down.
+
+.. class:: OnboardingMode
+
+    Represents the onboarding constraint mode.
+
+    .. versionadded:: 2.6
+
+    .. attribute:: default
+
+        Only default channels count towards onboarding constraints.
+
+    .. attribute:: advanced
+
+        Default channels and questions count towards onboarding constraints.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -4163,9 +4290,9 @@ AuditLogDiff
 
     .. attribute:: type
 
-        The type of channel, sticker, webhook or integration.
+        The type of channel, sticker, webhook, integration or onboarding prompt.
 
-        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`]
+        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`, :class:`OnboardingPromptType`]
 
     .. attribute:: topic
 
@@ -4538,7 +4665,7 @@ AuditLogDiff
 
     .. attribute:: enabled
 
-        Whether the automod rule is active or not.
+        Whether guild onboarding or the automod rule is active or not.
 
         :type: :class:`bool`
 
@@ -4558,7 +4685,7 @@ AuditLogDiff
 
         The trigger for the automod rule.
 
-        .. note ::
+        .. note::
 
             The :attr:`~AutoModTrigger.type` of the trigger may be incorrect.
             Some attributes such as :attr:`~AutoModTrigger.keyword_filter`, :attr:`~AutoModTrigger.regex_patterns`,
@@ -4570,7 +4697,7 @@ AuditLogDiff
 
         The actions to take when an automod rule is triggered.
 
-        :type: List[AutoModRuleAction]
+        :type: List[:class:`AutoModRuleAction`]
 
     .. attribute:: exempt_roles
 
@@ -4667,6 +4794,71 @@ AuditLogDiff
         See also :attr:`SoundboardSound.volume`
 
         :type: :class:`float`
+
+    .. attribute:: options
+
+        The onboarding prompt options associated with this onboarding prompt.
+
+        See also :attr:`OnboardingPrompt.options`
+
+        :type: List[:class:`OnboardingPromptOption`]
+    
+    .. attribute:: default_channels
+
+        The default channels associated with the onboarding in this guild.
+
+        See also :attr:`Onboarding.default_channels`
+
+        :type: List[:class:`abc.GuildChannel`, :class:`Object`]
+
+    .. attribute:: prompts
+
+        The onboarding prompts associated with the onboarding in this guild.
+
+        See also :attr:`Onboarding.prompts`
+
+        :type: List[:class:`OnboardingPrompt`]
+
+    .. attribute:: title
+
+        The title of the onboarding prompt.
+
+        See also :attr:`OnboardingPrompt.title`
+
+        :type: :class:`str`
+
+    .. attribute:: single_select
+
+        Whether only one prompt option can be selected.
+
+        See also :attr:`OnboardingPrompt.single_select`
+
+        :type: :class:`bool`
+
+    .. attribute:: required
+
+        Whether the onboarding prompt is required to complete the onboarding.
+
+        See also :attr:`OnboardingPrompt.required`
+
+        :type: :class:`bool`
+
+    .. attribute:: in_onboarding
+
+        Whether this prompt is currently part of the onboarding flow.
+
+        See also :attr:`OnboardingPrompt.in_onboarding`
+
+        :type: :class:`bool`
+
+    .. attribute:: mode
+
+        The onboarding constraint mode.
+
+        See also :attr:`Onboarding.mode`
+
+        :type: :class:`OnboardingMode`
+
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
@@ -5289,6 +5481,31 @@ GuildSticker
 .. attributetable:: GuildSticker
 
 .. autoclass:: GuildSticker()
+    :members:
+
+Onboarding
+~~~~~~~~~~~
+
+.. attributetable:: Onboarding
+
+.. autoclass:: Onboarding()
+    :members:
+
+OnboardingPrompt
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: OnboardingPrompt
+
+.. autoclass:: OnboardingPrompt()
+    :members:
+
+
+OnboardingPromptOption
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: OnboardingPromptOption
+
+.. autoclass:: OnboardingPromptOption()
     :members:
 
 BaseSoundboardSound
