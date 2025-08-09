@@ -94,6 +94,7 @@ GuildFeature = Literal[
     'RAID_ALERTS_DISABLED',
     'SOUNDBOARD',
     'MORE_SOUNDBOARD',
+    'GUILD_TAGS',
 ]
 
 
