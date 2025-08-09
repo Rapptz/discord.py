@@ -1,0 +1,51 @@
+import discord
+import openai
+import os
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
+
+# 会話履歴（ユーザーごとに管理が理想）
+conversation_history = []
+
+async def get_openai_response(user_message):
+    # 会話履歴にユーザー発言を追加
+    conversation_history.append({"role": "user", "content": user_message})
+
+    # システムメッセージでBOTの役割を設定
+    messages = [
+        {"role": "system", "content": "You are an English teacher. Have natural conversations. Correct the user's English mistakes gently and teach politely."}
+    ] + conversation_history
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=150,
+        temperature=0.7,
+    )
+    reply = response.choices[0].message.content
+
+    # 会話履歴にBOTの返答を追加
+    conversation_history.append({"role": "assistant", "content": reply})
+
+    return reply
+
+@client.event
+async def on_ready():
+    print(f"Logged in as {client.user}")
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    # Discordで受け取ったメッセージをOpenAIに送り、返答を取得
+    user_text = message.content
+    reply = await get_openai_response(user_text)
+    await message.channel.send(reply)
+
+client.run("YOUR_DISCORD_BOT_TOKEN")
