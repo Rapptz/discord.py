@@ -263,7 +263,7 @@ class Asset(AssetMixin):
             state,
             url=f'{cls.BASE}/avatar-decoration-presets/{avatar_decoration}.png?size=96',
             key=avatar_decoration,
-            animated=True,
+            animated=False,
         )
 
     @classmethod
