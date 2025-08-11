@@ -255,7 +255,7 @@ class ActionRow(Item[V]):
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:
-        """Removes an item from the row.
+        """Removes an item from the action row.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -263,7 +263,7 @@ class ActionRow(Item[V]):
         Parameters
         ----------
         item: :class:`Item`
-            The item to remove from the view.
+            The item to remove from the action row.
         """
 
         try:
