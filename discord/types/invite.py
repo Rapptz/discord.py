@@ -68,7 +68,8 @@ class Invite(IncompleteInvite, total=False):
     expires_at: Optional[str]
 
 
-class InviteWithCounts(Invite, _GuildPreviewUnique): ...
+class InviteWithCounts(Invite, _GuildPreviewUnique):
+    ...
 
 
 class GatewayInviteCreate(TypedDict):
