@@ -172,7 +172,7 @@ class Section(Item[V]):
 
         Parameters
         ----------
-        item: :class:`TextDisplay`
+        item: :class:`Item`
             The item to remove from the section.
         """
 
