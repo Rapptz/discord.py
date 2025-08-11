@@ -332,12 +332,11 @@ class ActionRow(Item[V]):
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         id: Optional[int] = None,
     ) -> Callable[[ItemCallbackType[Button[V]]], Button[V]]:
-        """A decorator that attaches a button to a component.
+        """A decorator that attaches a button to the action row.
 
         The function being decorated should have three parameters, ``self`` representing
-        the :class:`discord.ui.LayoutView`, the :class:`discord.Interaction` you receive and
+        the :class:`discord.ui.ActionRow`, the :class:`discord.Interaction` you receive and
         the :class:`discord.ui.Button` being pressed.
-
         .. note::
 
             Buttons with a URL or a SKU cannot be created with this function.
