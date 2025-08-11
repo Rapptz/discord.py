@@ -204,7 +204,7 @@ class ActionRow(Item[V]):
         return self._children.copy()
 
     def walk_children(self) -> Generator[Item[V], Any, None]:
-        """An iterator that recursively walks through all the children of this view
+        """An iterator that recursively walks through all the children of this action row
         and it's children, if applicable.
 
         Yields
