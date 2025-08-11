@@ -114,7 +114,7 @@ class ActionRow(Item[V]):
             # or you can use your subclass:
             # row = MyActionRow()
 
-            # you can create items with row.button and row.select
+            # you can add items with row.button and row.select
             @row.button(label='A button!')
             async def row_button(self, interaction: discord.Interaction, button: discord.ui.Button):
                 await interaction.response.send_message('You clicked a button!')
