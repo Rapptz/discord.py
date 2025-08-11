@@ -480,10 +480,10 @@ class ActionRow(Item[V]):
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
     ) -> SelectCallbackDecorator[BaseSelectT]:
-        """A decorator that attaches a select menu to a component.
+        """A decorator that attaches a select menu to the action row.
 
         The function being decorated should have three parameters, ``self`` representing
-        the :class:`discord.ui.LayoutView`, the :class:`discord.Interaction` you receive and
+        the :class:`discord.ui.ActionRow`, the :class:`discord.Interaction` you receive and
         the chosen select class.
 
         To obtain the selected values inside the callback, you can use the ``values`` attribute of the chosen class in the callback. The list of values
