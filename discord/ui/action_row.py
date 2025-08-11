@@ -217,7 +217,7 @@ class ActionRow(Item[V]):
             yield child
 
     def add_item(self, item: Item[Any]) -> Self:
-        """Adds an item to this row.
+        """Adds an item to this action row.
 
         This function returns the class instance to allow for fluent-style
         chaining.
