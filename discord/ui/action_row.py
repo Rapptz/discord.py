@@ -298,7 +298,7 @@ class ActionRow(Item[V]):
         return _utils_get(self.walk_children(), id=id)
 
     def clear_items(self) -> Self:
-        """Removes all items from the row.
+        """Removes all items from the action row.
 
         This function returns the class instance to allow for fluent-style
         chaining.
