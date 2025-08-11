@@ -225,7 +225,7 @@ class ActionRow(Item[V]):
         Parameters
         ----------
         item: :class:`Item`
-            The item to add to the row.
+            The item to add to the action row.
 
         Raises
         ------
