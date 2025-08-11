@@ -2548,7 +2548,6 @@ class Client:
         data = await self.http.get_invite(
             resolved.code,
             with_counts=with_counts,
-            with_expiration=with_expiration,
             guild_scheduled_event_id=scheduled_event_id,
         )
         return Invite.from_incomplete(state=self._connection, data=data)
