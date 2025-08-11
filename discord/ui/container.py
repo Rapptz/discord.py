@@ -316,8 +316,8 @@ class Container(Item[V]):
 
         Parameters
         ----------
-        item: :class:`TextDisplay`
-            The item to remove from the section.
+        item: :class:`Item`
+            The item to remove from the container.
         """
 
         try:
