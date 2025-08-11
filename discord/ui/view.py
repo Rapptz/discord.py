@@ -637,7 +637,7 @@ class BaseView:
 
     def walk_children(self) -> Generator[Item[Any], None, None]:
         """An iterator that recursively walks through all the children of this view
-        and it's children, if applicable.
+        and its children, if applicable.
 
         Yields
         ------

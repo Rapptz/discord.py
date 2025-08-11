@@ -265,7 +265,7 @@ class Container(Item[V]):
 
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this container
-        and it's children, if applicable.
+        and its children, if applicable.
 
         Yields
         ------

@@ -106,8 +106,8 @@ class Section(Item[V]):
         return True
 
     def walk_children(self) -> Generator[Item[V], None, None]:
-        """An iterator that recursively walks through all the children of this section.
-        and it's children, if applicable. This includes the `accessory`.
+        """An iterator that recursively walks through all the children of this section
+        and its children, if applicable. This includes the `accessory`.
 
         Yields
         ------
