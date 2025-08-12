@@ -381,7 +381,7 @@ class Client:
 
         .. note::
 
-            This not include the emojis that are owned by the application.
+            This does not include the emojis that are owned by the application.
             Use :meth:`.fetch_application_emoji` to get those.
         """
         return self._connection.emojis
@@ -2510,6 +2510,9 @@ class Client:
             :attr:`.Invite.expires_at` field.
 
             .. versionadded:: 2.0
+            .. deprecated:: 2.6
+                This parameter is deprecated and will be removed in a future version as it is no
+                longer needed to fill the :attr:`.Invite.expires_at` field.
         scheduled_event_id: Optional[:class:`int`]
             The ID of the scheduled event this invite is for.
 
@@ -2545,7 +2548,6 @@ class Client:
         data = await self.http.get_invite(
             resolved.code,
             with_counts=with_counts,
-            with_expiration=with_expiration,
             guild_scheduled_event_id=scheduled_event_id,
         )
         return Invite.from_incomplete(state=self._connection, data=data)

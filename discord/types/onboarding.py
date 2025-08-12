@@ -22,49 +22,51 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from .snowflake import SnowflakeList
-from .user import User, AvatarDecorationData
-from typing_extensions import NotRequired
+from __future__ import annotations
+from typing import TYPE_CHECKING, Literal, Optional, TypedDict, List, Union
+
+from .emoji import PartialEmoji
+from .snowflake import Snowflake
+
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
 
-class Nickname(TypedDict):
-    nick: str
+PromptType = Literal[0, 1]
+OnboardingMode = Literal[0, 1]
 
 
-class PartialMember(TypedDict):
-    roles: SnowflakeList
-    joined_at: Optional[str]  # null if guest
-    deaf: bool
-    mute: bool
-    flags: int
+class _PromptOption(TypedDict):
+    channel_ids: List[Snowflake]
+    role_ids: List[Snowflake]
+    title: str
+    description: Optional[str]
 
 
-class Member(PartialMember, total=False):
-    avatar: str
-    user: User
-    nick: str
-    premium_since: Optional[str]
-    pending: bool
-    permissions: str
-    communication_disabled_until: str
-    banner: NotRequired[Optional[str]]
-    avatar_decoration_data: NotRequired[AvatarDecorationData]
+class CreatePromptOption(_PromptOption):
+    emoji_id: NotRequired[Snowflake]
+    emoji_name: NotRequired[str]
+    emoji_animated: NotRequired[bool]
 
 
-class _OptionalMemberWithUser(PartialMember, total=False):
-    avatar: str
-    nick: str
-    premium_since: Optional[str]
-    pending: bool
-    permissions: str
-    communication_disabled_until: str
-    avatar_decoration_data: NotRequired[AvatarDecorationData]
+class PromptOption(_PromptOption):
+    id: Snowflake
+    emoji: NotRequired[PartialEmoji]
 
 
-class MemberWithUser(_OptionalMemberWithUser):
-    user: User
+class Prompt(TypedDict):
+    id: Snowflake
+    options: List[Union[PromptOption, CreatePromptOption]]
+    title: str
+    single_select: bool
+    required: bool
+    in_onboarding: bool
+    type: PromptType
 
 
-class UserWithMember(User, total=False):
-    member: _OptionalMemberWithUser
+class Onboarding(TypedDict):
+    guild_id: Snowflake
+    prompts: List[Prompt]
+    default_channel_ids: List[Snowflake]
+    enabled: bool
+    mode: OnboardingMode

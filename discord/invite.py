@@ -32,6 +32,7 @@ from .mixins import Hashable
 from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, InviteType, try_enum
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
+from .flags import InviteFlags
 
 __all__ = (
     'PartialInviteChannel',
@@ -289,8 +290,6 @@ class Invite(Hashable):
     +------------------------------------+--------------------------------------------------------------+
     | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite` with ``with_counts`` enabled     |
     +------------------------------------+--------------------------------------------------------------+
-    | :attr:`expires_at`                 | :meth:`Client.fetch_invite` with ``with_expiration`` enabled |
-    +------------------------------------+--------------------------------------------------------------+
 
     If it's not in the table above then it is available by all methods.
 
@@ -331,6 +330,9 @@ class Invite(Hashable):
         :meth:`Client.fetch_invite` with ``with_expiration`` enabled, the invite will never expire.
 
         .. versionadded:: 2.0
+        .. versionchanged:: 2.6
+            This will always be returned from all methods. ``None`` if the invite will
+            never expire.
 
     channel: Optional[Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]]
         The channel the invite is for.
@@ -379,6 +381,7 @@ class Invite(Hashable):
         'scheduled_event',
         'scheduled_event_id',
         'type',
+        '_flags',
     )
 
     BASE = 'https://discord.gg'
@@ -432,6 +435,7 @@ class Invite(Hashable):
             else None
         )
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
+        self._flags: int = data.get('flags', 0)
 
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
@@ -522,6 +526,14 @@ class Invite(Hashable):
         if self.scheduled_event_id is not None:
             url += '?event=' + str(self.scheduled_event_id)
         return url
+
+    @property
+    def flags(self) -> InviteFlags:
+        """:class:`InviteFlags`: Returns the flags for this invite.
+
+        .. versionadded:: 2.6
+        """
+        return InviteFlags._from_value(self._flags)
 
     def set_scheduled_event(self, scheduled_event: Snowflake, /) -> Self:
         """Sets the scheduled event for this invite.
