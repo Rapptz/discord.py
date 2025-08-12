@@ -290,8 +290,6 @@ class Invite(Hashable):
     +------------------------------------+--------------------------------------------------------------+
     | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite` with ``with_counts`` enabled     |
     +------------------------------------+--------------------------------------------------------------+
-    | :attr:`expires_at`                 | :meth:`Client.fetch_invite` with ``with_expiration`` enabled |
-    +------------------------------------+--------------------------------------------------------------+
 
     If it's not in the table above then it is available by all methods.
 
@@ -332,6 +330,9 @@ class Invite(Hashable):
         :meth:`Client.fetch_invite` with ``with_expiration`` enabled, the invite will never expire.
 
         .. versionadded:: 2.0
+        .. versionchanged:: 2.6
+            This will always be returned from all methods. ``None`` if the invite will
+            never expire.
 
     channel: Optional[Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]]
         The channel the invite is for.
