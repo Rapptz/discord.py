@@ -319,7 +319,7 @@ class BaseView:
         return self._children.copy()
 
     @classmethod
-    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Self:
+    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Union[View, LayoutView]:
         """Converts a message's components into a :class:`View`.
 
         The :attr:`.Message.components` of a message are read-only
