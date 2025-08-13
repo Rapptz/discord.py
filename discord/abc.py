@@ -134,27 +134,23 @@ _undefined: Any = _Undefined()
 
 
 class _PinsIterator:
-    def __init__(
-        self,
-        iterator: AsyncIterator[PinnedMessage],
-    ) -> None:
+    def __init__(self, iterator: AsyncIterator[PinnedMessage]) -> None:
         self.__iterator: AsyncIterator[PinnedMessage] = iterator
 
-    def __await__(self) -> Generator[None, None, list[PinnedMessage]]:
+    def __await__(self) -> Generator[Any, None, List[PinnedMessage]]:
         warnings.warn(
             "`await <channel>.pins()` is deprecated; use `async for message in <channel>.pins()` instead.",
             DeprecationWarning,
             stacklevel=2,
         )
 
-        async def coro() -> list[PinnedMessage]:
-            return [i async for i in self.__iterator]
+        async def gather() -> List[PinnedMessage]:
+            return [msg async for msg in self.__iterator]
 
-        return coro().__await__()
+        return gather().__await__()
 
-    async def __aiter__(self) -> AsyncIterator[PinnedMessage]:
-        async for m in self.__iterator:
-            yield m
+    def __aiter__(self) -> AsyncIterator[PinnedMessage]:
+        return self.__iterator
 
 
 async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
