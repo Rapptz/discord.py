@@ -103,8 +103,7 @@ if TYPE_CHECKING:
         Thread,
     ]
 
-    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
-
+ItemCallbackType = Callable[['S', 'Interaction[Any]', I], Coroutine[Any, Any, Any]]
 S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
 V = TypeVar('V', bound='BaseView', covariant=True)
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
