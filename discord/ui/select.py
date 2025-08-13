@@ -103,7 +103,8 @@ if TYPE_CHECKING:
         Thread,
     ]
 
-ItemCallbackType = Callable[['S', 'Interaction[Any]', I], Coroutine[Any, Any, Any]]
+    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
+
 S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
 V = TypeVar('V', bound='BaseView', covariant=True)
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
@@ -112,7 +113,7 @@ UserSelectT = TypeVar('UserSelectT', bound='UserSelect[Any]')
 RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect[Any]')
 ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect[Any]')
 MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect[Any]')
-SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[S, BaseSelectT]], BaseSelectT]
+SelectCallbackDecorator: TypeAlias = Callable[['ItemCallbackType[S, BaseSelectT]'], BaseSelectT]
 DefaultSelectComponentTypes = Literal[
     ComponentType.user_select,
     ComponentType.role_select,
