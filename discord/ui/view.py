@@ -352,7 +352,7 @@ class BaseView:
         else:
             raise TypeError('unreachable exception')
 
-        view =  view_cls(timeout=timeout)
+        view = view_cls(timeout=timeout)
         row = 0
 
         for component in message.components:
