@@ -34,8 +34,10 @@ from typing import (
     AsyncIterator,
     Callable,
     Dict,
+    Generator,
     Iterable,
     List,
+    Literal,
     Optional,
     TYPE_CHECKING,
     Protocol,
@@ -61,6 +63,7 @@ from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
 from .flags import InviteFlags
+import warnings
 
 __all__ = (
     'Snowflake',
@@ -114,6 +117,11 @@ if TYPE_CHECKING:
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
+    class PinnedMessage(Message):
+        pinned_at: datetime
+        pinned: Literal[True]
+
+
 MISSING = utils.MISSING
 
 
@@ -123,6 +131,30 @@ class _Undefined:
 
 
 _undefined: Any = _Undefined()
+
+
+class _PinsIterator:
+    def __init__(
+        self,
+        iterator: AsyncIterator[PinnedMessage],
+    ) -> None:
+        self.__iterator: AsyncIterator[PinnedMessage] = iterator
+
+    def __await__(self) -> Generator[None, None, list[PinnedMessage]]:
+        warnings.warn(
+            "`await <channel>.pins()` is deprecated; use `async for message in <channel>.pins()` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        async def coro() -> list[PinnedMessage]:
+            return [i async for i in self.__iterator]
+
+        return coro().__await__()
+
+    async def __aiter__(self) -> AsyncIterator[PinnedMessage]:
+        async for m in self.__iterator:
+            yield m
 
 
 async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
@@ -1722,61 +1754,13 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def pins(
+    async def __pins(
         self,
         *,
-        limit: Optional[int] = None,
-        before: SnowflakeTime = MISSING,
+        limit: Optional[int] = 50,
+        before: Optional[SnowflakeTime] = None,
         oldest_first: bool = False,
-    ) -> AsyncIterator[Message]:
-        """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
-
-        You must have the following permissions to get these:
-        :attr:`~discord.Permissions.view_channel`, :attr:`~discord.Permissions.read_message_history`.
-
-        .. versionchanged:: 2.6
-            Due to a change in Discord's API, this now returns a paginated iterator instead of a list.
-
-        .. note::
-
-            Due to a limitation with the Discord API, the :class:`.Message`
-            objects returned by this method do not contain complete
-            :attr:`.Message.reactions` data.
-
-        Parameters
-        -----------
-        limit: Optional[int]
-            The number of pinned messages to retrieve. If ``None``, it retrieves
-            every pinned message in the channel. Note, however, that this would
-            make it a slow operation.
-            Defaults to ``50``.
-
-            .. versionadded:: 2.6
-        before: Union[:class:`datetime.datetime`, :class:`.abc.Snowflake`]
-            Retrieve pinned messages before this time or snowflake.
-            If a datetime is provided, it is recommended to use a UTC aware datetime.
-            If the datetime is naive, it is assumed to be local time.
-
-            .. versionadded:: 2.6
-        oldest_first: :class:`bool`
-            If set to ``True``, return messages in oldest->newest order.
-            Defaults to ``False``.
-
-            .. versionadded:: 2.6
-
-        Raises
-        -------
-        ~discord.Forbidden
-            You do not have the permission to retrieve pinned messages.
-        ~discord.HTTPException
-            Retrieving the pinned messages failed.
-
-        Returns
-        --------
-        :class:`~discord.Message`
-            The pinned message with :attr:`.Message.pinned_at` set.
-        """
-
+    ) -> AsyncIterator[PinnedMessage]:
         channel = await self._get_channel()
         state = self._state
         max_limit: int = 50
@@ -1786,10 +1770,11 @@ class Messageable:
             if before is not None
             else None
         )
+
         while True:
             retrieve = max_limit if limit is None else min(limit, max_limit)
             if retrieve < 1:
-                return
+                break
 
             data = await self._state.http.pins_from(
                 channel_id=channel.id,
@@ -1797,7 +1782,7 @@ class Messageable:
                 before=time,
             )
 
-            items = data and data["items"]
+            items = data and data['items']
             if items:
                 if limit is not None:
                     limit -= len(items)
@@ -1809,12 +1794,92 @@ class Messageable:
                 limit = 0
 
             if oldest_first:
-                reversed(items)
+                items = reversed(items)
 
-            for m in items:
-                message = state.create_message(channel=channel, data=m['message'])
+            count = 0
+            for count, m in enumerate(items, start=1):
+                message: Message = state.create_message(channel=channel, data=m['message'])
                 message._pinned_at = utils.parse_time(m['pinned_at'])
-                yield message
+                yield message  # pyright: ignore[reportReturnType]
+
+            if count < max_limit:
+                break
+
+    def pins(
+        self,
+        *,
+        limit: Optional[int] = 50,
+        before: Optional[SnowflakeTime] = None,
+        oldest_first: bool = False,
+    ) -> _PinsIterator:
+        """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
+
+        You must have :attr:`~discord.Permissions.view_channel` and
+        :attr:`~discord.Permissions.read_message_history` in order to use this.
+
+        .. versionchanged:: 2.6
+
+            Due to a change in Discord's API, this now returns a paginated iterator instead of a list.
+
+            For backwards compatibility, you can still retrieve a list of pinned messages by
+            using ``await`` on the returned object. This is however deprecated.
+
+        .. note::
+
+            Due to a limitation with the Discord API, the :class:`.Message`
+            object returned by this method does not contain complete
+            :attr:`.Message.reactions` data.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            counter = 0
+            async for message in channel.pins(limit=250):
+                counter += 1
+
+        Flattening into a list: ::
+
+            messages = [message async for message in channel.pins(limit=50)]
+            # messages is now a list of Message...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[int]
+            The number of pinned messages to retrieve. If ``None``, it retrieves
+            every pinned message in the channel. Note, however, that this would
+            make it a slow operation.
+            Defaults to ``50``.
+
+            .. versionadded:: 2.6
+        before: Optional[Union[:class:`datetime.datetime`, :class:`.abc.Snowflake`]]
+            Retrieve pinned messages before this time or snowflake.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
+        oldest_first: :class:`bool`
+            If set to ``True``, return messages in oldest pin->newest pin order.
+            Defaults to ``False``.
+
+            .. versionadded:: 2.6
+
+        Raises
+        -------
+        ~discord.Forbidden
+            You do not have the permission to retrieve pinned messages.
+        ~discord.HTTPException
+            Retrieving the pinned messages failed.
+
+        Yields
+        -------
+        :class:`~discord.Message`
+            The pinned message with :attr:`.Message.pinned_at` set.
+        """
+        return _PinsIterator(self.__pins(limit=limit, before=before, oldest_first=oldest_first))
 
     async def history(
         self,
