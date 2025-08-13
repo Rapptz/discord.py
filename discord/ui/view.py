@@ -925,15 +925,7 @@ class ViewStore:
         try:
             child_index = parent._children.index(base_item)  # type: ignore
         except ValueError:
-            # handle cases in which the item is a section accessory
-            if getattr(base_item._parent, '__discord_ui_section__', False):
-                if (
-                    base_item._parent.accessory.type.value == component_type  # type: ignore
-                    and getattr(base_item._parent.accessory, 'custom_id', None) == custom_id  # type: ignore
-                ):
-                    base_item._parent.accessory = item  # type: ignore
-            else:
-                return
+            return
         else:
             parent._children[child_index] = item  # type: ignore
 
