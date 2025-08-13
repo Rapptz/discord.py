@@ -41,7 +41,7 @@ from typing import (
     overload,
 )
 
-from .item import Item, ItemCallbackType
+from .item import I, Item
 from .button import Button, button as _button
 from .select import select as _select, Select, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
 from ..components import ActionRow as ActionRowComponent
@@ -61,12 +61,15 @@ if TYPE_CHECKING:
         RoleSelectT,
         UserSelectT,
         SelectT,
-        SelectCallbackDecorator,
     )
     from ..emoji import Emoji
     from ..components import SelectOption
     from ..interactions import Interaction
 
+    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
+    SelectCallbackDecorator = Callable[[ItemCallbackType['S', BaseSelectT]], BaseSelectT]
+
+S = TypeVar('S', bound='ActionRow', covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('ActionRow',)
@@ -75,8 +78,8 @@ __all__ = ('ActionRow',)
 class _ActionRowCallback:
     __slots__ = ('row', 'callback', 'item')
 
-    def __init__(self, callback: ItemCallbackType[Any], row: ActionRow, item: Item[Any]) -> None:
-        self.callback: ItemCallbackType[Any] = callback
+    def __init__(self, callback: ItemCallbackType[S, Any], row: ActionRow, item: Item[Any]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
         self.row: ActionRow = row
         self.item: Item[Any] = item
 
@@ -127,7 +130,7 @@ class ActionRow(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
-    __action_row_children_items__: ClassVar[List[ItemCallbackType[Any]]] = []
+    __action_row_children_items__: ClassVar[List[ItemCallbackType[Self, Any]]] = []
     __discord_ui_action_row__: ClassVar[bool] = True
     __item_repr_attributes__ = ('id',)
 
@@ -149,7 +152,7 @@ class ActionRow(Item[V]):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        children: Dict[str, ItemCallbackType[Any]] = {}
+        children: Dict[str, ItemCallbackType[Self, Any]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if hasattr(member, '__discord_ui_model_type__'):
@@ -331,7 +334,7 @@ class ActionRow(Item[V]):
         style: ButtonStyle = ButtonStyle.secondary,
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         id: Optional[int] = None,
-    ) -> Callable[[ItemCallbackType[Button[V]]], Button[V]]:
+    ) -> Callable[[ItemCallbackType[S, Button[V]]], Button[V]]:
         """A decorator that attaches a button to the action row.
 
         The function being decorated should have three parameters, ``self`` representing
@@ -367,7 +370,7 @@ class ActionRow(Item[V]):
             .. versionadded:: 2.6
         """
 
-        def decorator(func: ItemCallbackType[Button[V]]) -> ItemCallbackType[Button[V]]:
+        def decorator(func: ItemCallbackType[S, Button[V]]) -> ItemCallbackType[S, Button[V]]:
             ret = _button(
                 label=label,
                 custom_id=custom_id,
@@ -395,7 +398,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[SelectT]:
+    ) -> SelectCallbackDecorator[S, SelectT]:
         ...
 
     @overload
@@ -412,7 +415,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[UserSelectT]:
+    ) -> SelectCallbackDecorator[S, UserSelectT]:
         ...
 
     @overload
@@ -429,7 +432,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[RoleSelectT]:
+    ) -> SelectCallbackDecorator[S, RoleSelectT]:
         ...
 
     @overload
@@ -446,7 +449,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[ChannelSelectT]:
+    ) -> SelectCallbackDecorator[S, ChannelSelectT]:
         ...
 
     @overload
@@ -463,7 +466,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[MentionableSelectT]:
+    ) -> SelectCallbackDecorator[S, MentionableSelectT]:
         ...
 
     def select(
@@ -479,7 +482,7 @@ class ActionRow(Item[V]):
         disabled: bool = False,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
-    ) -> SelectCallbackDecorator[BaseSelectT]:
+    ) -> SelectCallbackDecorator[S, BaseSelectT]:
         """A decorator that attaches a select menu to the action row.
 
         The function being decorated should have three parameters, ``self`` representing
@@ -554,7 +557,7 @@ class ActionRow(Item[V]):
             .. versionadded:: 2.6
         """
 
-        def decorator(func: ItemCallbackType[BaseSelectT]) -> ItemCallbackType[BaseSelectT]:
+        def decorator(func: ItemCallbackType[S, BaseSelectT]) -> ItemCallbackType[S, BaseSelectT]:
             r = _select(  # type: ignore
                 cls=cls,  # type: ignore
                 placeholder=placeholder,

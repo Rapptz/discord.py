@@ -87,7 +87,7 @@ if TYPE_CHECKING:
     from ..state import ConnectionState
     from .modal import Modal
 
-    ItemLike = Union[ItemCallbackType[Any], Item[Any]]
+    ItemLike = Union[ItemCallbackType[Any, Any], Item[Any]]
 
 
 _log = logging.getLogger(__name__)
@@ -201,8 +201,8 @@ class _ViewWeights:
 class _ViewCallback:
     __slots__ = ('view', 'callback', 'item')
 
-    def __init__(self, callback: ItemCallbackType[Any], view: BaseView, item: Item[BaseView]) -> None:
-        self.callback: ItemCallbackType[Any] = callback
+    def __init__(self, callback: ItemCallbackType[Any, Any], view: BaseView, item: Item[BaseView]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
         self.view: BaseView = view
         self.item: Item[BaseView] = item
 
@@ -791,7 +791,7 @@ class LayoutView(BaseView):
         super().__init_subclass__()
 
         children: Dict[str, ItemLike] = {}
-        callback_children: Dict[str, ItemCallbackType[Any]] = {}
+        callback_children: Dict[str, ItemCallbackType[Any, Any]] = {}
 
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():

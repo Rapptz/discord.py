@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import (
     Any,
+    Coroutine,
     List,
     Literal,
     Optional,
@@ -42,7 +43,7 @@ from contextvars import ContextVar
 import inspect
 import os
 
-from .item import Item, ItemCallbackType
+from .item import Item, I
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
@@ -73,6 +74,7 @@ if TYPE_CHECKING:
     from typing_extensions import TypeAlias, TypeGuard
 
     from .view import BaseView
+    from .action_row import ActionRow
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
@@ -101,6 +103,9 @@ if TYPE_CHECKING:
         Thread,
     ]
 
+    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
+
+S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
 V = TypeVar('V', bound='BaseView', covariant=True)
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
 SelectT = TypeVar('SelectT', bound='Select[Any]')
@@ -108,7 +113,7 @@ UserSelectT = TypeVar('UserSelectT', bound='UserSelect[Any]')
 RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect[Any]')
 ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect[Any]')
 MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect[Any]')
-SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[BaseSelectT]], BaseSelectT]
+SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[S, BaseSelectT]], BaseSelectT]
 DefaultSelectComponentTypes = Literal[
     ComponentType.user_select,
     ComponentType.role_select,
@@ -963,7 +968,7 @@ def select(
     disabled: bool = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[SelectT]:
+) -> SelectCallbackDecorator[S, SelectT]:
     ...
 
 
@@ -981,7 +986,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[UserSelectT]:
+) -> SelectCallbackDecorator[S, UserSelectT]:
     ...
 
 
@@ -999,7 +1004,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[RoleSelectT]:
+) -> SelectCallbackDecorator[S, RoleSelectT]:
     ...
 
 
@@ -1017,7 +1022,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[ChannelSelectT]:
+) -> SelectCallbackDecorator[S, ChannelSelectT]:
     ...
 
 
@@ -1035,7 +1040,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[MentionableSelectT]:
+) -> SelectCallbackDecorator[S, MentionableSelectT]:
     ...
 
 
@@ -1052,7 +1057,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = MISSING,
     row: Optional[int] = None,
     id: Optional[int] = None,
-) -> SelectCallbackDecorator[BaseSelectT]:
+) -> SelectCallbackDecorator[S, BaseSelectT]:
     """A decorator that attaches a select menu to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -1141,7 +1146,7 @@ def select(
         .. versionadded:: 2.6
     """
 
-    def decorator(func: ItemCallbackType[BaseSelectT]) -> ItemCallbackType[BaseSelectT]:
+    def decorator(func: ItemCallbackType[S, BaseSelectT]) -> ItemCallbackType[S, BaseSelectT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
         callback_cls = getattr(cls, '__origin__', cls)

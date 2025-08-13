@@ -25,12 +25,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
-from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Any, Callable, Coroutine, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import inspect
 import os
 
 
-from .item import Item, ItemCallbackType
+from .item import Item, I
 from ..enums import ButtonStyle, ComponentType
 from ..partial_emoji import PartialEmoji, _EmojiTag
 from ..components import Button as ButtonComponent
@@ -44,9 +44,14 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .view import BaseView
+    from .action_row import ActionRow
     from ..emoji import Emoji
+    from ..interactions import Interaction
     from ..types.components import ButtonComponent as ButtonComponentPayload
 
+    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
+
+S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
 V = TypeVar('V', bound='BaseView', covariant=True)
 
 
@@ -316,7 +321,7 @@ def button(
     emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
     row: Optional[int] = None,
     id: Optional[int] = None,
-) -> Callable[[ItemCallbackType[Button[V]]], Button[V]]:
+) -> Callable[[ItemCallbackType[S, Button[V]]], Button[V]]:
     """A decorator that attaches a button to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -363,7 +368,7 @@ def button(
         .. versionadded:: 2.6
     """
 
-    def decorator(func: ItemCallbackType[Button[V]]) -> ItemCallbackType[Button[V]]:
+    def decorator(func: ItemCallbackType[S, Button[V]]) -> ItemCallbackType[S, Button[V]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 

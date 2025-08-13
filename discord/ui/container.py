@@ -27,6 +27,7 @@ import copy
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     ClassVar,
     Coroutine,
     Dict,
@@ -38,7 +39,7 @@ from typing import (
     Union,
 )
 
-from .item import Item, ItemCallbackType
+from .item import Item, I
 from .view import _component_to_item, LayoutView
 from ..enums import ComponentType
 from ..utils import get as _utils_get
@@ -50,6 +51,9 @@ if TYPE_CHECKING:
     from ..components import Container as ContainerComponent
     from ..interactions import Interaction
 
+    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
+
+S = TypeVar('S', bound='Container', covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('Container',)
@@ -58,8 +62,8 @@ __all__ = ('Container',)
 class _ContainerCallback:
     __slots__ = ('container', 'callback', 'item')
 
-    def __init__(self, callback: ItemCallbackType[Any], container: Container, item: Item[Any]) -> None:
-        self.callback: ItemCallbackType[Any] = callback
+    def __init__(self, callback: ItemCallbackType[S, Any], container: Container, item: Item[Any]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
         self.container: Container = container
         self.item: Item[Any] = item
 
@@ -117,7 +121,7 @@ class Container(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
-    __container_children_items__: ClassVar[Dict[str, Union[ItemCallbackType[Any], Item[Any]]]] = {}
+    __container_children_items__: ClassVar[Dict[str, Union[ItemCallbackType[Self, Any], Item[Any]]]] = {}
     __discord_ui_container__: ClassVar[bool] = True
     __item_repr_attributes__ = (
         'accent_colour',
@@ -177,7 +181,7 @@ class Container(Item[V]):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        children: Dict[str, Union[ItemCallbackType[Any], Item[Any]]] = {}
+        children: Dict[str, Union[ItemCallbackType[Self, Any], Item[Any]]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
