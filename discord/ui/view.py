@@ -344,7 +344,15 @@ class BaseView:
             The converted view. This will always return one of :class:`View` or
             :class:`LayoutView`, and not one of its subclasses.
         """
-        view = cls(timeout=timeout)
+
+        if issubclass(cls, View):
+            view_cls = View
+        elif issubclass(cls, LayoutView):
+            view_cls = LayoutView
+        else:
+            raise TypeError('unreachable exception')
+
+        view =  view_cls(timeout=timeout)
         row = 0
 
         for component in message.components:
