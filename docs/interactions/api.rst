@@ -640,7 +640,7 @@ Modal
 .. attributetable:: discord.ui.Modal
 
 .. autoclass:: discord.ui.Modal
-    :members: 
+    :members:
     :inherited-members:
     :exclude-members: from_message
 
