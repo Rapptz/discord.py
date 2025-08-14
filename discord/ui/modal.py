@@ -34,6 +34,7 @@ from ..utils import MISSING, find
 from .._types import ClientT
 from .item import Item
 from .view import View
+from .label import Label
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -170,8 +171,10 @@ class Modal(View):
         for component in components:
             if component['type'] == 1:
                 self._refresh(interaction, component['components'])
+            elif component['type'] == 18:
+                self._refresh(interaction, [component['component']])
             else:
-                item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
+                item = find(lambda i: getattr(i, 'custom_id', None) == component['custom_id'], self.walk_children())  # type: ignore
                 if item is None:
                     _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
                     continue
@@ -193,6 +196,28 @@ class Modal(View):
             # No error, so assume this will always happen
             # In the future, maybe this will require checking if we set an error response.
             self.stop()
+
+    def to_components(self) -> List[Dict[str, Any]]:
+        def key(item: Item) -> int:
+            return item._rendered_row or 0
+
+        children = sorted(self._children, key=key)
+        components: List[Dict[str, Any]] = []
+        for child in children:
+            if isinstance(child, Label):
+                components.append(child.to_component_dict())  # type: ignore
+            else:
+                # Every implicit child wrapped in an ActionRow in a modal
+                # has a single child of width 5
+                # It's also deprecated to use ActionRow in modals
+                components.append(
+                    {
+                        'type': 1,
+                        'components': [child.to_component_dict()],
+                    }
+                )
+
+        return components
 
     def _dispatch_submit(
         self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]

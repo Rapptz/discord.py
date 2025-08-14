@@ -209,7 +209,13 @@ class ModalSubmitTextInputInteractionData(TypedDict):
     value: str
 
 
-ModalSubmitComponentItemInteractionData = ModalSubmitTextInputInteractionData
+class ModalSubmitStringSelectInteractionData(TypedDict):
+    type: Literal[3]
+    custom_id: str
+    values: List[str]
+
+
+ModalSubmitComponentItemInteractionData = Union[ModalSubmitTextInputInteractionData, ModalSubmitStringSelectInteractionData]
 
 
 class ModalSubmitActionRowInteractionData(TypedDict):
@@ -217,7 +223,14 @@ class ModalSubmitActionRowInteractionData(TypedDict):
     components: List[ModalSubmitComponentItemInteractionData]
 
 
-ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData]
+class ModalSubmitLabelInteractionData(TypedDict):
+    type: Literal[18]
+    component: ModalSubmitComponentItemInteractionData
+
+
+ModalSubmitComponentInteractionData = Union[
+    ModalSubmitLabelInteractionData, ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData
+]
 
 
 class ModalSubmitInteractionData(TypedDict):

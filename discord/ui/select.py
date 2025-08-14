@@ -239,6 +239,7 @@ class BaseSelect(Item[V]):
         min_values: Optional[int] = None,
         max_values: Optional[int] = None,
         disabled: bool = False,
+        required: bool = False,
         options: List[SelectOption] = MISSING,
         channel_types: List[ChannelType] = MISSING,
         default_values: Sequence[SelectDefaultValue] = MISSING,
@@ -257,6 +258,7 @@ class BaseSelect(Item[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             channel_types=[] if channel_types is MISSING else channel_types,
             options=[] if options is MISSING else options,
             default_values=[] if default_values is MISSING else default_values,
@@ -333,6 +335,18 @@ class BaseSelect(Item[V]):
         self._underlying.disabled = bool(value)
 
     @property
+    def required(self) -> bool:
+        """:class:`bool`: Whether the select is required or not. Only supported in modals.
+
+        .. versionadded:: 2.6
+        """
+        return self._underlying.required
+
+    @required.setter
+    def required(self, value: bool) -> None:
+        self._underlying.required = bool(value)
+
+    @property
     def width(self) -> int:
         return 5
 
@@ -399,6 +413,10 @@ class Select(BaseSelect[V]):
         Can only contain up to 25 items.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -426,6 +444,7 @@ class Select(BaseSelect[V]):
         max_values: int = 1,
         options: List[SelectOption] = MISSING,
         disabled: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
@@ -436,6 +455,7 @@ class Select(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             options=options,
             row=row,
             id=id,

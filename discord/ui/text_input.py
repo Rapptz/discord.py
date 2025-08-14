@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Literal, Optional, Tuple, TypeVar
 
 from ..components import TextInput as TextInputComponent
 from ..enums import ComponentType, TextStyle
-from ..utils import MISSING
+from ..utils import MISSING, deprecated
 from .item import Item
 
 if TYPE_CHECKING:
@@ -63,9 +63,15 @@ class TextInput(Item[V]):
 
     Parameters
     ------------
-    label: :class:`str`
+    label: Optional[:class:`str`]
         The label to display above the text input.
         Can only be up to 45 characters.
+
+        .. deprecated:: 2.6
+            This parameter is deprecated, use :class:`discord.ui.Label` instead.
+
+        .. versionchanged:: 2.6
+            This parameter is now optional and defaults to ``None``.
     custom_id: :class:`str`
         The ID of the text input that gets received during an interaction.
         If not given then one is generated for you.
@@ -108,7 +114,7 @@ class TextInput(Item[V]):
     def __init__(
         self,
         *,
-        label: str,
+        label: Optional[str] = None,
         style: TextStyle = TextStyle.short,
         custom_id: str = MISSING,
         placeholder: Optional[str] = None,
@@ -166,12 +172,14 @@ class TextInput(Item[V]):
         return self._value or ''
 
     @property
-    def label(self) -> str:
+    @deprecated('discord.ui.Label')
+    def label(self) -> Optional[str]:
         """:class:`str`: The label of the text input."""
         return self._underlying.label
 
     @label.setter
-    def label(self, value: str) -> None:
+    @deprecated('discord.ui.Label')
+    def label(self, value: Optional[str]) -> None:
         self._underlying.label = value
 
     @property

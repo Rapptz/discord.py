@@ -677,6 +677,7 @@ class ComponentType(Enum):
     file = 13
     separator = 14
     container = 17
+    label = 18
 
     def __int__(self) -> int:
         return self.value

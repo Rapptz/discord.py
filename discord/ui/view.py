@@ -65,6 +65,7 @@ from ..components import (
     SeparatorComponent,
     ThumbnailComponent,
     Container as ContainerComponent,
+    LabelComponent,
 )
 from ..utils import get as _utils_get, find as _utils_find
 
@@ -147,6 +148,10 @@ def _component_to_item(component: Component, parent: Optional[Item] = None) -> I
         from .container import Container
 
         item = Container.from_component(component)
+    elif isinstance(component, LabelComponent):
+        from .label import Label
+
+        item = Label.from_component(component)
     else:
         item = Item.from_component(component)
 

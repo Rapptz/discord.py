@@ -113,6 +113,15 @@ TextInput
     :members:
     :inherited-members:
 
+LabelComponent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: LabelComponent
+
+.. autoclass:: LabelComponent()
+    :members:
+    :inherited-members:
+
 
 SectionComponent
 ~~~~~~~~~~~~~~~~
@@ -425,7 +434,7 @@ Enumerations
     .. attribute:: media_gallery
 
         Represents a media gallery component.
-        
+
         .. versionadded:: 2.6
 
     .. attribute:: file
@@ -443,6 +452,12 @@ Enumerations
     .. attribute:: container
 
         Represents a component which holds different components in a container.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: label
+
+        Represents a label container component, usually in a modal.
 
         .. versionadded:: 2.6
 
@@ -739,6 +754,15 @@ File
 .. attributetable:: discord.ui.File
 
 .. autoclass:: discord.ui.File
+    :members:
+    :inherited-members:
+
+Label
+~~~~~~
+
+.. attributetable:: discord.ui.Label
+
+.. autoclass:: discord.ui.Label
     :members:
     :inherited-members:
 
