@@ -121,12 +121,6 @@ if TYPE_CHECKING:
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
 
-    class _CreateChannelWithCategory(TypedDict, total=False):
-        category: Optional[CategoryChannel]
-
-    class _CreateNewsChannel(TypedDict, total=False):
-        news: bool
-
     class _BaseCreateChannelOptions(TypedDict, total=False):
         reason: Optional[str]
         position: int
