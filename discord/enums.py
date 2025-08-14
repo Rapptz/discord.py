@@ -81,6 +81,8 @@ __all__ = (
     'StatusDisplayType',
     'OnboardingPromptType',
     'OnboardingMode',
+    'SeparatorSpacing',
+    'MediaItemLoadingState',
 )
 
 
@@ -668,6 +670,13 @@ class ComponentType(Enum):
     role_select = 6
     mentionable_select = 7
     channel_select = 8
+    section = 9
+    text_display = 10
+    thumbnail = 11
+    media_gallery = 12
+    file = 13
+    separator = 14
+    container = 17
 
     def __int__(self) -> int:
         return self.value
@@ -951,6 +960,18 @@ class OnboardingPromptType(Enum):
 class OnboardingMode(Enum):
     default = 0
     advanced = 1
+
+
+class SeparatorSpacing(Enum):
+    small = 1
+    large = 2
+
+
+class MediaItemLoadingState(Enum):
+    unknown = 0
+    loading = 1
+    loaded = 2
+    not_found = 3
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

@@ -92,12 +92,17 @@ class TextInput(Item[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
         'label',
         'placeholder',
         'required',
+        'id',
     )
 
     def __init__(
@@ -112,6 +117,7 @@ class TextInput(Item[V]):
         min_length: Optional[int] = None,
         max_length: Optional[int] = None,
         row: Optional[int] = None,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__()
         self._value: Optional[str] = default
@@ -129,8 +135,10 @@ class TextInput(Item[V]):
             required=required,
             min_length=min_length,
             max_length=max_length,
+            id=id,
         )
         self.row = row
+        self.id = id
 
     def __str__(self) -> str:
         return self.value
@@ -241,6 +249,7 @@ class TextInput(Item[V]):
             min_length=component.min_length,
             max_length=component.max_length,
             row=None,
+            id=component.id,
         )
 
     @property

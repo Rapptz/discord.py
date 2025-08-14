@@ -71,7 +71,7 @@ from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .invite import Invite
 from .integrations import _integration_factory
 from .interactions import Interaction
-from .ui.view import ViewStore, View
+from .ui.view import ViewStore, BaseView
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
@@ -412,12 +412,12 @@ class ConnectionState(Generic[ClientT]):
         self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
         return sticker
 
-    def store_view(self, view: View, message_id: Optional[int] = None, interaction_id: Optional[int] = None) -> None:
+    def store_view(self, view: BaseView, message_id: Optional[int] = None, interaction_id: Optional[int] = None) -> None:
         if interaction_id is not None:
             self._view_store.remove_interaction_mapping(interaction_id)
         self._view_store.add_view(view, message_id)
 
-    def prevent_view_updates_for(self, message_id: int) -> Optional[View]:
+    def prevent_view_updates_for(self, message_id: int) -> Optional[BaseView]:
         return self._view_store.remove_message_tracking(message_id)
 
     def store_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
@@ -427,7 +427,7 @@ class ConnectionState(Generic[ClientT]):
         self._view_store.remove_dynamic_items(*items)
 
     @property
-    def persistent_views(self) -> Sequence[View]:
+    def persistent_views(self) -> Sequence[BaseView]:
         return self._view_store.persistent_views
 
     @property
