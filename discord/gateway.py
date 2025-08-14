@@ -160,9 +160,11 @@ class KeepAliveHandler(threading.Thread):
                     f.result()
                 except Exception:
                     _log.exception('An error occurred while stopping the gateway. Ignoring.')
+                except BaseException as exc:
+                    _log.debug('A BaseException was raised while stopping the gateway', exc_info=exc)
                 finally:
                     self.stop()
-                    return
+                return
 
             data = self.get_payload()
             _log.debug(self.msg, self.shard_id, data['d'])
