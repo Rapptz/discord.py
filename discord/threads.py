@@ -272,12 +272,12 @@ class Thread(Messageable, Hashable):
         .. versionadded:: 2.1
         """
         tags = []
-        if self.parent is None or self.parent.type != ChannelType.forum:
+        if self.parent is None or self.parent.type not in (ChannelType.forum, ChannelType.media):
             return tags
 
         parent = self.parent
         for tag_id in self._applied_tags:
-            tag = parent.get_tag(tag_id)
+            tag = parent.get_tag(tag_id)  # type: ignore # parent here will be ForumChannel instance
             if tag is not None:
                 tags.append(tag)
 

@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .errors import MissingApplicationID
-from ..flags import AppCommandContext, AppInstallationType
+from ..flags import AppCommandContext, AppInstallationType, ChannelFlags
 from .translator import TranslationContextLocation, TranslationContext, locale_str, Translator
 from ..permissions import Permissions
 from ..enums import (
@@ -37,6 +37,7 @@ from ..enums import (
     Locale,
     try_enum,
 )
+import array
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
 from ..object import Object
@@ -84,7 +85,7 @@ if TYPE_CHECKING:
     from ..abc import Snowflake
     from ..state import ConnectionState
     from ..guild import GuildChannel, Guild
-    from ..channel import TextChannel
+    from ..channel import TextChannel, ForumChannel, ForumTag
     from ..threads import Thread
     from ..user import User
 
@@ -575,6 +576,35 @@ class AppCommandChannel(Hashable):
         the application command in that channel.
     guild_id: :class:`int`
         The guild ID this channel belongs to.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
+
+        .. versionadded:: 2.6
+    topic: Optional[:class:`str`]
+        The channel's topic. ``None`` if it doesn't exist.
+
+        .. versionadded:: 2.6
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0.
+
+        .. versionadded:: 2.6
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
+
+        .. versionadded:: 2.6
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this channel. A value of ``0`` denotes that it is disabled.
+        Bots and users with :attr:`~discord.Permissions.manage_channels` or
+        :attr:`~discord.Permissions.manage_messages` bypass slowmode.
+
+        .. versionadded:: 2.6
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work" or "age restricted".
+
+        .. versionadded:: 2.6
     """
 
     __slots__ = (
@@ -583,6 +613,14 @@ class AppCommandChannel(Hashable):
         'name',
         'permissions',
         'guild_id',
+        'topic',
+        'nsfw',
+        'position',
+        'category_id',
+        'slowmode_delay',
+        'last_message_id',
+        '_last_pin',
+        '_flags',
         '_state',
     )
 
@@ -599,6 +637,14 @@ class AppCommandChannel(Hashable):
         self.type: ChannelType = try_enum(ChannelType, data['type'])
         self.name: str = data['name']
         self.permissions: Permissions = Permissions(int(data['permissions']))
+        self.topic: Optional[str] = data.get('topic')
+        self.position: int = data.get('position') or 0
+        self.nsfw: bool = data.get('nsfw') or False
+        self.category_id: Optional[int] = _get_as_snowflake(data, 'parent_id')
+        self.slowmode_delay: int = data.get('rate_limit_per_user') or 0
+        self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
+        self._last_pin: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
+        self._flags: int = data.get('flags', 0)
 
     def __str__(self) -> str:
         return self.name
@@ -610,6 +656,28 @@ class AppCommandChannel(Hashable):
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`~discord.Guild`]: The channel's guild, from cache, if found."""
         return self._state._get_guild(self.guild_id)
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`~discord.ChannelFlags`: The flags associated with this channel object.
+
+        .. versionadded:: 2.6
+        """
+        return ChannelFlags._from_value(self._flags)
+
+    def is_nsfw(self) -> bool:
+        """:class:`bool`: Checks if the channel is NSFW.
+
+        .. versionadded:: 2.6
+        """
+        return self.nsfw
+
+    def is_news(self) -> bool:
+        """:class:`bool`: Checks if the channel is a news channel.
+
+        .. versionadded:: 2.6
+        """
+        return self.type == ChannelType.news
 
     def resolve(self) -> Optional[GuildChannel]:
         """Resolves the application command channel to the appropriate channel
@@ -653,6 +721,14 @@ class AppCommandChannel(Hashable):
         return f'<#{self.id}>'
 
     @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.6
+        """
+        return f'https://discord.com/channels/{self.guild_id}/{self.id}'
+
+    @property
     def created_at(self) -> datetime:
         """:class:`datetime.datetime`: An aware timestamp of when this channel was created in UTC."""
         return snowflake_time(self.id)
@@ -691,6 +767,30 @@ class AppCommandThread(Hashable):
         The name of the thread.
     parent_id: :class:`int`
         The parent text channel ID this thread belongs to.
+    owner_id: :class:`int`
+        The user's ID that created this thread.
+
+        .. versionadded:: 2.6
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this thread. It may
+        *not* point to an existing or valid message.
+
+        .. versionadded:: 2.6
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this thread. A value of ``0`` denotes that it is disabled.
+        Bots and users with :attr:`~discord.Permissions.manage_channels` or
+        :attr:`~discord.Permissions.manage_messages` bypass slowmode.
+
+        .. versionadded:: 2.6
+    message_count: :class:`int`
+        An approximate number of messages in this thread.
+
+        .. versionadded:: 2.6
+    member_count: :class:`int`
+        An approximate number of members in this thread. This caps at 50.
+
+        .. versionadded:: 2.6
     permissions: :class:`~discord.Permissions`
         The resolved permissions of the user who invoked
         the application command in that thread.
@@ -725,6 +825,13 @@ class AppCommandThread(Hashable):
         'archive_timestamp',
         'locked',
         'invitable',
+        'owner_id',
+        'message_count',
+        'member_count',
+        'slowmode_delay',
+        'last_message_id',
+        '_applied_tags',
+        '_flags',
         '_created_at',
         '_state',
     )
@@ -743,6 +850,13 @@ class AppCommandThread(Hashable):
         self.type: ChannelType = try_enum(ChannelType, data['type'])
         self.name: str = data['name']
         self.permissions: Permissions = Permissions(int(data['permissions']))
+        self.owner_id: int = int(data['owner_id'])
+        self.member_count: int = int(data['member_count'])
+        self.message_count: int = int(data['message_count'])
+        self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
+        self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
+        self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
+        self._flags: int = data.get('flags', 0)
         self._unroll_metadata(data['thread_metadata'])
 
     def __str__(self) -> str:
@@ -766,14 +880,57 @@ class AppCommandThread(Hashable):
         self._created_at: Optional[datetime] = parse_time(data.get('create_timestamp'))
 
     @property
-    def parent(self) -> Optional[TextChannel]:
-        """Optional[:class:`~discord.TextChannel`]: The parent channel this thread belongs to."""
-        return self.guild.get_channel(self.parent_id)  # type: ignore
+    def applied_tags(self) -> List[ForumTag]:
+        """List[:class:`~discord.ForumTag`]: A list of tags applied to this thread.
+
+        .. versionadded:: 2.6
+        """
+        tags = []
+        if self.parent is None or self.parent.type not in (ChannelType.forum, ChannelType.media):
+            return tags
+
+        parent = self.parent
+        for tag_id in self._applied_tags:
+            tag = parent.get_tag(tag_id)  # type: ignore # parent here will be ForumChannel instance
+            if tag is not None:
+                tags.append(tag)
+
+        return tags
+
+    @property
+    def parent(self) -> Optional[Union[ForumChannel, TextChannel]]:
+        """Optional[Union[:class:`~discord.ForumChannel`, :class:`~discord.TextChannel`]]: The parent channel
+        this thread belongs to."""
+        return self.guild and self.guild.get_channel(self.parent_id)  # type: ignore
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`~discord.ChannelFlags`: The flags associated with this thread.
+
+        .. versionadded:: 2.6
+        """
+        return ChannelFlags._from_value(self._flags)
+
+    @property
+    def owner(self) -> Optional[Member]:
+        """Optional[:class:`~discord.Member`]: The member this thread belongs to.
+
+        .. versionadded:: 2.6
+        """
+        return self.guild and self.guild.get_member(self.owner_id)
 
     @property
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the thread."""
         return f'<#{self.id}>'
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the thread.
+
+        .. versionadded:: 2.6
+        """
+        return f'https://discord.com/channels/{self.guild_id}/{self.id}'
 
     @property
     def created_at(self) -> Optional[datetime]:
@@ -1063,6 +1220,9 @@ class AppCommandPermissions:
 
         self.target: Union[Object, User, Member, Role, AllChannels, GuildChannel] = _object
 
+    def __repr__(self) -> str:
+        return f'<AppCommandPermissions id={self.id} type={self.type!r} guild={self.guild!r} permission={self.permission}>'
+
     def to_dict(self) -> ApplicationCommandPermissions:
         return {
             'id': self.target.id,
@@ -1105,6 +1265,9 @@ class GuildAppCommandPermissions:
         self.permissions: List[AppCommandPermissions] = [
             AppCommandPermissions(data=value, guild=guild, state=self._state) for value in data['permissions']
         ]
+
+    def __repr__(self) -> str:
+        return f'<GuildAppCommandPermissions id={self.id!r} guild_id={self.guild_id!r} permissions={self.permissions!r}>'
 
     def to_dict(self) -> Dict[str, Any]:
         return {'permissions': [p.to_dict() for p in self.permissions]}

@@ -24,12 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union, Optional
 from typing_extensions import NotRequired
 
-from .channel import ChannelTypeWithoutThread, ThreadMetadata, GuildChannel, InteractionDMChannel, GroupDMChannel
+from .channel import ChannelTypeWithoutThread, GuildChannel, InteractionDMChannel, GroupDMChannel
 from .sku import Entitlement
-from .threads import ThreadType
+from .threads import ThreadType, ThreadMetadata
 from .member import Member
 from .message import Attachment
 from .role import Role
@@ -64,12 +64,27 @@ class _BasePartialChannel(TypedDict):
 
 class PartialChannel(_BasePartialChannel):
     type: ChannelTypeWithoutThread
+    topic: NotRequired[str]
+    position: int
+    nsfw: bool
+    flags: int
+    rate_limit_per_user: int
+    parent_id: Optional[Snowflake]
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: NotRequired[str]
 
 
 class PartialThread(_BasePartialChannel):
     type: ThreadType
     thread_metadata: ThreadMetadata
     parent_id: Snowflake
+    applied_tags: NotRequired[List[Snowflake]]
+    owner_id: Snowflake
+    message_count: int
+    member_count: int
+    rate_limit_per_user: int
+    last_message_id: NotRequired[Optional[Snowflake]]
+    flags: NotRequired[int]
 
 
 class ResolvedData(TypedDict, total=False):
@@ -194,7 +209,13 @@ class ModalSubmitTextInputInteractionData(TypedDict):
     value: str
 
 
-ModalSubmitComponentItemInteractionData = ModalSubmitTextInputInteractionData
+class ModalSubmitStringSelectInteractionData(TypedDict):
+    type: Literal[3]
+    custom_id: str
+    values: List[str]
+
+
+ModalSubmitComponentItemInteractionData = Union[ModalSubmitTextInputInteractionData, ModalSubmitStringSelectInteractionData]
 
 
 class ModalSubmitActionRowInteractionData(TypedDict):
@@ -202,7 +223,14 @@ class ModalSubmitActionRowInteractionData(TypedDict):
     components: List[ModalSubmitComponentItemInteractionData]
 
 
-ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData]
+class ModalSubmitLabelInteractionData(TypedDict):
+    type: Literal[18]
+    component: ModalSubmitComponentItemInteractionData
+
+
+ModalSubmitComponentInteractionData = Union[
+    ModalSubmitLabelInteractionData, ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData
+]
 
 
 class ModalSubmitInteractionData(TypedDict):
@@ -233,6 +261,7 @@ class _BaseInteraction(TypedDict):
     entitlements: NotRequired[List[Entitlement]]
     authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
     context: NotRequired[InteractionContextType]
+    attachment_size_limit: int
 
 
 class PingInteraction(_BaseInteraction):

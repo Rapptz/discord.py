@@ -74,6 +74,7 @@ if TYPE_CHECKING:
         GuildVoiceState as GuildVoiceStatePayload,
         VoiceState as VoiceStatePayload,
     )
+    from .primary_guild import PrimaryGuild
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
@@ -238,7 +239,8 @@ class Member(discord.abc.Messageable, _UserTag):
     ----------
     joined_at: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC that the member joined the guild.
-        If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
+        If the member left and rejoined the guild, this will be the latest date.
+        This can be ``None``, such as when the member is a guest.
     activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities that the user is currently doing.
 
@@ -308,6 +310,7 @@ class Member(discord.abc.Messageable, _UserTag):
         accent_colour: Optional[Colour]
         avatar_decoration: Optional[Asset]
         avatar_decoration_sku_id: Optional[int]
+        primary_guild: PrimaryGuild
 
     def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
@@ -451,9 +454,11 @@ class Member(discord.abc.Messageable, _UserTag):
             u.global_name,
             u._public_flags,
             u._avatar_decoration_data['sku_id'] if u._avatar_decoration_data is not None else None,
+            u._primary_guild,
         )
 
         decoration_payload = user.get('avatar_decoration_data')
+        primary_guild_payload = user.get('primary_guild', None)
         # These keys seem to always be available
         modified = (
             user['username'],
@@ -462,16 +467,26 @@ class Member(discord.abc.Messageable, _UserTag):
             user.get('global_name'),
             user.get('public_flags', 0),
             decoration_payload['sku_id'] if decoration_payload is not None else None,
+            primary_guild_payload,
         )
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u.discriminator, u._avatar, u.global_name, u._public_flags, u._avatar_decoration_data = (
+            (
+                u.name,
+                u.discriminator,
+                u._avatar,
+                u.global_name,
+                u._public_flags,
+                u._avatar_decoration_data,
+                u._primary_guild,
+            ) = (
                 user['username'],
                 user['discriminator'],
                 user['avatar'],
                 user.get('global_name'),
                 user.get('public_flags', 0),
                 decoration_payload,
+                primary_guild_payload,
             )
             # Signal to dispatch on_user_update
             return to_return, u

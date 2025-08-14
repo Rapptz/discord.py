@@ -73,6 +73,8 @@ from .poll import *
 from .soundboard import *
 from .subscription import *
 from .presences import *
+from .primary_guild import *
+from .onboarding import *
 
 
 class VersionInfo(NamedTuple):

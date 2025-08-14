@@ -100,6 +100,7 @@ __all__ = (
     'AppInstallationType',
     'SKUFlags',
     'EmbedFlags',
+    'InviteFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -534,6 +535,16 @@ class MessageFlags(BaseFlags):
         .. versionadded:: 2.5
         """
         return 16384
+
+    @flag_value
+    def components_v2(self):
+        """:class:`bool`: Returns ``True`` if the message has Discord's v2 components.
+
+        Does not allow sending any ``content``, ``embed``, ``embeds``, ``stickers``, or ``poll``.
+
+        .. versionadded:: 2.6
+        """
+        return 32768
 
 
 @fill_with_flags()
@@ -2130,6 +2141,15 @@ class MemberFlags(BaseFlags):
         return 1 << 7
 
     @flag_value
+    def automod_quarantined_guild_tag(self):
+        """:class:`bool`: Returns ``True`` if the member's guild tag has been
+        blocked by AutoMod.
+
+        .. versionadded:: 2.6
+        """
+        return 1 << 10
+
+    @flag_value
     def dm_settings_upsell_acknowledged(self):
         """:class:`bool`: Returns ``True`` if the member has dismissed the DM settings upsell.
 
@@ -2433,3 +2453,60 @@ class EmbedFlags(BaseFlags):
         longer displayed.
         """
         return 1 << 5
+
+
+@fill_with_flags()
+class InviteFlags(BaseFlags):
+    r"""Wraps up the Discord Invite flags
+
+    .. versionadded:: 2.6
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two InviteFlags are equal.
+
+        .. describe:: x != y
+
+            Checks if two InviteFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a InviteFlags instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a InviteFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns a InviteFlags instance with all flags inverted from x.
+
+        .. describe:: hash(x)
+
+            Returns the flag's hash.
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    Attributes
+    ----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def guest(self):
+        """:class:`bool`: Returns ``True`` if this is a guest invite for a voice channel."""
+        return 1 << 0

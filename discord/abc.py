@@ -34,8 +34,10 @@ from typing import (
     AsyncIterator,
     Callable,
     Dict,
+    Generator,
     Iterable,
     List,
+    Literal,
     Optional,
     TYPE_CHECKING,
     Protocol,
@@ -60,6 +62,8 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
+from .flags import InviteFlags
+import warnings
 
 __all__ = (
     'Snowflake',
@@ -95,7 +99,7 @@ if TYPE_CHECKING:
     )
     from .poll import Poll
     from .threads import Thread
-    from .ui.view import View
+    from .ui.view import BaseView, View, LayoutView
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
         Channel as ChannelPayload,
@@ -114,6 +118,11 @@ if TYPE_CHECKING:
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
+    class PinnedMessage(Message):
+        pinned_at: datetime
+        pinned: Literal[True]
+
+
 MISSING = utils.MISSING
 
 
@@ -123,6 +132,26 @@ class _Undefined:
 
 
 _undefined: Any = _Undefined()
+
+
+class _PinsIterator:
+    def __init__(self, iterator: AsyncIterator[PinnedMessage]) -> None:
+        self.__iterator: AsyncIterator[PinnedMessage] = iterator
+
+    def __await__(self) -> Generator[Any, None, List[PinnedMessage]]:
+        warnings.warn(
+            "`await <channel>.pins()` is deprecated; use `async for message in <channel>.pins()` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        async def gather() -> List[PinnedMessage]:
+            return [msg async for msg in self.__iterator]
+
+        return gather().__await__()
+
+    def __aiter__(self) -> AsyncIterator[PinnedMessage]:
+        return self.__iterator
 
 
 async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
@@ -1258,6 +1287,7 @@ class GuildChannel:
         target_type: Optional[InviteTarget] = None,
         target_user: Optional[User] = None,
         target_application_id: Optional[int] = None,
+        guest: bool = False,
     ) -> Invite:
         """|coro|
 
@@ -1296,6 +1326,10 @@ class GuildChannel:
             The id of the embedded application for the invite, required if ``target_type`` is :attr:`.InviteTarget.embedded_application`.
 
             .. versionadded:: 2.0
+        guest: :class:`bool`
+            Whether the invite is a guest invite.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1313,6 +1347,11 @@ class GuildChannel:
         if target_type is InviteTarget.unknown:
             raise ValueError('Cannot create invite with an unknown target type')
 
+        flags: Optional[InviteFlags] = None
+        if guest:
+            flags = InviteFlags._from_value(0)
+            flags.guest = True
+
         data = await self._state.http.create_invite(
             self.id,
             reason=reason,
@@ -1323,6 +1362,7 @@ class GuildChannel:
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
+            flags=flags.value if flags else None,
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
@@ -1374,6 +1414,38 @@ class Messageable:
 
     async def _get_channel(self) -> MessageableChannel:
         raise NotImplementedError
+
+    @overload
+    async def send(
+        self,
+        *,
+        file: File = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        *,
+        files: Sequence[File] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
 
     @overload
     async def send(
@@ -1474,7 +1546,7 @@ class Messageable:
         allowed_mentions: Optional[AllowedMentions] = None,
         reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
         mention_author: Optional[bool] = None,
-        view: Optional[View] = None,
+        view: Optional[BaseView] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
@@ -1547,7 +1619,7 @@ class Messageable:
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
 
             .. versionadded:: 1.6
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             A Discord UI View to add to the message.
 
             .. versionadded:: 2.0
@@ -1645,7 +1717,7 @@ class Messageable:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             state.store_view(view, ret.id)
 
         if poll:
@@ -1711,16 +1783,118 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def pins(self) -> List[Message]:
-        """|coro|
+    async def __pins(
+        self,
+        *,
+        limit: Optional[int] = 50,
+        before: Optional[SnowflakeTime] = None,
+        oldest_first: bool = False,
+    ) -> AsyncIterator[PinnedMessage]:
+        channel = await self._get_channel()
+        state = self._state
+        max_limit: int = 50
 
-        Retrieves all messages that are currently pinned in the channel.
+        time: Optional[str] = (
+            (before if isinstance(before, datetime) else utils.snowflake_time(before.id)).isoformat()
+            if before is not None
+            else None
+        )
+
+        while True:
+            retrieve = max_limit if limit is None else min(limit, max_limit)
+            if retrieve < 1:
+                break
+
+            data = await self._state.http.pins_from(
+                channel_id=channel.id,
+                limit=retrieve,
+                before=time,
+            )
+
+            items = data and data['items']
+            if items:
+                if limit is not None:
+                    limit -= len(items)
+
+                time = items[-1]['pinned_at']
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(items) < max_limit or not data['has_more']:
+                limit = 0
+
+            if oldest_first:
+                items = reversed(items)
+
+            count = 0
+            for count, m in enumerate(items, start=1):
+                message: Message = state.create_message(channel=channel, data=m['message'])
+                message._pinned_at = utils.parse_time(m['pinned_at'])
+                yield message  # pyright: ignore[reportReturnType]
+
+            if count < max_limit:
+                break
+
+    def pins(
+        self,
+        *,
+        limit: Optional[int] = 50,
+        before: Optional[SnowflakeTime] = None,
+        oldest_first: bool = False,
+    ) -> _PinsIterator:
+        """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
+
+        You must have :attr:`~discord.Permissions.view_channel` and
+        :attr:`~discord.Permissions.read_message_history` in order to use this.
+
+        .. versionchanged:: 2.6
+
+            Due to a change in Discord's API, this now returns a paginated iterator instead of a list.
+
+            For backwards compatibility, you can still retrieve a list of pinned messages by
+            using ``await`` on the returned object. This is however deprecated.
 
         .. note::
 
             Due to a limitation with the Discord API, the :class:`.Message`
-            objects returned by this method do not contain complete
+            object returned by this method does not contain complete
             :attr:`.Message.reactions` data.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            counter = 0
+            async for message in channel.pins(limit=250):
+                counter += 1
+
+        Flattening into a list: ::
+
+            messages = [message async for message in channel.pins(limit=50)]
+            # messages is now a list of Message...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[int]
+            The number of pinned messages to retrieve. If ``None``, it retrieves
+            every pinned message in the channel. Note, however, that this would
+            make it a slow operation.
+            Defaults to ``50``.
+
+            .. versionadded:: 2.6
+        before: Optional[Union[:class:`datetime.datetime`, :class:`.abc.Snowflake`]]
+            Retrieve pinned messages before this time or snowflake.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
+        oldest_first: :class:`bool`
+            If set to ``True``, return messages in oldest pin->newest pin order.
+            Defaults to ``False``.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1729,16 +1903,12 @@ class Messageable:
         ~discord.HTTPException
             Retrieving the pinned messages failed.
 
-        Returns
-        --------
-        List[:class:`~discord.Message`]
-            The messages that are currently pinned.
+        Yields
+        -------
+        :class:`~discord.Message`
+            The pinned message with :attr:`.Message.pinned_at` set.
         """
-
-        channel = await self._get_channel()
-        state = self._state
-        data = await state.http.pins_from(channel.id)
-        return [state.create_message(channel=channel, data=m) for m in data]
+        return _PinsIterator(self.__pins(limit=limit, before=before, oldest_first=oldest_first))
 
     async def history(
         self,

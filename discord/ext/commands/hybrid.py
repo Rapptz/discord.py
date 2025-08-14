@@ -267,7 +267,7 @@ def replace_parameter(
                 # Special case Optional[X] where X is a single type that can optionally be a converter
                 inner = args[0]
                 is_inner_transformer = is_transformer(inner)
-                if is_converter(inner) and not is_inner_transformer:
+                if (is_converter(inner) or inner in CONVERTER_MAPPING) and not is_inner_transformer:
                     param = param.replace(annotation=Optional[ConverterTransformer(inner, original)])
             else:
                 raise
@@ -667,9 +667,9 @@ class HybridGroup(Group[CogT, P, T]):
         self.fallback_locale: Optional[app_commands.locale_str] = fallback_locale
 
         if self.with_app_command:
-            guild_ids = attrs.pop('guild_ids', None) or getattr(
-                self.callback, '__discord_app_commands_default_guilds__', None
-            )
+            guild_ids = attrs.pop('guild_ids', None)
+            if guild_ids is None:
+                guild_ids = getattr(self.callback, '__discord_app_commands_default_guilds__', None)
             guild_only = getattr(self.callback, '__discord_app_commands_guild_only__', False)
             default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
             nsfw = getattr(self.callback, '__discord_app_commands_is_nsfw__', False)

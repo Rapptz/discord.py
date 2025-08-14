@@ -33,7 +33,7 @@ from .user import User
 from .emoji import PartialEmoji
 from .embed import Embed
 from .channel import ChannelType
-from .components import Component
+from .components import ComponentBase
 from .interactions import MessageInteraction, MessageInteractionMetadata
 from .sticker import StickerItem
 from .threads import Thread
@@ -189,7 +189,7 @@ class MessageSnapshot(TypedDict):
     mentions: List[UserWithMember]
     mention_roles: SnowflakeList
     sticker_items: NotRequired[List[StickerItem]]
-    components: NotRequired[List[Component]]
+    components: NotRequired[List[ComponentBase]]
 
 
 class Message(PartialMessage):
@@ -221,7 +221,7 @@ class Message(PartialMessage):
     referenced_message: NotRequired[Optional[Message]]
     interaction: NotRequired[MessageInteraction]  # deprecated, use interaction_metadata
     interaction_metadata: NotRequired[MessageInteractionMetadata]
-    components: NotRequired[List[Component]]
+    components: NotRequired[List[ComponentBase]]
     position: NotRequired[int]
     role_subscription_data: NotRequired[RoleSubscriptionData]
     thread: NotRequired[Thread]
@@ -237,3 +237,13 @@ class AllowedMentions(TypedDict):
     roles: SnowflakeList
     users: SnowflakeList
     replied_user: bool
+
+
+class MessagePin(TypedDict):
+    pinned_at: str
+    message: Message
+
+
+class ChannelPins(TypedDict):
+    items: List[MessagePin]
+    has_more: bool
