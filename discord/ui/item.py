@@ -159,7 +159,7 @@ class Item(Generic[V]):
 
     @property
     def parent(self) -> Optional[Item[V]]:
-        """Optional[:class:`Item`]: This item's parent. If applicable. Only available on items with children
+        """Optional[:class:`Item`]: This item's parent. If applicable. Only available on items with children.
 
         .. versionadded:: 2.6
         """
