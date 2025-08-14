@@ -69,6 +69,7 @@ class Item(Generic[V]):
     - :class:`discord.ui.Separator`
     - :class:`discord.ui.TextDisplay`
     - :class:`discord.ui.Thumbnail`
+    - :class:`discord.ui.Label`
 
     .. versionadded:: 2.0
     """
@@ -158,9 +159,7 @@ class Item(Generic[V]):
 
     @property
     def parent(self) -> Optional[Item[V]]:
-        """Optional[:class:`Item`]: This item's parent. Only components that can have children
-        can be parents. Any item that has :class:`View` as a view will have this set to `None`
-        since only :class:`LayoutView` component v2 items can contain "container" like items.
+        """Optional[:class:`Item`]: This item's parent, if applicable. Only available on items with children.
 
         .. versionadded:: 2.6
         """
@@ -211,7 +210,8 @@ class Item(Generic[V]):
         .. note::
 
             If an exception occurs within the body then the check
-            is considered a failure and :meth:`discord.ui.View.on_error` is called.
+            is considered a failure and :meth:`View.on_error`
+            (or :meth:`LayoutView.on_error`) is called.
 
             For :class:`~discord.ui.DynamicItem` this does not call the ``on_error``
             handler.
