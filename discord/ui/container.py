@@ -21,13 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import copy
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     ClassVar,
     Coroutine,
     Dict,
@@ -39,7 +39,7 @@ from typing import (
     Union,
 )
 
-from .item import Item, I
+from .item import Item, ContainedItemCallbackType as ItemCallbackType
 from .view import _component_to_item, LayoutView
 from ..enums import ComponentType
 from ..utils import get as _utils_get
@@ -50,8 +50,6 @@ if TYPE_CHECKING:
 
     from ..components import Container as ContainerComponent
     from ..interactions import Interaction
-
-    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
 
 S = TypeVar('S', bound='Container', covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)

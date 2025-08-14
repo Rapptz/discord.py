@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import (
     Any,
-    Coroutine,
     List,
     Literal,
     Optional,
@@ -43,7 +42,7 @@ from contextvars import ContextVar
 import inspect
 import os
 
-from .item import Item, I
+from .item import Item, ContainedItemCallbackType as ItemCallbackType
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
@@ -102,8 +101,6 @@ if TYPE_CHECKING:
         AppCommandThread,
         Thread,
     ]
-
-    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
 
 S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
 V = TypeVar('V', bound='BaseView', covariant=True)

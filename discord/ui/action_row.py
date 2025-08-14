@@ -41,7 +41,7 @@ from typing import (
     overload,
 )
 
-from .item import I, Item
+from .item import Item, ContainedItemCallbackType as ItemCallbackType
 from .button import Button, button as _button
 from .select import select as _select, Select, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
 from ..components import ActionRow as ActionRowComponent
@@ -66,7 +66,6 @@ if TYPE_CHECKING:
     from ..components import SelectOption
     from ..interactions import Interaction
 
-    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
     SelectCallbackDecorator = Callable[[ItemCallbackType['S', BaseSelectT]], BaseSelectT]
 
 S = TypeVar('S', bound='ActionRow', covariant=True)

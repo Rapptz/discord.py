@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
-from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Union, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
 from .._types import ClientT
@@ -42,10 +42,15 @@ if TYPE_CHECKING:
     from ..enums import ComponentType
     from .view import BaseView
     from ..components import Component
+    from .action_row import ActionRow
+    from .container import Container
 
 I = TypeVar('I', bound='Item[Any]')
 V = TypeVar('V', bound='BaseView', covariant=True)
+ContainerType = Union['BaseView', 'ActionRow', 'Container']
+C = TypeVar('C', bound=ContainerType, covariant=True)
 ItemCallbackType = Callable[[V, Interaction[Any], I], Coroutine[Any, Any, Any]]
+ContainedItemCallbackType = Callable[[C, Interaction[Any], I], Coroutine[Any, Any, Any]]
 
 
 class Item(Generic[V]):

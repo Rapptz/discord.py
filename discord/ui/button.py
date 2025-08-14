@@ -25,12 +25,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
-from typing import Any, Callable, Coroutine, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import inspect
 import os
 
 
-from .item import Item, I
+from .item import Item, ContainedItemCallbackType as ItemCallbackType
 from ..enums import ButtonStyle, ComponentType
 from ..partial_emoji import PartialEmoji, _EmojiTag
 from ..components import Button as ButtonComponent
@@ -46,10 +46,7 @@ if TYPE_CHECKING:
     from .view import BaseView
     from .action_row import ActionRow
     from ..emoji import Emoji
-    from ..interactions import Interaction
     from ..types.components import ButtonComponent as ButtonComponentPayload
-
-    ItemCallbackType = Callable[['S', Interaction[Any], I], Coroutine[Any, Any, Any]]
 
 S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
 V = TypeVar('V', bound='BaseView', covariant=True)
