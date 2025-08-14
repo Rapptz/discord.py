@@ -737,7 +737,7 @@ TextInput
 .. autoclass:: discord.ui.TextInput
     :members:
     :inherited-members:
-    :exclude-members: parent, callback
+    :exclude-members: callback
 
 
 Container
@@ -769,7 +769,7 @@ Label
 .. autoclass:: discord.ui.Label
     :members:
     :inherited-members:
-    :exclude-members: callback, parent
+    :exclude-members: callback
 
 
 MediaGallery
