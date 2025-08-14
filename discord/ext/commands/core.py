@@ -398,9 +398,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         .. versionadded:: 2.0
     """
-    __original_kwargs__: _CommandKwargs
+    __original_kwargs__: Dict[str, Any]
 
-    def __new__(cls, *args: Any, **kwargs: Unpack[_CommandKwargs]) -> Self:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         # if you're wondering why this is done, it's because we need to ensure
         # we have a complete original copy of **kwargs even for classes that
         # mess with it by popping before delegating to the subclass __init__.
@@ -594,7 +594,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         subclass constructors, sans the name and callback.
         """
         cog = self.cog
-        self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))  # type: ignore # it's a typeddict
+        self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
         self.cog = cog
 
     async def __call__(self, context: Context[BotT], /, *args: P.args, **kwargs: P.kwargs) -> T:
