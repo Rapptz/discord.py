@@ -77,7 +77,7 @@ __all__ = (
 
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, TypeGuard
+    from typing_extensions import Self
     import re
 
     from ..interactions import Interaction
@@ -226,7 +226,7 @@ class BaseView:
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
         self._total_children: int = len(tuple(self.walk_children()))
 
-    def _is_layout(self) -> TypeGuard[LayoutView]:  # type: ignore
+    def _is_layout(self) -> bool:
         return False
 
     def __repr__(self) -> str:
@@ -402,6 +402,7 @@ class BaseView:
 
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
+
         if item._is_v2() and not self._is_layout():
             raise ValueError('v2 items cannot be added to this view')
 
@@ -413,6 +414,7 @@ class BaseView:
 
         if self._is_layout() and self._total_children + added > 40:
             raise ValueError('maximum number of children exceeded')
+
         self._total_children += added
         self._children.append(item)
         return self
@@ -807,7 +809,7 @@ class LayoutView(BaseView):
         children.update(callback_children)
         cls.__view_children_items__ = children
 
-    def _is_layout(self) -> TypeGuard[LayoutView]:  # type: ignore
+    def _is_layout(self) -> bool:
         return True
 
     def to_components(self):
