@@ -159,8 +159,7 @@ class Item(Generic[V]):
 
     @property
     def parent(self) -> Optional[Item[V]]:
-        """Optional[:class:`Item`]: This item's parent. Only components that can have children
-        can be parents. Any item that has :class:`View` as a view will have this set to `None`.
+        """Optional[:class:`Item`]: This item's parent. If applicable. Only available on items with children
 
         .. versionadded:: 2.6
         """
