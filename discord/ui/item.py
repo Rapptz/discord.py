@@ -69,6 +69,7 @@ class Item(Generic[V]):
     - :class:`discord.ui.Separator`
     - :class:`discord.ui.TextDisplay`
     - :class:`discord.ui.Thumbnail`
+    - :class:`discord.ui.Label`
 
     .. versionadded:: 2.0
     """
@@ -211,7 +212,8 @@ class Item(Generic[V]):
         .. note::
 
             If an exception occurs within the body then the check
-            is considered a failure and :meth:`discord.ui.View.on_error` is called.
+            is considered a failure and :meth:`View.on_error` 
+            (or :meth:`LayoutView.on_error`) is called.
 
             For :class:`~discord.ui.DynamicItem` this does not call the ``on_error``
             handler.

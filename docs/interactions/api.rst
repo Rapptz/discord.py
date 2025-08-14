@@ -640,8 +640,9 @@ Modal
 .. attributetable:: discord.ui.Modal
 
 .. autoclass:: discord.ui.Modal
-    :members:
+    :members: 
     :inherited-members:
+    :exclude-members: from_message
 
 Item
 ~~~~~~~
@@ -736,6 +737,7 @@ TextInput
 .. autoclass:: discord.ui.TextInput
     :members:
     :inherited-members:
+    :exclude-members: parent, callback
 
 
 Container
@@ -746,6 +748,7 @@ Container
 .. autoclass:: discord.ui.Container
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 
 File
@@ -756,6 +759,7 @@ File
 .. autoclass:: discord.ui.File
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 Label
 ~~~~~~
@@ -765,6 +769,7 @@ Label
 .. autoclass:: discord.ui.Label
     :members:
     :inherited-members:
+    :exclude-members: callback, parent
 
 
 MediaGallery
@@ -775,6 +780,7 @@ MediaGallery
 .. autoclass:: discord.ui.MediaGallery
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 
 Section
@@ -785,6 +791,7 @@ Section
 .. autoclass:: discord.ui.Section
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 
 Separator
@@ -795,6 +802,7 @@ Separator
 .. autoclass:: discord.ui.Separator
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 
 TextDisplay
@@ -805,6 +813,7 @@ TextDisplay
 .. autoclass:: discord.ui.TextDisplay
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 
 Thumbnail
@@ -815,6 +824,7 @@ Thumbnail
 .. autoclass:: discord.ui.Thumbnail
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 
 ActionRow
@@ -825,6 +835,7 @@ ActionRow
 .. autoclass:: discord.ui.ActionRow
     :members:
     :inherited-members:
+    :exclude-members: callback
 
 .. _discord_app_commands:
 
