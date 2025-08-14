@@ -212,7 +212,7 @@ class Permissions(BaseFlags):
             except KeyError:
                 raise TypeError(f'{key!r} is not a valid permission name.') from None
             else:
-                self._set_flag(flag, kwvalue)  # type: ignore
+                self._set_flag(flag, kwvalue)  # type: ignore # TypedDict annoyance where kwvalue is an object instead of bool
 
     def is_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or fewer permissions as other."""
