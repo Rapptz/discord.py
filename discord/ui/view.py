@@ -36,6 +36,7 @@ from typing import (
     Optional,
     Sequence,
     TYPE_CHECKING,
+    Set,
     Tuple,
     Type,
     Union,
@@ -573,11 +574,11 @@ class BaseView:
         self.__stopped.set_result(True)
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
-    def _dispatch_item(self, item: Item, interaction: Interaction):
+    def _dispatch_item(self, item: Item, interaction: Interaction) -> Optional[asyncio.Task[None]]:
         if self.__stopped.done():
             return
 
-        asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
+        return asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
 
     def _refresh(self, components: List[Component]) -> None:
         # fmt: off
@@ -842,6 +843,7 @@ class ViewStore:
         # component_type is the key
         self._dynamic_items: Dict[re.Pattern[str], Type[DynamicItem[Item[Any]]]] = {}
         self._state: ConnectionState = state
+        self.__tasks: Set[asyncio.Task[None]] = set()
 
     @property
     def persistent_views(self) -> Sequence[BaseView]:
@@ -854,6 +856,10 @@ class ViewStore:
         }
         # fmt: on
         return list(views.values())
+
+    def add_task(self, task: asyncio.Task[None]) -> None:
+        self.__tasks.add(task)
+        task.add_done_callback(self.__tasks.discard)
 
     def add_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
         for item in items:
@@ -965,9 +971,11 @@ class ViewStore:
         for pattern, item in self._dynamic_items.items():
             match = pattern.fullmatch(custom_id)
             if match is not None:
-                asyncio.create_task(
-                    self.schedule_dynamic_item_call(component_type, item, interaction, custom_id, match),
-                    name=f'discord-ui-dynamic-item-{item.__name__}-{custom_id}',
+                self.add_task(
+                    asyncio.create_task(
+                        self.schedule_dynamic_item_call(component_type, item, interaction, custom_id, match),
+                        name=f'discord-ui-dynamic-item-{item.__name__}-{custom_id}',
+                    )
                 )
 
     def dispatch_view(self, component_type: int, custom_id: str, interaction: Interaction) -> None:
@@ -1014,7 +1022,9 @@ class ViewStore:
             return
 
         # Note, at this point the View is *not* None
-        item.view._dispatch_item(item, interaction)  # type: ignore
+        task = item.view._dispatch_item(item, interaction)  # type: ignore
+        if task is not None:
+            self.add_task(task)
 
     def dispatch_modal(
         self,
@@ -1027,7 +1037,7 @@ class ViewStore:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
             return
 
-        modal._dispatch_submit(interaction, components)
+        self.add_task(modal._dispatch_submit(interaction, components))
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:
         # This is called before re-adding the view

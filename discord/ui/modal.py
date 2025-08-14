@@ -221,8 +221,10 @@ class Modal(View):
 
     def _dispatch_submit(
         self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]
-    ) -> None:
-        asyncio.create_task(self._scheduled_task(interaction, components), name=f'discord-ui-modal-dispatch-{self.id}')
+    ) -> asyncio.Task[None]:
+        return asyncio.create_task(
+            self._scheduled_task(interaction, components), name=f'discord-ui-modal-dispatch-{self.id}'
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         payload = {
