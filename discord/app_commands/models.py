@@ -860,7 +860,7 @@ class AppCommandThread(Hashable):
         self.message_count: int = int(data['message_count'])
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
-        self.total_message_sent: int = data.get('total_message_sent')
+        self.total_message_sent: int = data.get('total_message_sent', 0)
         self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
         self._flags: int = data.get('flags', 0)
         self._unroll_metadata(data['thread_metadata'])
