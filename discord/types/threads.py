@@ -51,23 +51,22 @@ class ThreadMetadata(TypedDict):
     create_timestamp: NotRequired[str]
 
 
-class ThreadChannel(_BaseChannel):
-    type: Literal[10, 11, 12]
+class Thread(TypedDict):
+    id: Snowflake
     guild_id: Snowflake
     parent_id: Snowflake
     owner_id: Snowflake
-    nsfw: bool
-    last_message_id: Optional[Snowflake]
-    rate_limit_per_user: int
-    message_count: int
+    name: str
+    type: ThreadType
     member_count: int
-    total_message_sent : int
+    message_count: int
+    total_message_sent: int
+    rate_limit_per_user: int
     thread_metadata: ThreadMetadata
     member: NotRequired[ThreadMember]
-    owner_id: NotRequired[Snowflake]
-    rate_limit_per_user: NotRequired[int]
     last_message_id: NotRequired[Optional[Snowflake]]
-    last_pin_timestamp: NotRequired[str]
+    last_pin_timestamp: NotRequired[Optional[Snowflake]]
+    newly_created: NotRequired[bool]
     flags: NotRequired[int]
     applied_tags: NotRequired[List[Snowflake]]
 
