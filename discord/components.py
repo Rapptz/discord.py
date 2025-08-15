@@ -1034,7 +1034,7 @@ class MediaGalleryItem:
         description: Optional[str] = None,
         spoiler: bool = False,
     ) -> None:
-        self._media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
+        self.media = media
         self.description: Optional[str] = description
         self.spoiler: bool = spoiler
         self._state: Optional[ConnectionState] = None
