@@ -126,7 +126,7 @@ class ThreadChannel(_BaseChannel):
     rate_limit_per_user: int
     message_count: int
     member_count: int
-    total_message_sent : int
+    total_message_sent: int
     thread_metadata: ThreadMetadata
     member: NotRequired[ThreadMember]
     owner_id: NotRequired[Snowflake]
