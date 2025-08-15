@@ -85,7 +85,7 @@ class PartialThread(_BasePartialChannel):
     rate_limit_per_user: int
     last_message_id: NotRequired[Optional[Snowflake]]
     flags: NotRequired[int]
-    total_message_sent : int
+    total_message_sent: int
 
 
 class ResolvedData(TypedDict, total=False):
