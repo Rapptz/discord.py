@@ -791,6 +791,10 @@ class AppCommandThread(Hashable):
         An approximate number of members in this thread. This caps at 50.
 
         .. versionadded:: 2.6
+    total_message_sent: :class:`int`
+        The total number of messages sent, including deleted messages.
+
+        .. versionadded:: 2.6
     permissions: :class:`~discord.Permissions`
         The resolved permissions of the user who invoked
         the application command in that thread.
@@ -830,6 +834,7 @@ class AppCommandThread(Hashable):
         'member_count',
         'slowmode_delay',
         'last_message_id',
+        'total_message_sent',
         '_applied_tags',
         '_flags',
         '_created_at',
@@ -855,6 +860,7 @@ class AppCommandThread(Hashable):
         self.message_count: int = int(data['message_count'])
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
+        self.total_message_sent: int = data.get('total_message_sent', 0)
         self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
         self._flags: int = data.get('flags', 0)
         self._unroll_metadata(data['thread_metadata'])
