@@ -39,6 +39,7 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
+    TypedDict,
     Union,
     overload,
 )
@@ -85,7 +86,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
 
     from .types.threads import ThreadArchiveDuration
     from .role import Role
@@ -119,6 +120,44 @@ if TYPE_CHECKING:
     from .soundboard import SoundboardSound
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
+
+    class _BaseCreateChannelOptions(TypedDict, total=False):
+        reason: Optional[str]
+        position: int
+
+    class _CreateTextChannelOptions(_BaseCreateChannelOptions, total=False):
+        topic: str
+        slowmode_delay: int
+        nsfw: bool
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+        default_auto_archive_duration: int
+        default_thread_slowmode_delay: int
+
+    class _CreateVoiceChannelOptions(_BaseCreateChannelOptions, total=False):
+        bitrate: int
+        user_limit: int
+        rtc_region: Optional[str]
+        video_quality_mode: VideoQualityMode
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+
+    class _CreateStageChannelOptions(_CreateVoiceChannelOptions, total=False):
+        bitrate: int
+        user_limit: int
+        rtc_region: Optional[str]
+        video_quality_mode: VideoQualityMode
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+
+    class _CreateForumChannelOptions(_CreateTextChannelOptions, total=False):
+        topic: str
+        slowmode_delay: int
+        nsfw: bool
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+        default_auto_archive_duration: int
+        default_thread_slowmode_delay: int
+        default_sort_order: ForumOrderType
+        default_reaction_emoji: EmojiInputType
+        default_layout: ForumLayoutType
+        available_tags: Sequence[ForumTag]
 
 
 class ThreadWithMessage(NamedTuple):
@@ -2194,7 +2233,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
-    async def create_text_channel(self, name: str, **options: Any) -> TextChannel:
+    async def create_text_channel(self, name: str, **options: Unpack[_CreateTextChannelOptions]) -> TextChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
@@ -2206,7 +2245,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_text_channel(name, category=self, **options)
 
-    async def create_voice_channel(self, name: str, **options: Any) -> VoiceChannel:
+    async def create_voice_channel(self, name: str, **options: Unpack[_CreateVoiceChannelOptions]) -> VoiceChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
@@ -2218,7 +2257,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_voice_channel(name, category=self, **options)
 
-    async def create_stage_channel(self, name: str, **options: Any) -> StageChannel:
+    async def create_stage_channel(self, name: str, **options: Unpack[_CreateStageChannelOptions]) -> StageChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_stage_channel` to create a :class:`StageChannel` in the category.
@@ -2232,7 +2271,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_stage_channel(name, category=self, **options)
 
-    async def create_forum(self, name: str, **options: Any) -> ForumChannel:
+    async def create_forum(self, name: str, **options: Unpack[_CreateForumChannelOptions]) -> ForumChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_forum` to create a :class:`ForumChannel` in the category.

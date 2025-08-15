@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional
+from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional, TypedDict, Generic, TypeVar
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
@@ -33,7 +33,73 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
+
+    BoolOrNoneT = TypeVar('BoolOrNoneT', bound=Optional[bool])
+
+    class _BasePermissionsKwargs(Generic[BoolOrNoneT], TypedDict, total=False):
+        create_instant_invite: BoolOrNoneT
+        kick_members: BoolOrNoneT
+        ban_members: BoolOrNoneT
+        administrator: BoolOrNoneT
+        manage_channels: BoolOrNoneT
+        manage_guild: BoolOrNoneT
+        add_reactions: BoolOrNoneT
+        view_audit_log: BoolOrNoneT
+        priority_speaker: BoolOrNoneT
+        stream: BoolOrNoneT
+        read_messages: BoolOrNoneT
+        view_channel: BoolOrNoneT
+        send_messages: BoolOrNoneT
+        send_tts_messages: BoolOrNoneT
+        manage_messages: BoolOrNoneT
+        embed_links: BoolOrNoneT
+        attach_files: BoolOrNoneT
+        read_message_history: BoolOrNoneT
+        mention_everyone: BoolOrNoneT
+        external_emojis: BoolOrNoneT
+        use_external_emojis: BoolOrNoneT
+        view_guild_insights: BoolOrNoneT
+        connect: BoolOrNoneT
+        speak: BoolOrNoneT
+        mute_members: BoolOrNoneT
+        deafen_members: BoolOrNoneT
+        move_members: BoolOrNoneT
+        use_voice_activation: BoolOrNoneT
+        change_nickname: BoolOrNoneT
+        manage_nicknames: BoolOrNoneT
+        manage_roles: BoolOrNoneT
+        manage_permissions: BoolOrNoneT
+        manage_webhooks: BoolOrNoneT
+        manage_expressions: BoolOrNoneT
+        manage_emojis: BoolOrNoneT
+        manage_emojis_and_stickers: BoolOrNoneT
+        use_application_commands: BoolOrNoneT
+        request_to_speak: BoolOrNoneT
+        manage_events: BoolOrNoneT
+        manage_threads: BoolOrNoneT
+        create_public_threads: BoolOrNoneT
+        create_private_threads: BoolOrNoneT
+        send_messages_in_threads: BoolOrNoneT
+        external_stickers: BoolOrNoneT
+        use_external_stickers: BoolOrNoneT
+        use_embedded_activities: BoolOrNoneT
+        moderate_members: BoolOrNoneT
+        use_soundboard: BoolOrNoneT
+        use_external_sounds: BoolOrNoneT
+        send_voice_messages: BoolOrNoneT
+        create_expressions: BoolOrNoneT
+        create_events: BoolOrNoneT
+        send_polls: BoolOrNoneT
+        create_polls: BoolOrNoneT
+        use_external_apps: BoolOrNoneT
+
+    class _PermissionsKwargs(_BasePermissionsKwargs[bool]):
+        ...
+
+    class _PermissionOverwriteKwargs(_BasePermissionsKwargs[Optional[bool]]):
+        ...
+
 
 # A permission alias works like a regular flag but is marked
 # So the PermissionOverwrite knows to work with it
@@ -135,18 +201,18 @@ class Permissions(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, permissions: int = 0, **kwargs: bool):
+    def __init__(self, permissions: int = 0, **kwargs: Unpack[_PermissionsKwargs]):
         if not isinstance(permissions, int):
             raise TypeError(f'Expected int parameter, received {permissions.__class__.__name__} instead.')
 
         self.value = permissions
-        for key, value in kwargs.items():
+        for key, kwvalue in kwargs.items():
             try:
                 flag = self.VALID_FLAGS[key]
             except KeyError:
                 raise TypeError(f'{key!r} is not a valid permission name.') from None
             else:
-                self._set_flag(flag, value)
+                self._set_flag(flag, kwvalue)  # type: ignore # TypedDict annoyance where kwvalue is an object instead of bool
 
     def is_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or fewer permissions as other."""
@@ -391,7 +457,7 @@ class Permissions(BaseFlags):
         """
         return cls(1 << 3)
 
-    def update(self, **kwargs: bool) -> None:
+    def update(self, **kwargs: Unpack[_PermissionsKwargs]) -> None:
         r"""Bulk updates this permission object.
 
         Allows you to set multiple attributes by using keyword
@@ -406,7 +472,7 @@ class Permissions(BaseFlags):
         for key, value in kwargs.items():
             flag = self.VALID_FLAGS.get(key)
             if flag is not None:
-                self._set_flag(flag, value)
+                self._set_flag(flag, value)  # type: ignore
 
     def handle_overwrite(self, allow: int, deny: int) -> None:
         # Basically this is what's happening here.
@@ -918,7 +984,7 @@ class PermissionOverwrite:
         create_polls: Optional[bool]
         use_external_apps: Optional[bool]
 
-    def __init__(self, **kwargs: Optional[bool]):
+    def __init__(self, **kwargs: Unpack[_PermissionOverwriteKwargs]) -> None:
         self._values: Dict[str, Optional[bool]] = {}
 
         for key, value in kwargs.items():
@@ -980,7 +1046,7 @@ class PermissionOverwrite:
         """
         return len(self._values) == 0
 
-    def update(self, **kwargs: Optional[bool]) -> None:
+    def update(self, **kwargs: Unpack[_PermissionOverwriteKwargs]) -> None:
         r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword

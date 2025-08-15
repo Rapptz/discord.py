@@ -43,6 +43,7 @@ from typing import (
     TypeVar,
     Union,
     overload,
+    TypedDict,
 )
 import re
 
@@ -58,9 +59,38 @@ from .parameters import Parameter, Signature
 from discord.app_commands.commands import NUMPY_DOCSTRING_ARG_REGEX
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, Self
+    from typing_extensions import Concatenate, ParamSpec, Self, Unpack
 
     from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
+
+    from discord.permissions import _PermissionsKwargs
+
+    class _CommandDecoratorKwargs(TypedDict, total=False):
+        enabled: bool
+        help: str
+        brief: str
+        usage: str
+        rest_is_raw: bool
+        aliases: List[str]
+        description: str
+        hidden: bool
+        checks: List[UserCheck[Context[Any]]]
+        cooldown: CooldownMapping[Context[Any]]
+        max_concurrency: MaxConcurrency
+        require_var_positional: bool
+        cooldown_after_parsing: bool
+        ignore_extra: bool
+        extras: Dict[Any, Any]
+
+    class _CommandKwargs(_CommandDecoratorKwargs, total=False):
+        name: str
+
+    class _GroupDecoratorKwargs(_CommandDecoratorKwargs, total=False):
+        invoke_without_command: bool
+        case_insensitive: bool
+
+    class _GroupKwargs(_GroupDecoratorKwargs, total=False):
+        name: str
 
 
 __all__ = (
@@ -393,7 +423,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             Callable[Concatenate[Context[Any], P], Coro[T]],
         ],
         /,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandKwargs],
     ) -> None:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError('Callback must be a coroutine.')
@@ -556,7 +586,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except ValueError:
             pass
 
-    def update(self, **kwargs: Any) -> None:
+    def update(self, **kwargs: Unpack[_CommandKwargs]) -> None:
         """Updates :class:`Command` instance with updated attribute.
 
         This works similarly to the :func:`~discord.ext.commands.command` decorator in terms
@@ -1468,7 +1498,7 @@ class GroupMixin(Generic[CogT]):
         self: GroupMixin[CogT],
         name: str = ...,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1486,7 +1516,7 @@ class GroupMixin(Generic[CogT]):
         name: str = ...,
         cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1503,7 +1533,7 @@ class GroupMixin(Generic[CogT]):
         name: str = MISSING,
         cls: Type[Command[Any, ..., Any]] = MISSING,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandDecoratorKwargs],
     ) -> Any:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -1515,8 +1545,7 @@ class GroupMixin(Generic[CogT]):
         """
 
         def decorator(func):
-
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault('parent', self)  # type: ignore # the parent kwarg is not for users to set.
             result = command(name=name, cls=cls, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -1528,7 +1557,7 @@ class GroupMixin(Generic[CogT]):
         self: GroupMixin[CogT],
         name: str = ...,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_GroupDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1546,7 +1575,7 @@ class GroupMixin(Generic[CogT]):
         name: str = ...,
         cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_GroupDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1563,7 +1592,7 @@ class GroupMixin(Generic[CogT]):
         name: str = MISSING,
         cls: Type[Group[Any, ..., Any]] = MISSING,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_GroupDecoratorKwargs],
     ) -> Any:
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -1575,7 +1604,7 @@ class GroupMixin(Generic[CogT]):
         """
 
         def decorator(func):
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault('parent', self)  # type: ignore # the parent kwarg is not for users to set.
             result = group(name=name, cls=cls, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -1606,7 +1635,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         Defaults to ``False``.
     """
 
-    def __init__(self, *args: Any, **attrs: Any) -> None:
+    def __init__(self, *args: Any, **attrs: Unpack[_GroupKwargs]) -> None:
         self.invoke_without_command: bool = attrs.pop('invoke_without_command', False)
         super().__init__(*args, **attrs)
 
@@ -1728,7 +1757,7 @@ if TYPE_CHECKING:
 @overload
 def command(
     name: str = ...,
-    **attrs: Any,
+    **attrs: Unpack[_CommandDecoratorKwargs],
 ) -> _CommandDecorator:
     ...
 
@@ -1737,7 +1766,7 @@ def command(
 def command(
     name: str = ...,
     cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
-    **attrs: Any,
+    **attrs: Unpack[_CommandDecoratorKwargs],
 ) -> Callable[
     [
         Union[
@@ -1753,7 +1782,7 @@ def command(
 def command(
     name: str = MISSING,
     cls: Type[Command[Any, ..., Any]] = MISSING,
-    **attrs: Any,
+    **attrs: Unpack[_CommandDecoratorKwargs],
 ) -> Any:
     """A decorator that transforms a function into a :class:`.Command`
     or if called with :func:`.group`, :class:`.Group`.
@@ -1798,7 +1827,7 @@ def command(
 @overload
 def group(
     name: str = ...,
-    **attrs: Any,
+    **attrs: Unpack[_GroupDecoratorKwargs],
 ) -> _GroupDecorator:
     ...
 
@@ -1807,7 +1836,7 @@ def group(
 def group(
     name: str = ...,
     cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
-    **attrs: Any,
+    **attrs: Unpack[_GroupDecoratorKwargs],
 ) -> Callable[
     [
         Union[
@@ -1823,7 +1852,7 @@ def group(
 def group(
     name: str = MISSING,
     cls: Type[Group[Any, ..., Any]] = MISSING,
-    **attrs: Any,
+    **attrs: Unpack[_GroupDecoratorKwargs],
 ) -> Any:
     """A decorator that transforms a function into a :class:`.Group`.
 
@@ -2165,7 +2194,7 @@ def bot_has_any_role(*items: int) -> Callable[[T], T]:
     return check(predicate)
 
 
-def has_permissions(**perms: bool) -> Check[Any]:
+def has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
@@ -2212,7 +2241,7 @@ def has_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def bot_has_permissions(**perms: bool) -> Check[Any]:
+def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
 
@@ -2237,7 +2266,7 @@ def bot_has_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def has_guild_permissions(**perms: bool) -> Check[Any]:
+def has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions.
 
@@ -2266,7 +2295,7 @@ def has_guild_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def bot_has_guild_permissions(**perms: bool) -> Check[Any]:
+def bot_has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
 

@@ -40,12 +40,48 @@ from typing import (
     Type,
     TypeVar,
     overload,
+    TypedDict,
 )
 
 from .enums import UserFlags
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
+
+    class _IntentsFlagsKwargs(TypedDict, total=False):
+        guilds: bool
+        members: bool
+        moderation: bool
+        bans: bool
+        emojis: bool
+        emojis_and_stickers: bool
+        expressions: bool
+        integrations: bool
+        webhooks: bool
+        invites: bool
+        voice_states: bool
+        presences: bool
+        messages: bool
+        guild_messages: bool
+        dm_messages: bool
+        reactions: bool
+        guild_reactions: bool
+        dm_reactions: bool
+        typing: bool
+        guild_typing: bool
+        dm_typing: bool
+        message_content: bool
+        guild_scheduled_events: bool
+        auto_moderation: bool
+        auto_moderation_configuration: bool
+        auto_moderation_execution: bool
+        polls: bool
+        guild_polls: bool
+        dm_polls: bool
+
+    class _MemberCacheFlagsKwargs(TypedDict, total=False):
+        voice: bool
+        joined: bool
 
 
 __all__ = (
@@ -765,12 +801,12 @@ class Intents(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, value: int = 0, **kwargs: bool) -> None:
+    def __init__(self, value: int = 0, **kwargs: Unpack[_IntentsFlagsKwargs]) -> None:
         self.value: int = value
-        for key, value in kwargs.items():
+        for key, kwvalue in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError(f'{key!r} is not a valid flag name.')
-            setattr(self, key, value)
+            setattr(self, key, kwvalue)
 
     @classmethod
     def all(cls: Type[Intents]) -> Intents:
@@ -1426,7 +1462,7 @@ class MemberCacheFlags(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, **kwargs: bool):
+    def __init__(self, **kwargs: Unpack[_MemberCacheFlagsKwargs]) -> None:
         bits = max(self.VALID_FLAGS.values()).bit_length()
         self.value: int = (1 << bits) - 1
         for key, value in kwargs.items():
