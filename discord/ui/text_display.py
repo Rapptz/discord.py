@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Optional, TypeVar
@@ -56,7 +57,7 @@ class TextDisplay(Item[V]):
 
     __slots__ = ('content',)
 
-    def __init__(self, content: str, *, row: Optional[int] = None, id: Optional[int] = None) -> None:
+    def __init__(self, content: str, *, id: Optional[int] = None) -> None:
         super().__init__()
         self.content: str = content
         self.id = id
