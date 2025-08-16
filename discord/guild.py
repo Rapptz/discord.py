@@ -2465,7 +2465,7 @@ class Guild(Hashable):
     async def fetch_members_named(self, name: str, *, limit: Optional[int] = 1000) -> List[Member]:
         """|coro|
 
-        A List[:class:`Member`] whose username or nickname starts
+        Returns a list of members whose username or nickname starts
         with the provided `name`.
 
         .. versionadded:: 2.?
@@ -2476,17 +2476,17 @@ class Guild(Hashable):
         name: :class:`str`
             The string to match a username and nickname against.
         limit: Optional[:class:`int`]
-            The maximum number of members to return. Defaults to 1000.
+            The maximum number of members to return. Max of 1000.
 
         Raises
         ------
         HTTPException
             Getting the members failed.
-
+s
         Returns
         ------
         List[:class:`Member`]
-            A list of members.
+            A list of matched members.
         """
 
         state = self._state
