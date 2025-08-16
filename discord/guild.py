@@ -2463,7 +2463,7 @@ class Guild(Hashable):
         return threads
 
     async def fetch_members_named(self, name: str, *, limit: Optional[int] = 1) -> List[Member]:
-        """A List[:class:`.Member`] members whose username or nickname starts
+        """A List[:class:`.Member`] whose username or nickname starts
         with the provided `name`.
 
         .. versionadded:: 2.6
