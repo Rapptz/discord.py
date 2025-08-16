@@ -2462,6 +2462,40 @@ class Guild(Hashable):
 
         return threads
 
+    async def fetch_members_named(self, name: str, *, limit: Optional[int] = 1) -> List[Member]:
+        """A List[:class:`.Member`] members whose username or nickname starts
+        with the provided `name`.
+
+        .. versionadded:: 2.6
+
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The string to match a username and nickname against.
+        limit: Optional[:class:`int`]
+            The maximum number of members to return. Max of 1000, defaults to 1.
+
+        Raises
+        ------
+        HTTPException
+            Getting the members failed.
+        ValueError
+            Maximum number of members to return of 1000 was exceeded.
+
+        Returns
+        ------
+        List[:class:`.Member`]
+            A list of members.
+        """
+
+        if limit > 1000:
+            raise ValueError('Maximum number of members to return was exceeded')
+
+        state = self._state
+        data = await state.http.search_members(name, self.id, limit)
+        return [Member(data=raw_member, guild=self, state=state) for raw_member in data]
+
     async def fetch_members(self, *, limit: Optional[int] = 1000, after: SnowflakeTime = MISSING) -> AsyncIterator[Member]:
         """Retrieves an :term:`asynchronous iterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
