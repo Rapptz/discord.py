@@ -5,7 +5,6 @@
 import asyncio
 import logging
 import logging.handlers
-import os
 
 from typing import List, Optional
 

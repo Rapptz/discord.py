@@ -70,6 +70,9 @@ class DynamicCounter(
 
 
 class DynamicCounterBot(commands.Bot):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self):
         intents = discord.Intents.default()
         super().__init__(command_prefix=commands.when_mentioned, intents=intents)

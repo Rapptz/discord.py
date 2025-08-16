@@ -9,6 +9,9 @@ TEST_GUILD = discord.Object(0)
 
 
 class MyClient(discord.Client):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self) -> None:
         # Just default intents and a `discord.Client` instance
         # We don't need a `commands.Bot` instance because we are not

@@ -68,7 +68,7 @@ if TYPE_CHECKING:
 
     SelectCallbackDecorator = Callable[[ItemCallbackType['S', BaseSelectT]], BaseSelectT]
 
-S = TypeVar('S', bound='ActionRow', covariant=True)
+S = TypeVar('S', bound=Union['ActionRow', 'LayoutView'], covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('ActionRow',)

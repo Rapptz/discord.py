@@ -52,6 +52,9 @@ async def text(ctx: commands.Context, name: str, *objects: typing.Union[discord.
 
     overwrites = create_overwrites(ctx, *objects)
 
+    # Tell the type checker that our Guild is not None
+    assert ctx.guild is not None
+
     await ctx.guild.create_text_channel(
         name,
         overwrites=overwrites,
@@ -69,6 +72,8 @@ async def voice(ctx: commands.Context, name: str, *objects: typing.Union[discord
 
     overwrites = create_overwrites(ctx, *objects)
 
+    assert ctx.guild is not None
+
     await ctx.guild.create_voice_channel(
         name,
         overwrites=overwrites,
@@ -85,6 +90,8 @@ async def emoji(ctx: commands.Context, emoji: discord.PartialEmoji, *roles: disc
 
     # fetch the emoji asset and read it as bytes.
     emoji_bytes = await emoji.read()
+
+    assert ctx.guild is not None
 
     # the key parameter here is `roles`, which controls
     # what roles are able to use the emoji.

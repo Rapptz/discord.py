@@ -4,6 +4,9 @@ import discord
 
 
 class MyClient(discord.Client):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -21,8 +24,11 @@ class MyClient(discord.Client):
     @tasks.loop(seconds=60)  # task runs every 60 seconds
     async def my_background_task(self):
         channel = self.get_channel(1234567)  # channel ID goes here
+        # Tell the type checker that this is a messageable channel
+        assert isinstance(channel, discord.abc.Messageable)
+
         self.counter += 1
-        await channel.send(self.counter)
+        await channel.send(str(self.counter))
 
     @my_background_task.before_loop
     async def before_my_task(self):

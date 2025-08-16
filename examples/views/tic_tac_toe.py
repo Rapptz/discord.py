@@ -121,6 +121,9 @@ class TicTacToe(discord.ui.View):
 
 
 class TicTacToeBot(commands.Bot):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True

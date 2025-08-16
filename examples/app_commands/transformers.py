@@ -12,6 +12,9 @@ MY_GUILD = discord.Object(id=0)  # replace with your guild id
 
 
 class MyClient(discord.Client):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self):
         super().__init__(intents=discord.Intents.default())
         self.tree = app_commands.CommandTree(self)

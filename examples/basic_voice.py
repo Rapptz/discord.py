@@ -25,10 +25,6 @@ ytdl_format_options = {
     'source_address': '0.0.0.0',  # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
-ffmpeg_options = {
-    'options': '-vn',
-}
-
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
@@ -51,7 +47,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+        return cls(discord.FFmpegPCMAudio(filename, options='-vn'), data=data)
 
 
 class Music(commands.Cog):
@@ -138,6 +134,9 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
+    # Tell the type checker that User is filled up at this point
+    assert bot.user is not None
+
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('------')
 
