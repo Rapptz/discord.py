@@ -2462,11 +2462,13 @@ class Guild(Hashable):
 
         return threads
 
-    async def fetch_members_named(self, name: str, *, limit: Optional[int] = 1) -> List[Member]:
-        """A List[:class:`.Member`] whose username or nickname starts
+    async def fetch_members_named(self, name: str, *, limit: Optional[int] = 1000) -> List[Member]:
+        """|coro|
+
+        A List[:class:`Member`] whose username or nickname starts
         with the provided `name`.
 
-        .. versionadded:: 2.6
+        .. versionadded:: 2.?
 
 
         Parameters
@@ -2474,23 +2476,18 @@ class Guild(Hashable):
         name: :class:`str`
             The string to match a username and nickname against.
         limit: Optional[:class:`int`]
-            The maximum number of members to return. Max of 1000, defaults to 1.
+            The maximum number of members to return. Defaults to 1000.
 
         Raises
         ------
         HTTPException
             Getting the members failed.
-        ValueError
-            Maximum number of members to return of 1000 was exceeded.
 
         Returns
         ------
-        List[:class:`.Member`]
+        List[:class:`Member`]
             A list of members.
         """
-
-        if limit > 1000:
-            raise ValueError('Maximum number of members to return was exceeded')
 
         state = self._state
         data = await state.http.search_members(name, self.id, limit)
