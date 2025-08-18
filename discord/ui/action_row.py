@@ -234,7 +234,8 @@ class ActionRow(Item[V]):
         TypeError
             An :class:`Item` was not passed.
         ValueError
-            Maximum number of children has been exceeded (5).
+            Maximum number of children has been exceeded (5)
+            or (40) for the entire view.
         """
 
         if (self._weight + item.width) > 5:
@@ -246,13 +247,13 @@ class ActionRow(Item[V]):
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
+        if self._view:
+            self._view._add_count(1)
+
         item._update_view(self.view)
         item._parent = self
         self._weight += 1
         self._children.append(item)
-
-        if self._view:
-            self._view._total_children += 1
 
         return self
 
@@ -273,8 +274,8 @@ class ActionRow(Item[V]):
         except ValueError:
             pass
         else:
-            if self._view and self._view._is_layout():
-                self._view._total_children -= 1
+            if self._view:
+                self._view._add_count(-1)
             self._weight -= 1
 
         return self
@@ -305,8 +306,8 @@ class ActionRow(Item[V]):
         This function returns the class instance to allow for fluent-style
         chaining.
         """
-        if self._view and self._view._is_layout():
-            self._view._total_children -= len(self._children)
+        if self._view:
+            self._view._add_count(-len(self._children))
         self._children.clear()
         self._weight = 0
         return self

@@ -145,22 +145,23 @@ class Section(Item[V]):
         TypeError
             An :class:`Item` or :class:`str` was not passed.
         ValueError
-            Maximum number of children has been exceeded (3).
+            Maximum number of children has been exceeded (3) or (40)
+            for the entire view.
         """
 
         if len(self._children) >= 3:
-            raise ValueError('maximum number of children exceeded')
+            raise ValueError('maximum number of children exceeded (3)')
 
         if not isinstance(item, (Item, str)):
             raise TypeError(f'expected Item or str not {item.__class__.__name__}')
+
+        if self._view:
+            self._view._add_count(1)
 
         item = item if isinstance(item, Item) else TextDisplay(item)
         item._update_view(self.view)
         item._parent = self
         self._children.append(item)
-
-        if self._view:
-            self._view._total_children += 1
 
         return self
 
@@ -182,7 +183,7 @@ class Section(Item[V]):
             pass
         else:
             if self._view:
-                self._view._total_children -= 1
+                self._view._add_count(-1)
 
         return self
 
@@ -212,8 +213,8 @@ class Section(Item[V]):
         This function returns the class instance to allow for fluent-style
         chaining.
         """
-        if self._view and self._view._is_layout():
-            self._view._total_children -= len(self._children)  # we don't count the accessory because it is required
+        if self._view:
+            self._view._add_count(-len(self._children))  # we don't count the accessory because it is required
 
         self._children.clear()
         return self
