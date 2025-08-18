@@ -281,6 +281,12 @@ class Container(Item[V]):
             if child._has_children():
                 yield from child.walk_children()  # type: ignore
 
+    def content_length(self) -> int:
+        """:class:`int`: Returns the total length of all text content in this container."""
+        from .text_display import TextDisplay
+
+        return sum(len(item.content) for item in self.walk_children() if isinstance(item, TextDisplay))
+
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to this container.
 

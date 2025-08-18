@@ -219,6 +219,12 @@ class ActionRow(Item[V]):
         for child in self.children:
             yield child
 
+    def content_length(self) -> int:
+        """:class:`int`: Returns the total length of all text content in this action row."""
+        from .text_display import TextDisplay
+
+        return sum(len(item.content) for item in self._children if isinstance(item, TextDisplay))
+
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to this action row.
 

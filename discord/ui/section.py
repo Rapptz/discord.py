@@ -128,6 +128,12 @@ class Section(Item[V]):
     def _has_children(self):
         return True
 
+    def content_length(self) -> int:
+        """:class:`int`: Returns the total length of all text content in this section."""
+        from .text_display import TextDisplay
+
+        return sum(len(item.content) for item in self._children if isinstance(item, TextDisplay))
+
     def add_item(self, item: Union[str, Item[Any]]) -> Self:
         """Adds an item to this section.
 

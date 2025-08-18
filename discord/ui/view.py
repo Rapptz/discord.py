@@ -327,6 +327,15 @@ class BaseView:
         """List[:class:`Item`]: The list of children attached to this view."""
         return self._children.copy()
 
+    def content_length(self) -> int:
+        """:class:`int`: Returns the total length of all text content in the view's items.
+
+        A view is allowed to have a maximum of 4000 display characters across all its items.
+        """
+        from .text_display import TextDisplay
+
+        return sum(len(item.content) for item in self.walk_children() if isinstance(item, TextDisplay))
+
     @classmethod
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Union[View, LayoutView]:
         """Converts a message's components into a :class:`View`
