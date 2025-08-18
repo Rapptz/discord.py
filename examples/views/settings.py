@@ -67,8 +67,7 @@ class FruitsSetting(ui.ActionRow['SettingsView']):
 
     def update_options(self):
         for option in self.select_fruit.options:
-            if option.value == self.settings.fruit_type.name:
-                option.default = True
+            option.default = option.value == self.settings.fruit_type.name
 
     @ui.select(placeholder='Select a fruit', options=[fruit.as_option() for fruit in FruitType])
     async def select_fruit(self, interaction: discord.Interaction[Bot], select: discord.ui.Select) -> None:
