@@ -737,7 +737,7 @@ TextInput
 .. autoclass:: discord.ui.TextInput
     :members:
     :inherited-members:
-    :exclude-members: callback
+    :exclude-members: callback, interaction_check
 
 
 Container
@@ -759,7 +759,7 @@ File
 .. autoclass:: discord.ui.File
     :members:
     :inherited-members:
-    :exclude-members: callback
+    :exclude-members: callback, interaction_check
 
 Label
 ~~~~~~
@@ -769,7 +769,7 @@ Label
 .. autoclass:: discord.ui.Label
     :members:
     :inherited-members:
-    :exclude-members: callback
+    :exclude-members: callback, interaction_check
 
 
 MediaGallery
@@ -780,7 +780,7 @@ MediaGallery
 .. autoclass:: discord.ui.MediaGallery
     :members:
     :inherited-members:
-    :exclude-members: callback
+    :exclude-members: callback, interaction_check
 
 
 Section
@@ -802,7 +802,7 @@ Separator
 .. autoclass:: discord.ui.Separator
     :members:
     :inherited-members:
-    :exclude-members: callback
+    :exclude-members: callback, interaction_check
 
 
 TextDisplay
@@ -813,7 +813,7 @@ TextDisplay
 .. autoclass:: discord.ui.TextDisplay
     :members:
     :inherited-members:
-    :exclude-members: callback
+    :exclude-members: callback, interaction_check
 
 
 Thumbnail
@@ -824,7 +824,7 @@ Thumbnail
 .. autoclass:: discord.ui.Thumbnail
     :members:
     :inherited-members:
-    :exclude-members: callback
+    :exclude-members: callback, interaction_check
 
 
 ActionRow
