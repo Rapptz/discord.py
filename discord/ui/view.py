@@ -689,10 +689,6 @@ class View(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View:
-            ...
-
-        @classmethod
         def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
             ...
 
@@ -785,10 +781,6 @@ class LayoutView(BaseView):
     """
 
     if TYPE_CHECKING:
-
-        @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView:
-            ...
 
         @classmethod
         def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
