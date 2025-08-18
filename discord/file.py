@@ -136,7 +136,7 @@ class File:
         This is used in certain places such as embeds or components to refer
         to an uploaded file via URL.
 
-        .. info::
+        .. note::
             Due to Discord's filename processing, the filename must be ASCII aphanumeric
             with underscores, dashes, and periods.
 
