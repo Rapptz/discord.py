@@ -21,13 +21,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Optional, TypeVar, Union
 
+
 from .item import Item
 from ..components import FileComponent, UnfurledMediaItem
 from ..enums import ComponentType
+from ..utils import MISSING
+from ..file import File as SendableFile
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -60,7 +64,7 @@ class File(Item[V]):
 
     Parameters
     ----------
-    media: Union[:class:`str`, :class:`.UnfurledMediaItem`]
+    media: Union[:class:`str`, :class:`.UnfurledMediaItem`, :class:`discord.File`]
         This file's media. If this is a string it must point to a local
         file uploaded within the parent view of this item, and must
         meet the ``attachment://<filename>`` format.
@@ -78,17 +82,24 @@ class File(Item[V]):
 
     def __init__(
         self,
-        media: Union[str, UnfurledMediaItem],
+        media: Union[str, UnfurledMediaItem, SendableFile],
         *,
-        spoiler: bool = False,
+        spoiler: bool = MISSING,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
-        self._underlying = FileComponent._raw_construct(
-            media=UnfurledMediaItem(media) if isinstance(media, str) else media,
-            spoiler=spoiler,
-            id=id,
-        )
+        if isinstance(media, SendableFile):
+            self._underlying = FileComponent._raw_construct(
+                media=UnfurledMediaItem(media.uri),
+                spoiler=media.spoiler if spoiler is MISSING else spoiler,
+                id=id,
+            )
+        else:
+            self._underlying = FileComponent._raw_construct(
+                media=UnfurledMediaItem(media) if isinstance(media, str) else media,
+                spoiler=bool(spoiler),
+                id=id,
+            )
         self.id = id
 
     def _is_v2(self):
@@ -108,13 +119,15 @@ class File(Item[V]):
         return self._underlying.media
 
     @media.setter
-    def media(self, value: Union[str, UnfurledMediaItem]) -> None:
+    def media(self, value: Union[str, SendableFile, UnfurledMediaItem]) -> None:
         if isinstance(value, str):
             self._underlying.media = UnfurledMediaItem(value)
         elif isinstance(value, UnfurledMediaItem):
             self._underlying.media = value
+        elif isinstance(value, SendableFile):
+            self._underlying.media = UnfurledMediaItem(value.uri)
         else:
-            raise TypeError(f'expected a str or UnfurledMediaItem, not {value.__class__.__name__!r}')
+            raise TypeError(f'expected a str or UnfurledMediaItem or File, not {value.__class__.__name__!r}')
 
     @property
     def url(self) -> str:

@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, TypeVar, Union
@@ -28,6 +29,8 @@ from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, TypeVar, Union
 from .item import Item
 from ..enums import ComponentType
 from ..components import UnfurledMediaItem
+from ..file import File
+from ..utils import MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -47,7 +50,7 @@ class Thumbnail(Item[V]):
 
     Parameters
     ----------
-    media: Union[:class:`str`, :class:`discord.UnfurledMediaItem`]
+    media: Union[:class:`str`, :class:`discord.File`, :class:`discord.UnfurledMediaItem`]
         The media of the thumbnail. This can be a URL or a reference
         to an attachment that matches the ``attachment://filename.extension``
         structure.
@@ -74,16 +77,23 @@ class Thumbnail(Item[V]):
 
     def __init__(
         self,
-        media: Union[str, UnfurledMediaItem],
+        media: Union[str, File, UnfurledMediaItem],
         *,
-        description: Optional[str] = None,
-        spoiler: bool = False,
+        description: Optional[str] = MISSING,
+        spoiler: bool = MISSING,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
+
+        if isinstance(media, File):
+            description = description if description is not MISSING else media.description
+            spoiler = spoiler if spoiler is not MISSING else media.spoiler
+            media = media.uri
+
         self._media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
-        self.description: Optional[str] = description
-        self.spoiler: bool = spoiler
+        self.description: Optional[str] = None if description is MISSING else description
+        self.spoiler: bool = bool(spoiler)
+
         self.id = id
 
     @property
@@ -96,11 +106,13 @@ class Thumbnail(Item[V]):
         return self._media
 
     @media.setter
-    def media(self, value: Union[str, UnfurledMediaItem]) -> None:
+    def media(self, value: Union[str, File, UnfurledMediaItem]) -> None:
         if isinstance(value, str):
             self._media = UnfurledMediaItem(value)
         elif isinstance(value, UnfurledMediaItem):
             self._media = value
+        elif isinstance(value, File):
+            self._media = UnfurledMediaItem(value.uri)
         else:
             raise TypeError(f'expected a str or UnfurledMediaItem, not {value.__class__.__name__!r}')
 

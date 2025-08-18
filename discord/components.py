@@ -47,6 +47,7 @@ from .enums import (
 )
 from .flags import AttachmentFlags
 from .colour import Colour
+from .file import File
 from .utils import get_slots, MISSING, _get_as_snowflake
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -1009,7 +1010,7 @@ class MediaGalleryItem:
 
     Parameters
     ----------
-    media: Union[:class:`str`, :class:`UnfurledMediaItem`]
+    media: Union[:class:`str`, :class:`discord.File`, :class:`UnfurledMediaItem`]
         The media item data. This can be a string representing a local
         file uploaded as an attachment in the message, which can be accessed
         using the ``attachment://<filename>`` format, or an arbitrary url.
@@ -1029,14 +1030,21 @@ class MediaGalleryItem:
 
     def __init__(
         self,
-        media: Union[str, UnfurledMediaItem],
+        media: Union[str, File, UnfurledMediaItem],
         *,
-        description: Optional[str] = None,
-        spoiler: bool = False,
+        description: Optional[str] = MISSING,
+        spoiler: bool = MISSING,
     ) -> None:
         self.media = media
-        self.description: Optional[str] = description
-        self.spoiler: bool = spoiler
+
+        if isinstance(media, File):
+            if description is MISSING:
+                description = media.description
+            if spoiler is MISSING:
+                spoiler = media.spoiler
+
+        self.description: Optional[str] = None if description is MISSING else description
+        self.spoiler: bool = bool(spoiler)
         self._state: Optional[ConnectionState] = None
 
     def __repr__(self) -> str:
@@ -1048,11 +1056,13 @@ class MediaGalleryItem:
         return self._media
 
     @media.setter
-    def media(self, value: Union[str, UnfurledMediaItem]) -> None:
+    def media(self, value: Union[str, File, UnfurledMediaItem]) -> None:
         if isinstance(value, str):
             self._media = UnfurledMediaItem(value)
         elif isinstance(value, UnfurledMediaItem):
             self._media = value
+        elif isinstance(value, File):
+            self._media = UnfurledMediaItem(value.uri)
         else:
             raise TypeError(f'Expected a str or UnfurledMediaItem, not {value.__class__.__name__}')
 

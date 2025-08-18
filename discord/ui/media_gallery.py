@@ -27,6 +27,8 @@ from typing import TYPE_CHECKING, List, Literal, Optional, TypeVar, Union
 
 from .item import Item
 from ..enums import ComponentType
+from ..utils import MISSING
+from ..file import File
 from ..components import (
     MediaGalleryItem,
     MediaGalleryComponent,
@@ -110,9 +112,9 @@ class MediaGallery(Item[V]):
     def add_item(
         self,
         *,
-        media: Union[str, UnfurledMediaItem],
-        description: Optional[str] = None,
-        spoiler: bool = False,
+        media: Union[str, File, UnfurledMediaItem],
+        description: Optional[str] = MISSING,
+        spoiler: bool = MISSING,
     ) -> Self:
         """Adds an item to this gallery.
 
@@ -121,7 +123,7 @@ class MediaGallery(Item[V]):
 
         Parameters
         ----------
-        media: Union[:class:`str`, :class:`.UnfurledMediaItem`]
+        media: Union[:class:`str`, :class:`discord.File`, :class:`.UnfurledMediaItem`]
             The media item data. This can be a string representing a local
             file uploaded as an attachment in the message, which can be accessed
             using the ``attachment://<filename>`` format, or an arbitrary url.
@@ -176,9 +178,9 @@ class MediaGallery(Item[V]):
         self,
         index: int,
         *,
-        media: Union[str, UnfurledMediaItem],
-        description: Optional[str] = None,
-        spoiler: bool = False,
+        media: Union[str, File, UnfurledMediaItem],
+        description: Optional[str] = MISSING,
+        spoiler: bool = MISSING,
     ) -> Self:
         """Inserts an item before a specified index to the media gallery.
 
@@ -189,7 +191,7 @@ class MediaGallery(Item[V]):
         ----------
         index: :class:`int`
             The index of where to insert the field.
-        media: Union[:class:`str`, :class:`.UnfurledMediaItem`]
+        media: Union[:class:`str`, :class:`discord.File`, :class:`.UnfurledMediaItem`]
             The media item data. This can be a string representing a local
             file uploaded as an attachment in the message, which can be accessed
             using the ``attachment://<filename>`` format, or an arbitrary url.

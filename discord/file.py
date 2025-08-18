@@ -130,6 +130,14 @@ class File:
     def filename(self, value: str) -> None:
         self._filename, self.spoiler = _strip_spoiler(value)
 
+    @property
+    def uri(self) -> str:
+        """:class:`str`: Returns the ``attachment://<filename>`` URI for this file.
+
+        .. versionadded:: 2.6
+        """
+        return f'attachment://{self.filename}'
+
     def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because
         # the retry-loop is iterated over multiple times
