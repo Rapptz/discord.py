@@ -380,7 +380,7 @@ class BaseView:
                     if item._is_v2():
                         raise ValueError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
                     view.add_item(item)
-                    row += 1
+                row += 1
                 continue
 
             item = _component_to_item(component)
