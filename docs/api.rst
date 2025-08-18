@@ -3604,6 +3604,15 @@ of :class:`enum.Enum`.
 
         The ``vi`` locale.
 
+    .. attribute:: language_code
+
+        :class:`str`: Returns the locale's BCP 47 language code in the format of ``language-COUNTRY``.
+
+        This is derived from a predefined mapping based on Discord's supported locales.
+        If no mapping exists for the current locale, this returns the raw locale value as a fallback.
+
+        .. versionadded:: 2.6
+
 
 .. class:: MFALevel
 
@@ -3998,7 +4007,7 @@ of :class:`enum.Enum`.
 
 .. class:: StatusDisplayType
 
-    Represents which field is of the user's activity is 
+    Represents which field is of the user's activity is
     displayed in the members list.
 
     .. versionadded:: 2.6
@@ -4823,7 +4832,7 @@ AuditLogDiff
         See also :attr:`OnboardingPrompt.options`
 
         :type: List[:class:`OnboardingPromptOption`]
-    
+
     .. attribute:: default_channels
 
         The default channels associated with the onboarding in this guild.
