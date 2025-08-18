@@ -65,10 +65,11 @@ if TYPE_CHECKING:
     from ..emoji import Emoji
     from ..components import SelectOption
     from ..interactions import Interaction
+    from .container import Container
 
     SelectCallbackDecorator = Callable[[ItemCallbackType['S', BaseSelectT]], BaseSelectT]
 
-S = TypeVar('S', bound=Union['ActionRow', 'LayoutView'], covariant=True)
+S = TypeVar('S', bound=Union['ActionRow', 'Container', 'LayoutView'], covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('ActionRow',)

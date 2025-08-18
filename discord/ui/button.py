@@ -45,10 +45,11 @@ if TYPE_CHECKING:
 
     from .view import BaseView
     from .action_row import ActionRow
+    from .container import Container
     from ..emoji import Emoji
     from ..types.components import ButtonComponent as ButtonComponentPayload
 
-S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
+S = TypeVar('S', bound='Union[BaseView, Container, ActionRow]', covariant=True)
 V = TypeVar('V', bound='BaseView', covariant=True)
 
 
