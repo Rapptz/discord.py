@@ -327,14 +327,10 @@ class BaseView:
         """List[:class:`Item`]: The list of children attached to this view."""
         return self._children.copy()
 
-    def content_length(self) -> int:
-        """:class:`int`: Returns the total length of all text content in the view's items.
-
-        A view is allowed to have a maximum of 4000 display characters across all its items.
-        """
-        from .text_display import TextDisplay
-
-        return sum(len(item.content) for item in self.walk_children() if isinstance(item, TextDisplay))
+    @property
+    def total_children_count(self) -> int:
+        """:class:`int`: The total number of children in this view, including those from nested items."""
+        return self._total_children
 
     @classmethod
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Union[View, LayoutView]:
@@ -693,12 +689,10 @@ class View(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View:
-            ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View: ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
-            ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View: ...
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -791,12 +785,10 @@ class LayoutView(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView:
-            ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
-            ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         super().__init__(timeout=timeout)
@@ -845,6 +837,15 @@ class LayoutView(BaseView):
             raise ValueError('maximum number of children exceeded (40)')
         super().add_item(item)
         return self
+
+    def content_length(self) -> int:
+        """:class:`int`: Returns the total length of all text content in the view's items.
+
+        A view is allowed to have a maximum of 4000 display characters across all its items.
+        """
+        from .text_display import TextDisplay
+
+        return sum(len(item.content) for item in self.walk_children() if isinstance(item, TextDisplay))
 
 
 class ViewStore:
