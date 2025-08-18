@@ -326,7 +326,8 @@ class BaseView:
 
     @classmethod
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Union[View, LayoutView]:
-        """Converts a message's components into a :class:`View`.
+        """Converts a message's components into a :class:`View`
+        or :class:`LayoutView`.
 
         The :attr:`.Message.components` of a message are read-only
         and separate types from those in the ``discord.ui`` namespace.
@@ -767,6 +768,9 @@ class LayoutView(BaseView):
     """Represents a layout view for components.
 
     This object must be inherited to create a UI within Discord.
+
+    This differs from a :class:`View` in that it supports all component types
+    and uses what Discord refers to as "v2 components".
 
     You can find usage examples in the :resource:`repository <examples>`
 
