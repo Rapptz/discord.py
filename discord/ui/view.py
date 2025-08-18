@@ -689,10 +689,12 @@ class View(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View: ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View:
+            ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View: ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
+            ...
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -785,10 +787,12 @@ class LayoutView(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView: ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView:
+            ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
+            ...
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         super().__init__(timeout=timeout)
