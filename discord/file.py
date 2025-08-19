@@ -155,11 +155,11 @@ class File:
         self.duration = duration
         if waveform is not None:
             if len(waveform) > 256:
-                raise ValueError("Waveforms have a maximum of 256 values")
+                raise ValueError('Waveforms have a maximum of 256 values')
             elif max(waveform) > 255:
-                raise ValueError("Maximum value of ints is 255 for waveforms")
+                raise ValueError('Maximum value of ints is 255 for waveforms')
             elif min(waveform) < 0:
-                raise ValueError("Minimum value of ints is 0 for waveforms")
+                raise ValueError('Minimum value of ints is 0 for waveforms')
         self._waveform = waveform
 
         if voice is MISSING:
@@ -247,7 +247,7 @@ class File:
 
     def generate_waveform(self) -> list[int]:
         if not self.voice:
-            raise ValueError("Cannot produce waveform for non voice file")
+            raise ValueError('Cannot produce waveform for non voice file')
         self.reset()
         ogg = OggStream(self.fp)  # type: ignore
         decoder = Decoder()
