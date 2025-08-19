@@ -57,11 +57,6 @@ class Section(Item[V]):
         The section accessory.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
-
-    Attributes
-    ----------
-    accessory: :class:`Item`
-        The section accessory.
     """
 
     __item_repr_attributes__ = (
@@ -72,7 +67,7 @@ class Section(Item[V]):
 
     __slots__ = (
         '_children',
-        'accessory',
+        '_accessory',
     )
 
     def __init__(
@@ -83,13 +78,11 @@ class Section(Item[V]):
     ) -> None:
         super().__init__()
         self._children: List[Item[V]] = []
-        if children:
-            if len(children) > 3:
-                raise ValueError('maximum number of children exceeded')
-            self._children.extend(
-                [c if isinstance(c, Item) else TextDisplay(c) for c in children],
-            )
-        self.accessory: Item[V] = accessory
+        for child in children:
+            self.add_item(child)
+
+        accessory._parent = self
+        self._accessory: Item[V] = accessory
         self.id = id
 
     def __repr__(self) -> str:
@@ -107,6 +100,19 @@ class Section(Item[V]):
     @property
     def width(self):
         return 5
+
+    @property
+    def accessory(self) -> Item[V]:
+        """:class:`Item`: The section's accessory."""
+        return self._accessory
+
+    @accessory.setter
+    def accessory(self, value: Item[V]) -> None:
+        if not isinstance(value, Item):
+            raise TypeError(f'Expected an Item, got {value.__class__.__name__!r} instead')
+
+        value._parent = self
+        self._accessory = value
 
     def _is_v2(self) -> bool:
         return True
