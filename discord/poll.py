@@ -483,7 +483,7 @@ class Poll:
         return data
 
     def __repr__(self) -> str:
-        return f"<Poll duration={self.duration} question=\"{self.question}\" answers={self.answers}>"
+        return f'<Poll duration={self.duration} question="{self.question}" answers={self.answers}>'
 
     @property
     def question(self) -> str:

@@ -76,38 +76,32 @@ class TranslationContext(Generic[_L, _D]):
     @overload
     def __init__(
         self, location: Literal[TranslationContextLocation.command_name], data: Union[Command[Any, ..., Any], ContextMenu]
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
         self, location: Literal[TranslationContextLocation.command_description], data: Command[Any, ..., Any]
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
         self,
         location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description],
         data: Group,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
         self,
         location: Literal[TranslationContextLocation.parameter_name, TranslationContextLocation.parameter_description],
         data: Parameter,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
-    def __init__(self, location: Literal[TranslationContextLocation.choice_name], data: Choice[Any]) -> None:
-        ...
+    def __init__(self, location: Literal[TranslationContextLocation.choice_name], data: Choice[Any]) -> None: ...
 
     @overload
-    def __init__(self, location: Literal[TranslationContextLocation.other], data: Any) -> None:
-        ...
+    def __init__(self, location: Literal[TranslationContextLocation.other], data: Any) -> None: ...
 
     def __init__(self, location: _L, data: _D) -> None:  # type: ignore # pyright doesn't like the overloads
         self.location: _L = location

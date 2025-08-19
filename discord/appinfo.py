@@ -406,7 +406,7 @@ class AppInfo:
             if install_params_scopes is None:
                 install_params = None
             else:
-                if "bot" not in install_params_scopes and install_params_permissions is not MISSING:
+                if 'bot' not in install_params_scopes and install_params_permissions is not MISSING:
                     raise ValueError("'bot' must be in install_params_scopes if install_params_permissions is set")
 
                 install_params['scopes'] = install_params_scopes

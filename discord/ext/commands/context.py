@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import re
@@ -70,7 +71,7 @@ MISSING: Any = discord.utils.MISSING
 
 
 T = TypeVar('T')
-CogT = TypeVar('CogT', bound="Cog")
+CogT = TypeVar('CogT', bound='Cog')
 
 if TYPE_CHECKING:
     P = ParamSpec('P')
@@ -424,8 +425,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         # consider this to be an *incredibly* strange use case. I'd rather go
         # for this common use case rather than waste performance for the
         # odd one.
-        pattern = re.compile(r"<@!?%s>" % user.id)
-        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.prefix)
+        pattern = re.compile(r'<@!?%s>' % user.id)
+        return pattern.sub('@%s' % user.display_name.replace('\\', r'\\'), self.prefix)
 
     @property
     def cog(self) -> Optional[Cog]:
@@ -642,8 +643,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def reply(
@@ -659,8 +659,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def reply(
@@ -681,8 +680,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def reply(
@@ -703,8 +701,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def reply(
@@ -725,8 +722,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def reply(
@@ -747,8 +743,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
         """|coro|
@@ -865,8 +860,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def send(
@@ -882,8 +876,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def send(
@@ -904,8 +897,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def send(
@@ -926,8 +918,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def send(
@@ -948,8 +939,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     @overload
     async def send(
@@ -970,8 +960,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
-    ) -> Message:
-        ...
+    ) -> Message: ...
 
     async def send(
         self,

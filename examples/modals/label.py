@@ -84,7 +84,7 @@ class TimeoutModal(discord.ui.Modal, title='Timeout Member'):
 client = MyClient()
 
 
-@client.tree.command(guild=TEST_GUILD, description="Timeout a member")
+@client.tree.command(guild=TEST_GUILD, description='Timeout a member')
 async def timeout(interaction: discord.Interaction, member: discord.Member):
     # Send the modal with an instance of our `TimeoutModal` class
     # Since modals require an interaction, they cannot be done as a response to a text command.

@@ -219,8 +219,8 @@ class GuildPreview(Hashable):
         'stickers',
         'features',
         'description',
-        "approximate_member_count",
-        "approximate_presence_count",
+        'approximate_member_count',
+        'approximate_presence_count',
     )
 
     def __init__(self, *, data: GuildPreviewPayload, state: ConnectionState) -> None:
@@ -1296,8 +1296,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, TextChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, TextChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1307,8 +1306,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, VoiceChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, VoiceChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1318,8 +1316,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, StageChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, StageChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1329,8 +1326,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, CategoryChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, CategoryChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1340,8 +1336,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, NewsChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, NewsChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1351,8 +1346,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, Union[TextChannelPayload, NewsChannelPayload]]:
-        ...
+    ) -> Coroutine[Any, Any, Union[TextChannelPayload, NewsChannelPayload]]: ...
 
     @overload
     def _create_channel(
@@ -1362,8 +1356,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, ForumChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, ForumChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1373,8 +1366,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, GuildChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, GuildChannelPayload]: ...
 
     def _create_channel(
         self,
@@ -1965,7 +1957,9 @@ class Guild(Hashable):
         )
 
         channel = ForumChannel(
-            state=self._state, guild=self, data=data  # pyright: ignore[reportArgumentType] # it's the correct data
+            state=self._state,
+            guild=self,
+            data=data,  # pyright: ignore[reportArgumentType] # it's the correct data
         )
 
         # temporarily add to the cache
@@ -3246,8 +3240,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3262,8 +3255,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3277,8 +3269,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3292,8 +3283,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     async def create_scheduled_event(
         self,
@@ -3405,7 +3395,7 @@ class Guild(Hashable):
 
         if entity_type is None:
             raise TypeError(
-                'invalid GuildChannel type passed, must be VoiceChannel or StageChannel ' f'not {channel.__class__.__name__}'
+                f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__.__name__}'
             )
 
         if privacy_level is not MISSING:
@@ -3660,8 +3650,7 @@ class Guild(Hashable):
         mentionable: bool = ...,
         secondary_colour: Optional[Union[Colour, int]] = ...,
         tertiary_colour: Optional[Union[Colour, int]] = ...,
-    ) -> Role:
-        ...
+    ) -> Role: ...
 
     @overload
     async def create_role(
@@ -3676,8 +3665,7 @@ class Guild(Hashable):
         mentionable: bool = ...,
         secondary_color: Optional[Union[Colour, int]] = ...,
         tertiary_color: Optional[Union[Colour, int]] = ...,
-    ) -> Role:
-        ...
+    ) -> Role: ...
 
     async def create_role(
         self,

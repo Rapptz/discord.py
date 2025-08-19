@@ -70,7 +70,7 @@ test = [
     "tzdata; sys_platform == 'win32'",
 ]
 dev = [
-    "black==22.6",
+    "ruff==0.12",
     "typing_extensions>=4.3,<5",
 ]
 
@@ -89,6 +89,13 @@ include-package-data = true
 [tool.black]
 line-length = 125
 skip-string-normalization = true
+
+[tool.ruff]
+line-length = 125
+
+[tool.ruff.format]
+line-ending = "lf"
+quote-style = "single"
 
 [tool.coverage.run]
 omit = [

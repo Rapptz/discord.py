@@ -94,11 +94,9 @@ if TYPE_CHECKING:
         create_polls: BoolOrNoneT
         use_external_apps: BoolOrNoneT
 
-    class _PermissionsKwargs(_BasePermissionsKwargs[bool]):
-        ...
+    class _PermissionsKwargs(_BasePermissionsKwargs[bool]): ...
 
-    class _PermissionOverwriteKwargs(_BasePermissionsKwargs[Optional[bool]]):
-        ...
+    class _PermissionOverwriteKwargs(_BasePermissionsKwargs[Optional[bool]]): ...
 
 
 # A permission alias works like a regular flag but is marked
@@ -219,14 +217,14 @@ class Permissions(BaseFlags):
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+            raise TypeError(f'cannot compare {self.__class__.__name__} with {other.__class__.__name__}')
 
     def is_superset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+            raise TypeError(f'cannot compare {self.__class__.__name__} with {other.__class__.__name__}')
 
     def is_strict_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if the permissions on other are a strict subset of those on self."""

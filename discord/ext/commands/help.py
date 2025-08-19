@@ -1072,7 +1072,7 @@ class DefaultHelpCommand(HelpCommand):
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.arguments_heading: str = options.pop('arguments_heading', "Arguments:")
+        self.arguments_heading: str = options.pop('arguments_heading', 'Arguments:')
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
         self.default_argument_description: str = options.pop('default_argument_description', 'No description given')
         self.no_category: str = options.pop('no_category', 'No Category')

@@ -81,7 +81,7 @@ class VersionInfo(NamedTuple):
     major: int
     minor: int
     micro: int
-    releaselevel: Literal["alpha", "beta", "candidate", "final"]
+    releaselevel: Literal['alpha', 'beta', 'candidate', 'final']
     serial: int
 
 

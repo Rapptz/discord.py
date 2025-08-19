@@ -319,7 +319,7 @@ class SessionStartLimits:
         The number of identify requests allowed per 5 seconds
     """
 
-    __slots__ = ("total", "remaining", "reset_after", "max_concurrency")
+    __slots__ = ('total', 'remaining', 'reset_after', 'max_concurrency')
 
     def __init__(self, **kwargs: Unpack[SessionStartLimit]):
         self.total: int = kwargs['total']

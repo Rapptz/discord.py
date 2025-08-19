@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 from typing import (
@@ -405,8 +406,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[S, SelectT]:
-        ...
+    ) -> SelectCallbackDecorator[S, SelectT]: ...
 
     @overload
     def select(
@@ -422,8 +422,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[S, UserSelectT]:
-        ...
+    ) -> SelectCallbackDecorator[S, UserSelectT]: ...
 
     @overload
     def select(
@@ -439,8 +438,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[S, RoleSelectT]:
-        ...
+    ) -> SelectCallbackDecorator[S, RoleSelectT]: ...
 
     @overload
     def select(
@@ -456,8 +454,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[S, ChannelSelectT]:
-        ...
+    ) -> SelectCallbackDecorator[S, ChannelSelectT]: ...
 
     @overload
     def select(
@@ -473,8 +470,7 @@ class ActionRow(Item[V]):
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
         id: Optional[int] = ...,
-    ) -> SelectCallbackDecorator[S, MentionableSelectT]:
-        ...
+    ) -> SelectCallbackDecorator[S, MentionableSelectT]: ...
 
     def select(
         self,

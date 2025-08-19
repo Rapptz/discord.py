@@ -83,7 +83,7 @@ class PrimaryGuild:
 
     @classmethod
     def _default(cls, state: ConnectionState) -> Self:
-        payload: PrimaryGuildPayload = {"identity_enabled": False}  # type: ignore
+        payload: PrimaryGuildPayload = {'identity_enabled': False}  # type: ignore
         return cls(state=state, data=payload)
 
     def __repr__(self) -> str:

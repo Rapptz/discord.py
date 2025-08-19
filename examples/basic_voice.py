@@ -97,10 +97,10 @@ class Music(commands.Cog):
         """Changes the player's volume"""
 
         if ctx.voice_client is None:
-            return await ctx.send("Not connected to a voice channel.")
+            return await ctx.send('Not connected to a voice channel.')
 
         ctx.voice_client.source.volume = volume / 100
-        await ctx.send(f"Changed volume to {volume}%")
+        await ctx.send(f'Changed volume to {volume}%')
 
     @commands.command()
     async def stop(self, ctx):
@@ -116,8 +116,8 @@ class Music(commands.Cog):
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
             else:
-                await ctx.send("You are not connected to a voice channel.")
-                raise commands.CommandError("Author not connected to a voice channel.")
+                await ctx.send('You are not connected to a voice channel.')
+                raise commands.CommandError('Author not connected to a voice channel.')
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
 
@@ -126,7 +126,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or("!"),
+    command_prefix=commands.when_mentioned_or('!'),
     description='Relatively simple music bot example',
     intents=intents,
 )

@@ -306,14 +306,12 @@ class AuditLogDiff:
 
     if TYPE_CHECKING:
 
-        def __getattr__(self, item: str) -> Any:
-            ...
+        def __getattr__(self, item: str) -> Any: ...
 
-        def __setattr__(self, key: str, value: Any) -> Any:
-            ...
+        def __setattr__(self, key: str, value: Any) -> Any: ...
 
 
-Transformer = Callable[["AuditLogEntry", Any], Any]
+Transformer = Callable[['AuditLogEntry', Any], Any]
 
 
 class AuditLogChanges:

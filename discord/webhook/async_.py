@@ -1324,7 +1324,7 @@ class Webhook(BaseWebhook):
 
     @classmethod
     def _as_follower(cls, data, *, channel, user) -> Self:
-        name = f"{channel.guild} #{channel}"
+        name = f'{channel.guild} #{channel}'
         feed: WebhookPayload = {
             'id': data['webhook_id'],
             'type': 2,
@@ -1622,8 +1622,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
-    ) -> WebhookMessage:
-        ...
+    ) -> WebhookMessage: ...
 
     @overload
     async def send(
@@ -1642,8 +1641,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     async def send(
@@ -1667,8 +1665,7 @@ class Webhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
-    ) -> WebhookMessage:
-        ...
+    ) -> WebhookMessage: ...
 
     @overload
     async def send(
@@ -1692,8 +1689,7 @@ class Webhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     async def send(
         self,
@@ -1987,8 +1983,7 @@ class Webhook(BaseWebhook):
         view: LayoutView,
         allowed_mentions: Optional[AllowedMentions] = ...,
         thread: Snowflake = ...,
-    ) -> WebhookMessage:
-        ...
+    ) -> WebhookMessage: ...
 
     @overload
     async def edit_message(
@@ -2002,8 +1997,7 @@ class Webhook(BaseWebhook):
         view: Optional[View] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
         thread: Snowflake = ...,
-    ) -> WebhookMessage:
-        ...
+    ) -> WebhookMessage: ...
 
     async def edit_message(
         self,

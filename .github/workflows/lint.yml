@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         id: install-deps
         run: |
-          python -m pip install --upgrade pip setuptools wheel black==22.6 requests
+          python -m pip install --upgrade pip setuptools wheel ruff==0.12 requests
           pip install -U -r requirements.txt
 
       - name: Setup node.js
@@ -42,7 +42,7 @@ jobs:
           warnings: false
           no-comments: ${{ matrix.python-version != '3.x' }}
 
-      - name: Run black
+      - name: Run ruff
         if: ${{ always() && steps.install-deps.outcome == 'success' }}
         run: |
-          black --check discord examples
+          ruff format --check discord examples

@@ -70,7 +70,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
 client = MyClient()
 
 
-@client.tree.command(guild=TEST_GUILD, description="Submit feedback")
+@client.tree.command(guild=TEST_GUILD, description='Submit feedback')
 async def feedback(interaction: discord.Interaction):
     # Send the modal with an instance of our `Feedback` class
     # Since modals require an interaction, they cannot be done as a response to a text command.

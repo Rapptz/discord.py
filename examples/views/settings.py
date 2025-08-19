@@ -9,24 +9,24 @@ import enum
 
 
 class FruitType(enum.Enum):
-    apple = "Apple"
-    banana = "Banana"
-    orange = "Orange"
-    grape = "Grape"
-    mango = "Mango"
-    watermelon = "Watermelon"
-    coconut = "Coconut"
+    apple = 'Apple'
+    banana = 'Banana'
+    orange = 'Orange'
+    grape = 'Grape'
+    mango = 'Mango'
+    watermelon = 'Watermelon'
+    coconut = 'Coconut'
 
     @property
     def emoji(self) -> str:
         emojis = {
-            "Apple": "🍎",
-            "Banana": "🍌",
-            "Orange": "🍊",
-            "Grape": "🍇",
-            "Mango": "🥭",
-            "Watermelon": "🍉",
-            "Coconut": "🥥",
+            'Apple': '🍎',
+            'Banana': '🍌',
+            'Orange': '🍊',
+            'Grape': '🍇',
+            'Mango': '🥭',
+            'Watermelon': '🍉',
+            'Coconut': '🥥',
         }
         return emojis[self.value]
 

@@ -133,7 +133,7 @@ async def setup(bot):
     await bot.add_cog({name}(bot))
 '''
 
-_cog_extras = '''
+_cog_extras = """
     async def cog_load(self):
         # loading logic goes here
         pass
@@ -170,7 +170,7 @@ _cog_extras = '''
         # called after a command is called here
         pass
 
-'''
+"""
 
 
 # certain file names and directory names are forbidden

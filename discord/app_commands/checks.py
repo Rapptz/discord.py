@@ -327,7 +327,7 @@ def has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Callable[[T], T]:
 
     invalid = perms.keys() - Permissions.VALID_FLAGS.keys()
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(interaction: Interaction) -> bool:
         permissions = interaction.permissions
@@ -354,7 +354,7 @@ def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Callable[[T], T]
 
     invalid = set(perms) - set(Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(interaction: Interaction) -> bool:
         permissions = interaction.app_permissions
@@ -371,7 +371,6 @@ def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Callable[[T], T]
 def _create_cooldown_decorator(
     key: CooldownFunction[Hashable], factory: CooldownFunction[Optional[Cooldown]]
 ) -> Callable[[T], T]:
-
     mapping: Dict[Any, Cooldown] = {}
 
     async def get_bucket(

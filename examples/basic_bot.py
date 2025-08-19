@@ -4,10 +4,10 @@ import discord
 from discord.ext import commands
 import random
 
-description = '''An example bot to showcase the discord.ext.commands extension
+description = """An example bot to showcase the discord.ext.commands extension
 module.
 
-There are a number of utility commands being showcased here.'''
+There are a number of utility commands being showcased here."""
 
 intents = discord.Intents.default()
 intents.members = True

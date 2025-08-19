@@ -189,7 +189,6 @@ class Embed:
         description: Optional[Any] = None,
         timestamp: Optional[datetime.datetime] = None,
     ):
-
         self.colour = colour if colour is not None else color
         self.title: Optional[str] = title
         self.type: EmbedType = type
@@ -362,7 +361,7 @@ class Embed:
         elif value is None:
             self._timestamp = None
         else:
-            raise TypeError(f"Expected datetime.datetime or None received {value.__class__.__name__} instead")
+            raise TypeError(f'Expected datetime.datetime or None received {value.__class__.__name__} instead')
 
     @property
     def footer(self) -> _EmbedFooterProxy:

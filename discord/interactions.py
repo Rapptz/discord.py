@@ -95,8 +95,8 @@ if TYPE_CHECKING:
         GroupChannel,
     ]
     InteractionCallbackResource = Union[
-        "InteractionMessage",
-        "InteractionCallbackActivityInstance",
+        'InteractionMessage',
+        'InteractionCallbackActivityInstance',
     ]
 
 MISSING: Any = utils.MISSING
@@ -735,7 +735,6 @@ class InteractionCallbackResponse(Generic[ClientT]):
 
         resource = data.get('resource')
         if resource is not None:
-
             self.type = try_enum(InteractionResponseType, resource['type'])
 
             message = resource.get('message')
@@ -916,8 +915,7 @@ class InteractionResponse(Generic[ClientT]):
         suppress_embeds: bool = False,
         silent: bool = False,
         delete_after: Optional[float] = None,
-    ) -> InteractionCallbackResponse[ClientT]:
-        ...
+    ) -> InteractionCallbackResponse[ClientT]: ...
 
     @overload
     async def send_message(
@@ -936,8 +934,7 @@ class InteractionResponse(Generic[ClientT]):
         silent: bool = False,
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
-    ) -> InteractionCallbackResponse[ClientT]:
-        ...
+    ) -> InteractionCallbackResponse[ClientT]: ...
 
     async def send_message(
         self,
@@ -1437,8 +1434,7 @@ class InteractionMessage(Message):
         view: LayoutView,
         allowed_mentions: Optional[AllowedMentions] = None,
         delete_after: Optional[float] = None,
-    ) -> InteractionMessage:
-        ...
+    ) -> InteractionMessage: ...
 
     @overload
     async def edit(
@@ -1452,8 +1448,7 @@ class InteractionMessage(Message):
         allowed_mentions: Optional[AllowedMentions] = None,
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
-    ) -> InteractionMessage:
-        ...
+    ) -> InteractionMessage: ...
 
     async def edit(
         self,

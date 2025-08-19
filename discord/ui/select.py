@@ -361,11 +361,12 @@ class BaseSelect(Item[V]):
         payload: List[PossibleValue]
         try:
             resolved = Namespace._get_resolved_items(
-                interaction, data['resolved']  # pyright: ignore[reportTypedDictNotRequiredAccess]
+                interaction,
+                data['resolved'],  # pyright: ignore[reportTypedDictNotRequiredAccess]
             )
             payload = list(resolved.values())
         except KeyError:
-            payload = data.get("values", [])  # type: ignore
+            payload = data.get('values', [])  # type: ignore
 
         self._values = values[self.custom_id] = payload
         selected_values.set(values)
@@ -985,8 +986,7 @@ def select(
     disabled: bool = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[S, SelectT]:
-    ...
+) -> SelectCallbackDecorator[S, SelectT]: ...
 
 
 @overload
@@ -1003,8 +1003,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[S, UserSelectT]:
-    ...
+) -> SelectCallbackDecorator[S, UserSelectT]: ...
 
 
 @overload
@@ -1021,8 +1020,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[S, RoleSelectT]:
-    ...
+) -> SelectCallbackDecorator[S, RoleSelectT]: ...
 
 
 @overload
@@ -1039,8 +1037,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[S, ChannelSelectT]:
-    ...
+) -> SelectCallbackDecorator[S, ChannelSelectT]: ...
 
 
 @overload
@@ -1057,8 +1054,7 @@ def select(
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
     id: Optional[int] = ...,
-) -> SelectCallbackDecorator[S, MentionableSelectT]:
-    ...
+) -> SelectCallbackDecorator[S, MentionableSelectT]: ...
 
 
 def select(

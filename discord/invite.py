@@ -418,7 +418,7 @@ class Invite(Hashable):
         target_user_data = data.get('target_user')
         self.target_user: Optional[User] = None if target_user_data is None else self._state.create_user(target_user_data)
 
-        self.target_type: InviteTarget = try_enum(InviteTarget, data.get("target_type", 0))
+        self.target_type: InviteTarget = try_enum(InviteTarget, data.get('target_type', 0))
 
         application = data.get('target_application')
         self.target_application: Optional[PartialAppInfo] = (

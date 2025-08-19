@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -398,6 +399,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         .. versionadded:: 2.0
     """
+
     __original_kwargs__: Dict[str, Any]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
@@ -451,7 +453,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.extras: Dict[Any, Any] = kwargs.get('extras', {})
 
         if not isinstance(self.aliases, (list, tuple)):
-            raise TypeError("Aliases of a command must be a list or a tuple of strings.")
+            raise TypeError('Aliases of a command must be a list or a tuple of strings.')
 
         self.description: str = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden: bool = kwargs.get('hidden', False)
@@ -474,7 +476,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         elif isinstance(cooldown, CooldownMapping):
             buckets: CooldownMapping[Context[Any]] = cooldown
         else:
-            raise TypeError("Cooldown must be an instance of CooldownMapping or None.")
+            raise TypeError('Cooldown must be an instance of CooldownMapping or None.')
         self._buckets: CooldownMapping[Context[Any]] = buckets
 
         try:
@@ -520,7 +522,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     @property
     def callback(
         self,
-    ) -> Union[Callable[Concatenate[CogT, Context[Any], P], Coro[T]], Callable[Concatenate[Context[Any], P], Coro[T]],]:
+    ) -> Union[
+        Callable[Concatenate[CogT, Context[Any], P], Coro[T]],
+        Callable[Concatenate[Context[Any], P], Coro[T]],
+    ]:
         return self._callback
 
     @callback.setter
@@ -1507,8 +1512,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         Command[CogT, P, T],
-    ]:
-        ...
+    ]: ...
 
     @overload
     def command(
@@ -1525,8 +1529,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         CommandT,
-    ]:
-        ...
+    ]: ...
 
     def command(
         self,
@@ -1566,8 +1569,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         Group[CogT, P, T],
-    ]:
-        ...
+    ]: ...
 
     @overload
     def group(
@@ -1584,8 +1586,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         GroupT,
-    ]:
-        ...
+    ]: ...
 
     def group(
         self,
@@ -1731,35 +1732,28 @@ if TYPE_CHECKING:
 
     class _CommandDecorator:
         @overload
-        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Command[CogT, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Command[CogT, P, T]: ...
 
         @overload
-        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Command[None, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Command[None, P, T]: ...
 
-        def __call__(self, func: Callable[..., Coro[T]], /) -> Any:
-            ...
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
 
     class _GroupDecorator:
         @overload
-        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Group[CogT, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Group[CogT, P, T]: ...
 
         @overload
-        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Group[None, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Group[None, P, T]: ...
 
-        def __call__(self, func: Callable[..., Coro[T]], /) -> Any:
-            ...
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
 
 
 @overload
 def command(
     name: str = ...,
     **attrs: Unpack[_CommandDecoratorKwargs],
-) -> _CommandDecorator:
-    ...
+) -> _CommandDecorator: ...
 
 
 @overload
@@ -1775,8 +1769,7 @@ def command(
         ]
     ],
     CommandT,
-]:
-    ...
+]: ...
 
 
 def command(
@@ -1828,8 +1821,7 @@ def command(
 def group(
     name: str = ...,
     **attrs: Unpack[_GroupDecoratorKwargs],
-) -> _GroupDecorator:
-    ...
+) -> _GroupDecorator: ...
 
 
 @overload
@@ -1845,8 +1837,7 @@ def group(
         ]
     ],
     GroupT,
-]:
-    ...
+]: ...
 
 
 def group(
@@ -2226,7 +2217,7 @@ def has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         permissions = ctx.permissions
@@ -2251,7 +2242,7 @@ def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         permissions = ctx.bot_permissions
@@ -2278,7 +2269,7 @@ def has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
@@ -2304,7 +2295,7 @@ def bot_has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
@@ -2544,7 +2535,7 @@ def dynamic_cooldown(
         The type of cooldown to have.
     """
     if not callable(cooldown):
-        raise TypeError("A callable must be provided")
+        raise TypeError('A callable must be provided')
 
     if type is BucketType.default:
         raise ValueError('BucketType.default cannot be used in dynamic cooldowns')

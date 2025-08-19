@@ -60,6 +60,7 @@ async def add(
 # Examples of these include int, str, float, bool, User, Member, Role, and any channel type.
 # Since there are a lot of these, for brevity only a channel example will be included.
 
+
 # This command shows how to only show text and voice channels to a user using the Union type hint
 # combined with the VoiceChannel and TextChannel types.
 @client.tree.command(name='channel-info')
@@ -82,6 +83,7 @@ async def channel_info(interaction: discord.Interaction, channel: Union[discord.
 
 # In order to support choices, the library has a few ways of doing this.
 # The first one is using a typing.Literal for basic choices.
+
 
 # On Discord, this will show up as two choices, Buy and Sell.
 # In the code, you will receive either 'Buy' or 'Sell' as a string.

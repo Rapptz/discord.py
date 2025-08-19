@@ -94,8 +94,7 @@ if TYPE_CHECKING:
         strip_after_prefix: bool
         case_insensitive: bool
 
-    class _AutoShardedBotOptions(_AutoShardedClientOptions, _BotOptions):
-        ...
+    class _AutoShardedBotOptions(_AutoShardedClientOptions, _BotOptions): ...
 
 
 __all__ = (
@@ -1233,8 +1232,8 @@ class BotBase(GroupMixin[None]):
                     raise
 
                 raise TypeError(
-                    "command_prefix must be plain string, iterable of strings, or callable "
-                    f"returning either of these, not {ret.__class__.__name__}"
+                    'command_prefix must be plain string, iterable of strings, or callable '
+                    f'returning either of these, not {ret.__class__.__name__}'
                 )
 
         return ret
@@ -1254,8 +1253,7 @@ class BotBase(GroupMixin[None]):
         /,
         *,
         cls: Type[ContextT],
-    ) -> ContextT:
-        ...
+    ) -> ContextT: ...
 
     async def get_context(
         self,
@@ -1332,15 +1330,15 @@ class BotBase(GroupMixin[None]):
             except TypeError:
                 if not isinstance(prefix, list):
                     raise TypeError(
-                        "get_prefix must return either a string or a list of string, " f"not {prefix.__class__.__name__}"
+                        f'get_prefix must return either a string or a list of string, not {prefix.__class__.__name__}'
                     )
 
                 # It's possible a bad command_prefix got us here.
                 for value in prefix:
                     if not isinstance(value, str):
                         raise TypeError(
-                            "Iterable command_prefix or list returned from get_prefix must "
-                            f"contain only strings, not {value.__class__.__name__}"
+                            'Iterable command_prefix or list returned from get_prefix must '
+                            f'contain only strings, not {value.__class__.__name__}'
                         )
 
                 # Getting here shouldn't happen
@@ -1552,5 +1550,4 @@ class AutoShardedBot(BotBase, discord.AutoShardedClient):
             allowed_installs: app_commands.AppInstallationType = MISSING,
             intents: discord.Intents,
             **kwargs: Unpack[_AutoShardedBotOptions],
-        ) -> None:
-            ...
+        ) -> None: ...

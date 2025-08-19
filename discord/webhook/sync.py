@@ -872,8 +872,7 @@ class SyncWebhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
-    ) -> SyncWebhookMessage:
-        ...
+    ) -> SyncWebhookMessage: ...
 
     @overload
     def send(
@@ -891,8 +890,7 @@ class SyncWebhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def send(
@@ -915,8 +913,7 @@ class SyncWebhook(BaseWebhook):
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
         view: View = MISSING,
-    ) -> SyncWebhookMessage:
-        ...
+    ) -> SyncWebhookMessage: ...
 
     @overload
     def send(
@@ -939,8 +936,7 @@ class SyncWebhook(BaseWebhook):
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
         view: View = MISSING,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def send(
         self,
@@ -1192,8 +1188,7 @@ class SyncWebhook(BaseWebhook):
         view: LayoutView,
         allowed_mentions: Optional[AllowedMentions] = ...,
         thread: Snowflake = ...,
-    ) -> SyncWebhookMessage:
-        ...
+    ) -> SyncWebhookMessage: ...
 
     @overload
     def edit_message(
@@ -1207,8 +1202,7 @@ class SyncWebhook(BaseWebhook):
         view: Optional[View] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
         thread: Snowflake = ...,
-    ) -> SyncWebhookMessage:
-        ...
+    ) -> SyncWebhookMessage: ...
 
     def edit_message(
         self,

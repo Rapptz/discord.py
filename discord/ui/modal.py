@@ -176,7 +176,7 @@ class Modal(View):
             else:
                 item = find(lambda i: getattr(i, 'custom_id', None) == component['custom_id'], self.walk_children())  # type: ignore
                 if item is None:
-                    _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
+                    _log.debug('Modal interaction referencing unknown item custom_id %s. Discarding', component['custom_id'])
                     continue
                 item._refresh_state(interaction, component)  # type: ignore
 
