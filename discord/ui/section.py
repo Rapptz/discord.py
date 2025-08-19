@@ -57,6 +57,11 @@ class Section(Item[V]):
         The section accessory.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
+
+    Attributes
+    ----------
+    accessory: :class:`Item`
+        The section accessory.
     """
 
     __item_repr_attributes__ = (
