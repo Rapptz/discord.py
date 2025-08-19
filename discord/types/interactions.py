@@ -78,6 +78,14 @@ class PartialThread(_BasePartialChannel):
     type: ThreadType
     thread_metadata: ThreadMetadata
     parent_id: Snowflake
+    applied_tags: NotRequired[List[Snowflake]]
+    owner_id: Snowflake
+    message_count: int
+    member_count: int
+    rate_limit_per_user: int
+    last_message_id: NotRequired[Optional[Snowflake]]
+    flags: NotRequired[int]
+    total_message_sent: int
 
 
 class ResolvedData(TypedDict, total=False):
@@ -202,7 +210,13 @@ class ModalSubmitTextInputInteractionData(TypedDict):
     value: str
 
 
-ModalSubmitComponentItemInteractionData = ModalSubmitTextInputInteractionData
+class ModalSubmitStringSelectInteractionData(TypedDict):
+    type: Literal[3]
+    custom_id: str
+    values: List[str]
+
+
+ModalSubmitComponentItemInteractionData = Union[ModalSubmitTextInputInteractionData, ModalSubmitStringSelectInteractionData]
 
 
 class ModalSubmitActionRowInteractionData(TypedDict):
@@ -210,7 +224,14 @@ class ModalSubmitActionRowInteractionData(TypedDict):
     components: List[ModalSubmitComponentItemInteractionData]
 
 
-ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData]
+class ModalSubmitLabelInteractionData(TypedDict):
+    type: Literal[18]
+    component: ModalSubmitComponentItemInteractionData
+
+
+ModalSubmitComponentInteractionData = Union[
+    ModalSubmitLabelInteractionData, ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData
+]
 
 
 class ModalSubmitInteractionData(TypedDict):

@@ -24,24 +24,31 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
 from .emoji import PartialEmoji
 from .channel import ChannelType
 
-ComponentType = Literal[1, 2, 3, 4]
+ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
 DefaultValueType = Literal['user', 'role', 'channel']
+SeparatorSpacing = Literal[1, 2]
+MediaItemLoadingState = Literal[0, 1, 2, 3]
 
 
-class ActionRow(TypedDict):
+class ComponentBase(TypedDict):
+    id: NotRequired[int]
+    type: int
+
+
+class ActionRow(ComponentBase):
     type: Literal[1]
     components: List[ActionRowChildComponent]
 
 
-class ButtonComponent(TypedDict):
+class ButtonComponent(ComponentBase):
     type: Literal[2]
     style: ButtonStyle
     custom_id: NotRequired[str]
@@ -60,7 +67,7 @@ class SelectOption(TypedDict):
     emoji: NotRequired[PartialEmoji]
 
 
-class SelectComponent(TypedDict):
+class SelectComponent(ComponentBase):
     custom_id: str
     placeholder: NotRequired[str]
     min_values: NotRequired[int]
@@ -99,11 +106,11 @@ class ChannelSelectComponent(SelectComponent):
     default_values: NotRequired[List[SelectDefaultValues]]
 
 
-class TextInput(TypedDict):
+class TextInput(ComponentBase):
     type: Literal[4]
     custom_id: str
     style: TextStyle
-    label: str
+    label: Optional[str]
     placeholder: NotRequired[str]
     value: NotRequired[str]
     required: NotRequired[bool]
@@ -113,10 +120,91 @@ class TextInput(TypedDict):
 
 class SelectMenu(SelectComponent):
     type: Literal[3, 5, 6, 7, 8]
+    required: NotRequired[bool]  # Only for StringSelect within modals
     options: NotRequired[List[SelectOption]]
     channel_types: NotRequired[List[ChannelType]]
     default_values: NotRequired[List[SelectDefaultValues]]
 
 
+class SectionComponent(ComponentBase):
+    type: Literal[9]
+    components: List[Union[TextComponent, ButtonComponent]]
+    accessory: Component
+
+
+class TextComponent(ComponentBase):
+    type: Literal[10]
+    content: str
+
+
+class UnfurledMediaItem(TypedDict):
+    url: str
+    proxy_url: str
+    height: NotRequired[Optional[int]]
+    width: NotRequired[Optional[int]]
+    content_type: NotRequired[str]
+    placeholder: str
+    loading_state: MediaItemLoadingState
+    attachment_id: NotRequired[int]
+    flags: NotRequired[int]
+
+
+class ThumbnailComponent(ComponentBase):
+    type: Literal[11]
+    media: UnfurledMediaItem
+    description: NotRequired[Optional[str]]
+    spoiler: NotRequired[bool]
+
+
+class MediaGalleryItem(TypedDict):
+    media: UnfurledMediaItem
+    description: NotRequired[str]
+    spoiler: NotRequired[bool]
+
+
+class MediaGalleryComponent(ComponentBase):
+    type: Literal[12]
+    items: List[MediaGalleryItem]
+
+
+class FileComponent(ComponentBase):
+    type: Literal[13]
+    file: UnfurledMediaItem
+    spoiler: NotRequired[bool]
+    name: NotRequired[str]
+    size: NotRequired[int]
+
+
+class SeparatorComponent(ComponentBase):
+    type: Literal[14]
+    divider: NotRequired[bool]
+    spacing: NotRequired[SeparatorSpacing]
+
+
+class ContainerComponent(ComponentBase):
+    type: Literal[17]
+    accent_color: NotRequired[int]
+    spoiler: NotRequired[bool]
+    components: List[ContainerChildComponent]
+
+
+class LabelComponent(ComponentBase):
+    type: Literal[18]
+    label: str
+    description: NotRequired[str]
+    component: Union[StringSelectComponent, TextInput]
+
+
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
-Component = Union[ActionRow, ActionRowChildComponent]
+ContainerChildComponent = Union[
+    ActionRow,
+    TextComponent,
+    MediaGalleryComponent,
+    FileComponent,
+    SectionComponent,
+    SectionComponent,
+    ContainerComponent,
+    SeparatorComponent,
+    ThumbnailComponent,
+]
+Component = Union[ActionRowChildComponent, LabelComponent, ContainerChildComponent]

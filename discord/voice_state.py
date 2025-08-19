@@ -148,7 +148,7 @@ class SocketReader(threading.Thread):
                 readable, _, _ = select.select([self.state.socket], [], [], 30)
             except (ValueError, TypeError, OSError) as e:
                 _log.debug(
-                    "Select error handling socket in reader, this should be safe to ignore: %s: %s", e.__class__.__name__, e
+                    'Select error handling socket in reader, this should be safe to ignore: %s: %s', e.__class__.__name__, e
                 )
                 # The socket is either closed or doesn't exist at the moment
                 continue

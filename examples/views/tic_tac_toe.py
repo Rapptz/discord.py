@@ -4,6 +4,7 @@ from typing import List
 from discord.ext import commands
 import discord
 
+
 # Defines a custom button that contains the logic of the game.
 # The ['TicTacToe'] bit is for type hinting purposes to tell your IDE or linter
 # what the type of `self.view` is. It is not required.
@@ -121,6 +122,9 @@ class TicTacToe(discord.ui.View):
 
 
 class TicTacToeBot(commands.Bot):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True

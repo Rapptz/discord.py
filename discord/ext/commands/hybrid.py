@@ -24,19 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    List,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    Optional,
-)
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Tuple, Type, TypeVar, Union, Optional
 
 import discord
 import inspect
@@ -51,7 +39,7 @@ from .cog import Cog
 from .view import StringView
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, ParamSpec, Concatenate
+    from typing_extensions import Self, ParamSpec, Concatenate, Unpack
     from ._types import ContextT, Coro, BotT
     from .bot import Bot
     from .context import Context
@@ -60,6 +48,29 @@ if TYPE_CHECKING:
         AutocompleteCallback,
         ChoiceT,
     )
+    from .core import _CommandKwargs
+
+    class _HybridCommandKwargs(_CommandKwargs, total=False):
+        guild_ids: list[int]
+        guild_only: bool
+        default_permissions: bool
+        nsfw: bool
+        with_app_command: bool
+
+    class _HybridCommandDecoratorKwargs(_HybridCommandKwargs, total=False):
+        description: Union[str, app_commands.locale_str]
+
+    class _HybridGroupKwargs(_HybridCommandDecoratorKwargs, total=False):
+        with_app_command: bool
+        guild_ids: list[int]
+        guild_only: bool
+        default_permissions: bool
+        nsfw: bool
+        description: str
+
+    class _HybridGroupDecoratorKwargs(_HybridGroupKwargs, total=False):
+        description: Union[str, app_commands.locale_str]
+        fallback: Union[str, app_commands.locale_str]
 
 
 __all__ = (
@@ -256,7 +267,7 @@ def replace_parameter(
                 # Special case Optional[X] where X is a single type that can optionally be a converter
                 inner = args[0]
                 is_inner_transformer = is_transformer(inner)
-                if is_converter(inner) and not is_inner_transformer:
+                if (is_converter(inner) or inner in CONVERTER_MAPPING) and not is_inner_transformer:
                     param = param.replace(annotation=Optional[ConverterTransformer(inner, original)])
             else:
                 raise
@@ -501,7 +512,7 @@ class HybridCommand(Command[CogT, P, T]):
         *,
         name: Union[str, app_commands.locale_str] = MISSING,
         description: Union[str, app_commands.locale_str] = MISSING,
-        **kwargs: Any,
+        **kwargs: Unpack[_HybridCommandKwargs],  # type: ignore # name, description
     ) -> None:
         name, name_locale = (name.message, name) if isinstance(name, app_commands.locale_str) else (name, None)
         if name is not MISSING:
@@ -621,7 +632,7 @@ class HybridGroup(Group[CogT, P, T]):
         name: Union[str, app_commands.locale_str] = MISSING,
         description: Union[str, app_commands.locale_str] = MISSING,
         fallback: Optional[Union[str, app_commands.locale_str]] = None,
-        **attrs: Any,
+        **attrs: Unpack[_HybridGroupKwargs],  # type: ignore # name, description
     ) -> None:
         name, name_locale = (name.message, name) if isinstance(name, app_commands.locale_str) else (name, None)
         if name is not MISSING:
@@ -825,7 +836,7 @@ class HybridGroup(Group[CogT, P, T]):
         name: Union[str, app_commands.locale_str] = MISSING,
         *args: Any,
         with_app_command: bool = True,
-        **kwargs: Any,
+        **kwargs: Unpack[_HybridCommandDecoratorKwargs],  # type: ignore # name, with_app_command
     ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridCommand[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
         the internal command list via :meth:`add_command`.
@@ -837,8 +848,8 @@ class HybridGroup(Group[CogT, P, T]):
         """
 
         def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
-            kwargs.setdefault('parent', self)
-            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
+            kwargs.setdefault('parent', self)  # type: ignore # parent is not for users to set
+            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)  # type: ignore # name, with_app_command
             self.add_command(result)
             return result
 
@@ -849,7 +860,7 @@ class HybridGroup(Group[CogT, P, T]):
         name: Union[str, app_commands.locale_str] = MISSING,
         *args: Any,
         with_app_command: bool = True,
-        **kwargs: Any,
+        **kwargs: Unpack[_HybridGroupDecoratorKwargs],  # type: ignore # name, with_app_command
     ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridGroup[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -861,8 +872,8 @@ class HybridGroup(Group[CogT, P, T]):
         """
 
         def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
-            kwargs.setdefault('parent', self)
-            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
+            kwargs.setdefault('parent', self)  # type: ignore # parent is not for users to set
+            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)  # type: ignore # name, with_app_command
             self.add_command(result)
             return result
 
@@ -873,7 +884,7 @@ def hybrid_command(
     name: Union[str, app_commands.locale_str] = MISSING,
     *,
     with_app_command: bool = True,
-    **attrs: Any,
+    **attrs: Unpack[_HybridCommandDecoratorKwargs],  # type: ignore # name, with_app_command
 ) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridCommand[CogT, P, T]]:
     r"""A decorator that transforms a function into a :class:`.HybridCommand`.
 
@@ -916,7 +927,7 @@ def hybrid_command(
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
         # Pyright does not allow Command[Any] to be assigned to Command[CogT] despite it being okay here
-        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore
+        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore # name, with_app_command
 
     return decorator
 
@@ -925,7 +936,7 @@ def hybrid_group(
     name: Union[str, app_commands.locale_str] = MISSING,
     *,
     with_app_command: bool = True,
-    **attrs: Any,
+    **attrs: Unpack[_HybridGroupDecoratorKwargs],  # type: ignore # name, with_app_command
 ) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridGroup[CogT, P, T]]:
     """A decorator that transforms a function into a :class:`.HybridGroup`.
 
@@ -949,6 +960,6 @@ def hybrid_group(
     def decorator(func: CommandCallback[CogT, ContextT, P, T]) -> HybridGroup[CogT, P, T]:
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
-        return HybridGroup(func, name=name, with_app_command=with_app_command, **attrs)
+        return HybridGroup(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore # name, with_app_command
 
     return decorator

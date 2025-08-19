@@ -15,6 +15,7 @@ import re
 # `counter:5:user:80088516616269824` where the first number is the current count and the
 # second number is the user ID who owns the button.
 
+
 # Note that custom_ids can only be up to 100 characters long.
 class DynamicCounter(
     discord.ui.DynamicItem[discord.ui.Button],
@@ -70,6 +71,9 @@ class DynamicCounter(
 
 
 class DynamicCounterBot(commands.Bot):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self):
         intents = discord.Intents.default()
         super().__init__(command_prefix=commands.when_mentioned, intents=intents)

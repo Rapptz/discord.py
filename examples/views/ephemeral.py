@@ -6,6 +6,9 @@ import discord
 
 
 class EphemeralCounterBot(commands.Bot):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
@@ -19,7 +22,6 @@ class EphemeralCounterBot(commands.Bot):
 
 # Define a simple View that gives us a counter button
 class Counter(discord.ui.View):
-
     # Define the actual button
     # When pressed, this increments the number displayed until it hits 5.
     # When it hits 5, the counter button is disabled and it turns green.

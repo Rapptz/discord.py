@@ -72,7 +72,7 @@ __all__ = (
 
 _log = logging.getLogger(__name__)
 
-OPUS_SILENCE = b'\xF8\xFF\xFE'
+OPUS_SILENCE = b'\xf8\xff\xfe'
 
 c_int_ptr = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
@@ -218,7 +218,7 @@ def libopus_loader(name: str) -> Any:
             if item[3]:
                 func.errcheck = item[3]
         except KeyError:
-            _log.exception("Error assigning check function to %s", func)
+            _log.exception('Error assigning check function to %s', func)
 
     return lib
 
@@ -476,16 +476,14 @@ class Decoder(_OpusStruct):
         return ret.value
 
     @overload
-    def decode(self, data: bytes, *, fec: bool) -> bytes:
-        ...
+    def decode(self, data: bytes, *, fec: bool) -> bytes: ...
 
     @overload
-    def decode(self, data: Literal[None], *, fec: Literal[False]) -> bytes:
-        ...
+    def decode(self, data: Literal[None], *, fec: Literal[False]) -> bytes: ...
 
     def decode(self, data: Optional[bytes], *, fec: bool = False) -> bytes:
         if data is None and fec:
-            raise TypeError("Invalid arguments: FEC cannot be used with null data")
+            raise TypeError('Invalid arguments: FEC cannot be used with null data')
 
         if data is None:
             frame_size = self._get_last_packet_duration() or self.SAMPLES_PER_FRAME

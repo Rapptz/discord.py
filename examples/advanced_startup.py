@@ -5,7 +5,6 @@
 import asyncio
 import logging
 import logging.handlers
-import os
 
 from typing import List, Optional
 
@@ -32,7 +31,6 @@ class CustomBot(commands.Bot):
         self.initial_extensions = initial_extensions
 
     async def setup_hook(self) -> None:
-
         # here, we are loading extensions prior to sync to ensure we are syncing interactions defined in those extensions.
 
         for extension in self.initial_extensions:
@@ -54,7 +52,6 @@ class CustomBot(commands.Bot):
 
 
 async def main():
-
     # When taking over how the bot process is run, you become responsible for a few additional things.
 
     # 1. logging

@@ -199,6 +199,20 @@ class File:
     def filename(self, value: str) -> None:
         self._filename, self.spoiler = _strip_spoiler(value)
 
+    @property
+    def uri(self) -> str:
+        """:class:`str`: Returns the ``attachment://<filename>`` URI for this file.
+        This is used in certain places such as embeds or components to refer
+        to an uploaded file via URL.
+
+        .. note::
+            Due to Discord's filename processing, the filename must be ASCII aphanumeric
+            with underscores, dashes, and periods.
+
+        .. versionadded:: 2.6
+        """
+        return f'attachment://{self.filename}'
+
     def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because
         # the retry-loop is iterated over multiple times

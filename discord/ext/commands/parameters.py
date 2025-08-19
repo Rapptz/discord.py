@@ -278,8 +278,7 @@ class ParameterAlias(Protocol):
         description: str = empty,
         displayed_default: str = empty,
         displayed_name: str = empty,
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
 
 param: ParameterAlias = parameter

@@ -39,6 +39,7 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
+    TypedDict,
     Union,
     overload,
 )
@@ -85,7 +86,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
 
     from .types.threads import ThreadArchiveDuration
     from .role import Role
@@ -100,7 +101,7 @@ if TYPE_CHECKING:
     from .file import File
     from .user import ClientUser, User, BaseUser
     from .guild import Guild, GuildChannel as GuildChannelType
-    from .ui.view import View
+    from .ui.view import BaseView, View, LayoutView
     from .types.channel import (
         TextChannel as TextChannelPayload,
         NewsChannel as NewsChannelPayload,
@@ -119,6 +120,44 @@ if TYPE_CHECKING:
     from .soundboard import SoundboardSound
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
+
+    class _BaseCreateChannelOptions(TypedDict, total=False):
+        reason: Optional[str]
+        position: int
+
+    class _CreateTextChannelOptions(_BaseCreateChannelOptions, total=False):
+        topic: str
+        slowmode_delay: int
+        nsfw: bool
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+        default_auto_archive_duration: int
+        default_thread_slowmode_delay: int
+
+    class _CreateVoiceChannelOptions(_BaseCreateChannelOptions, total=False):
+        bitrate: int
+        user_limit: int
+        rtc_region: Optional[str]
+        video_quality_mode: VideoQualityMode
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+
+    class _CreateStageChannelOptions(_CreateVoiceChannelOptions, total=False):
+        bitrate: int
+        user_limit: int
+        rtc_region: Optional[str]
+        video_quality_mode: VideoQualityMode
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+
+    class _CreateForumChannelOptions(_CreateTextChannelOptions, total=False):
+        topic: str
+        slowmode_delay: int
+        nsfw: bool
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
+        default_auto_archive_duration: int
+        default_thread_slowmode_delay: int
+        default_sort_order: ForumOrderType
+        default_reaction_emoji: EmojiInputType
+        default_layout: ForumLayoutType
+        available_tags: Sequence[ForumTag]
 
 
 class ThreadWithMessage(NamedTuple):
@@ -168,7 +207,7 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
         super().__init__(state=state, data=data)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} id={self.id} volume={self.volume}>"
+        return f'<{self.__class__.__name__} id={self.id} volume={self.volume}>'
 
     @property
     def created_at(self) -> Optional[datetime.datetime]:
@@ -234,7 +273,7 @@ class VoiceChannelEffect:
             ('sound', self.sound),
         ]
         inner = ' '.join('%s=%r' % t for t in attrs)
-        return f"<{self.__class__.__name__} {inner}>"
+        return f'<{self.__class__.__name__} {inner}>'
 
     def is_sound(self) -> bool:
         """:class:`bool`: Whether the effect is a sound or not."""
@@ -418,12 +457,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     @overload
-    async def edit(self) -> Optional[TextChannel]:
-        ...
+    async def edit(self) -> Optional[TextChannel]: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -441,8 +478,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         default_thread_slowmode_delay: int = ...,
         type: ChannelType = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
-    ) -> TextChannel:
-        ...
+    ) -> TextChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[TextChannel]:
         """|coro|
@@ -1512,12 +1548,10 @@ class VoiceChannel(VocalGuildChannel):
         return ChannelType.voice
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -1536,8 +1570,7 @@ class VoiceChannel(VocalGuildChannel):
         slowmode_delay: int = ...,
         status: Optional[str] = ...,
         reason: Optional[str] = ...,
-    ) -> VoiceChannel:
-        ...
+    ) -> VoiceChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[VoiceChannel]:
         """|coro|
@@ -1878,12 +1911,10 @@ class StageChannel(VocalGuildChannel):
         return StageInstance(guild=self.guild, state=self._state, data=data)
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -1901,8 +1932,7 @@ class StageChannel(VocalGuildChannel):
         video_quality_mode: VideoQualityMode = ...,
         slowmode_delay: int = ...,
         reason: Optional[str] = ...,
-    ) -> StageChannel:
-        ...
+    ) -> StageChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StageChannel]:
         """|coro|
@@ -2068,12 +2098,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return await self._clone_impl({'nsfw': self.nsfw}, name=name, reason=reason)
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -2084,8 +2112,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         nsfw: bool = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
         reason: Optional[str] = ...,
-    ) -> CategoryChannel:
-        ...
+    ) -> CategoryChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[CategoryChannel]:
         """|coro|
@@ -2194,7 +2221,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
-    async def create_text_channel(self, name: str, **options: Any) -> TextChannel:
+    async def create_text_channel(self, name: str, **options: Unpack[_CreateTextChannelOptions]) -> TextChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
@@ -2206,7 +2233,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_text_channel(name, category=self, **options)
 
-    async def create_voice_channel(self, name: str, **options: Any) -> VoiceChannel:
+    async def create_voice_channel(self, name: str, **options: Unpack[_CreateVoiceChannelOptions]) -> VoiceChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
@@ -2218,7 +2245,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_voice_channel(name, category=self, **options)
 
-    async def create_stage_channel(self, name: str, **options: Any) -> StageChannel:
+    async def create_stage_channel(self, name: str, **options: Unpack[_CreateStageChannelOptions]) -> StageChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_stage_channel` to create a :class:`StageChannel` in the category.
@@ -2232,7 +2259,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_stage_channel(name, category=self, **options)
 
-    async def create_forum(self, name: str, **options: Any) -> ForumChannel:
+    async def create_forum(self, name: str, **options: Unpack[_CreateForumChannelOptions]) -> ForumChannel:
         """|coro|
 
         A shortcut method to :meth:`Guild.create_forum` to create a :class:`ForumChannel` in the category.
@@ -2619,12 +2646,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         )
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -2647,8 +2672,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_layout: ForumLayoutType = ...,
         default_sort_order: ForumOrderType = ...,
         require_tag: bool = ...,
-    ) -> ForumChannel:
-        ...
+    ) -> ForumChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[ForumChannel]:
         """|coro|
@@ -2841,6 +2865,45 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         return result
 
+    @overload
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = ...,
+        slowmode_delay: Optional[int] = ...,
+        file: File = ...,
+        files: Sequence[File] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        applied_tags: Sequence[ForumTag] = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        reason: Optional[str] = ...,
+    ) -> ThreadWithMessage: ...
+
+    @overload
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = ...,
+        slowmode_delay: Optional[int] = ...,
+        content: Optional[str] = ...,
+        tts: bool = ...,
+        embed: Embed = ...,
+        embeds: Sequence[Embed] = ...,
+        file: File = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        applied_tags: Sequence[ForumTag] = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        reason: Optional[str] = ...,
+    ) -> ThreadWithMessage: ...
+
     async def create_thread(
         self,
         *,
@@ -2857,7 +2920,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         allowed_mentions: AllowedMentions = MISSING,
         mention_author: bool = MISSING,
         applied_tags: Sequence[ForumTag] = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
         suppress_embeds: bool = False,
         reason: Optional[str] = None,
     ) -> ThreadWithMessage:
@@ -2907,7 +2970,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
         applied_tags: List[:class:`discord.ForumTag`]
             A list of tags to apply to the thread.
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             A Discord UI View to add to the message.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
@@ -2983,7 +3046,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
             thread = Thread(guild=self.guild, state=self._state, data=data)
             message = Message(state=self._state, channel=thread, data=data['message'])
-            if view and not view.is_finished():
+            if view and not view.is_finished() and view.is_dispatchable():
                 self._state.store_view(view, message.id)
 
             return ThreadWithMessage(thread=thread, message=message)

@@ -145,6 +145,7 @@ class InviteCreateEvent(TypedDict):
     code: str
     created_at: str
     max_age: int
+    expires_at: Optional[str]
     max_uses: int
     temporary: bool
     uses: Literal[0]

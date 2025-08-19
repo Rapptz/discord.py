@@ -55,8 +55,9 @@ from ..utils import get as utils_get, MISSING, maybe_coroutine
 T = TypeVar('T')
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
     from ..interactions import Interaction
+    from ..permissions import _PermissionsKwargs
 
     CooldownFunction = Union[
         Callable[[Interaction[Any]], Coroutine[Any, Any, T]],
@@ -286,7 +287,7 @@ def has_any_role(*items: Union[int, str]) -> Callable[[T], T]:
     return check(predicate)
 
 
-def has_permissions(**perms: bool) -> Callable[[T], T]:
+def has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Callable[[T], T]:
     r"""A :func:`~discord.app_commands.check` that is added that checks if the member
     has all of the permissions necessary.
 
@@ -326,7 +327,7 @@ def has_permissions(**perms: bool) -> Callable[[T], T]:
 
     invalid = perms.keys() - Permissions.VALID_FLAGS.keys()
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(interaction: Interaction) -> bool:
         permissions = interaction.permissions
@@ -341,7 +342,7 @@ def has_permissions(**perms: bool) -> Callable[[T], T]:
     return check(predicate)
 
 
-def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
+def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Callable[[T], T]:
     """Similar to :func:`has_permissions` except checks if the bot itself has
     the permissions listed. This relies on :attr:`discord.Interaction.app_permissions`.
 
@@ -353,7 +354,7 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
 
     invalid = set(perms) - set(Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(interaction: Interaction) -> bool:
         permissions = interaction.app_permissions
@@ -370,7 +371,6 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
 def _create_cooldown_decorator(
     key: CooldownFunction[Hashable], factory: CooldownFunction[Optional[Cooldown]]
 ) -> Callable[[T], T]:
-
     mapping: Dict[Any, Cooldown] = {}
 
     async def get_bucket(

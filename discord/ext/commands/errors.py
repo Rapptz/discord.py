@@ -925,7 +925,7 @@ class BadLiteralArgument(UserInputError):
         .. versionadded:: 2.3
     """
 
-    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = "") -> None:
+    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = '') -> None:
         self.param: Parameter = param
         self.literals: Tuple[Any, ...] = literals
         self.errors: List[CommandError] = errors

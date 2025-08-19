@@ -57,16 +57,16 @@ from .file import File
 from .mentions import AllowedMentions
 from . import __version__, utils
 from .utils import MISSING
+from .flags import MessageFlags
 
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .ui.view import View
+    from .ui.view import BaseView
     from .embeds import Embed
     from .message import Attachment
-    from .flags import MessageFlags
     from .poll import Poll
 
     from .types import (
@@ -81,6 +81,7 @@ if TYPE_CHECKING:
         invite,
         member,
         message,
+        onboarding,
         template,
         role,
         user,
@@ -150,7 +151,7 @@ def handle_message_parameters(
     embed: Optional[Embed] = MISSING,
     embeds: Sequence[Embed] = MISSING,
     attachments: Sequence[Union[Attachment, File]] = MISSING,
-    view: Optional[View] = MISSING,
+    view: Optional[BaseView] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     message_reference: Optional[message.MessageReference] = MISSING,
     stickers: Optional[SnowflakeList] = MISSING,
@@ -193,6 +194,12 @@ def handle_message_parameters(
     if view is not MISSING:
         if view is not None:
             payload['components'] = view.to_components()
+
+            if view.has_components_v2():
+                if flags is not MISSING:
+                    flags.components_v2 = True
+                else:
+                    flags = MessageFlags(components_v2=True)
         else:
             payload['components'] = []
 
@@ -1040,7 +1047,7 @@ class HTTPClient:
     def pin_message(self, channel_id: Snowflake, message_id: Snowflake, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'PUT',
-            '/channels/{channel_id}/pins/{message_id}',
+            '/channels/{channel_id}/messages/pins/{message_id}',
             channel_id=channel_id,
             message_id=message_id,
         )
@@ -1049,14 +1056,25 @@ class HTTPClient:
     def unpin_message(self, channel_id: Snowflake, message_id: Snowflake, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE',
-            '/channels/{channel_id}/pins/{message_id}',
+            '/channels/{channel_id}/messages/pins/{message_id}',
             channel_id=channel_id,
             message_id=message_id,
         )
         return self.request(r, reason=reason)
 
-    def pins_from(self, channel_id: Snowflake) -> Response[List[message.Message]]:
-        return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
+    def pins_from(
+        self,
+        channel_id: Snowflake,
+        limit: Optional[int] = None,
+        before: Optional[str] = None,
+    ) -> Response[message.ChannelPins]:
+        params = {}
+        if before is not None:
+            params['before'] = before
+        if limit is not None:
+            params['limit'] = limit
+
+        return self.request(Route('GET', '/channels/{channel_id}/messages/pins', channel_id=channel_id), params=params)
 
     # Member management
 
@@ -1863,12 +1881,10 @@ class HTTPClient:
         invite_id: str,
         *,
         with_counts: bool = True,
-        with_expiration: bool = True,
         guild_scheduled_event_id: Optional[Snowflake] = None,
     ) -> Response[invite.Invite]:
         params: Dict[str, Any] = {
             'with_counts': int(with_counts),
-            'with_expiration': int(with_expiration),
         }
 
         if guild_scheduled_event_id:
@@ -2021,22 +2037,19 @@ class HTTPClient:
     @overload
     def get_scheduled_events(
         self, guild_id: Snowflake, with_user_count: Literal[True]
-    ) -> Response[List[scheduled_event.GuildScheduledEventWithUserCount]]:
-        ...
+    ) -> Response[List[scheduled_event.GuildScheduledEventWithUserCount]]: ...
 
     @overload
     def get_scheduled_events(
         self, guild_id: Snowflake, with_user_count: Literal[False]
-    ) -> Response[List[scheduled_event.GuildScheduledEvent]]:
-        ...
+    ) -> Response[List[scheduled_event.GuildScheduledEvent]]: ...
 
     @overload
     def get_scheduled_events(
         self, guild_id: Snowflake, with_user_count: bool
     ) -> Union[
         Response[List[scheduled_event.GuildScheduledEventWithUserCount]], Response[List[scheduled_event.GuildScheduledEvent]]
-    ]:
-        ...
+    ]: ...
 
     def get_scheduled_events(self, guild_id: Snowflake, with_user_count: bool) -> Response[Any]:
         params = {'with_user_count': int(with_user_count)}
@@ -2065,20 +2078,19 @@ class HTTPClient:
     @overload
     def get_scheduled_event(
         self, guild_id: Snowflake, guild_scheduled_event_id: Snowflake, with_user_count: Literal[True]
-    ) -> Response[scheduled_event.GuildScheduledEventWithUserCount]:
-        ...
+    ) -> Response[scheduled_event.GuildScheduledEventWithUserCount]: ...
 
     @overload
     def get_scheduled_event(
         self, guild_id: Snowflake, guild_scheduled_event_id: Snowflake, with_user_count: Literal[False]
-    ) -> Response[scheduled_event.GuildScheduledEvent]:
-        ...
+    ) -> Response[scheduled_event.GuildScheduledEvent]: ...
 
     @overload
     def get_scheduled_event(
         self, guild_id: Snowflake, guild_scheduled_event_id: Snowflake, with_user_count: bool
-    ) -> Union[Response[scheduled_event.GuildScheduledEventWithUserCount], Response[scheduled_event.GuildScheduledEvent]]:
-        ...
+    ) -> Union[
+        Response[scheduled_event.GuildScheduledEventWithUserCount], Response[scheduled_event.GuildScheduledEvent]
+    ]: ...
 
     def get_scheduled_event(
         self, guild_id: Snowflake, guild_scheduled_event_id: Snowflake, with_user_count: bool
@@ -2148,8 +2160,7 @@ class HTTPClient:
         with_member: Literal[True],
         before: Optional[Snowflake] = ...,
         after: Optional[Snowflake] = ...,
-    ) -> Response[scheduled_event.ScheduledEventUsersWithMember]:
-        ...
+    ) -> Response[scheduled_event.ScheduledEventUsersWithMember]: ...
 
     @overload
     def get_scheduled_event_users(
@@ -2160,8 +2171,7 @@ class HTTPClient:
         with_member: Literal[False],
         before: Optional[Snowflake] = ...,
         after: Optional[Snowflake] = ...,
-    ) -> Response[scheduled_event.ScheduledEventUsers]:
-        ...
+    ) -> Response[scheduled_event.ScheduledEventUsers]: ...
 
     @overload
     def get_scheduled_event_users(
@@ -2172,8 +2182,7 @@ class HTTPClient:
         with_member: bool,
         before: Optional[Snowflake] = ...,
         after: Optional[Snowflake] = ...,
-    ) -> Union[Response[scheduled_event.ScheduledEventUsersWithMember], Response[scheduled_event.ScheduledEventUsers]]:
-        ...
+    ) -> Union[Response[scheduled_event.ScheduledEventUsersWithMember], Response[scheduled_event.ScheduledEventUsers]]: ...
 
     def get_scheduled_event_users(
         self,
@@ -2539,6 +2548,41 @@ class HTTPClient:
                 application_id=application_id,
                 entitlement_id=entitlement_id,
             ),
+        )
+
+    # Guild Onboarding
+
+    def get_guild_onboarding(self, guild_id: Snowflake) -> Response[onboarding.Onboarding]:
+        return self.request(Route('GET', '/guilds/{guild_id}/onboarding', guild_id=guild_id))
+
+    def edit_guild_onboarding(
+        self,
+        guild_id: Snowflake,
+        *,
+        prompts: Optional[List[onboarding.Prompt]] = None,
+        default_channel_ids: Optional[List[Snowflake]] = None,
+        enabled: Optional[bool] = None,
+        mode: Optional[onboarding.OnboardingMode] = None,
+        reason: Optional[str],
+    ) -> Response[onboarding.Onboarding]:
+        payload = {}
+
+        if prompts is not None:
+            payload['prompts'] = prompts
+
+        if default_channel_ids is not None:
+            payload['default_channel_ids'] = default_channel_ids
+
+        if enabled is not None:
+            payload['enabled'] = enabled
+
+        if mode is not None:
+            payload['mode'] = mode
+
+        return self.request(
+            Route('PUT', f'/guilds/{guild_id}/onboarding', guild_id=guild_id),
+            json=payload,
+            reason=reason,
         )
 
     # Soundboard

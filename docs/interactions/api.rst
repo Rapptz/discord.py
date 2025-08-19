@@ -113,6 +113,86 @@ TextInput
     :members:
     :inherited-members:
 
+LabelComponent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: LabelComponent
+
+.. autoclass:: LabelComponent()
+    :members:
+    :inherited-members:
+
+
+SectionComponent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: SectionComponent
+
+.. autoclass:: SectionComponent()
+    :members:
+    :inherited-members:
+
+
+ThumbnailComponent
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ThumbnailComponent
+
+.. autoclass:: ThumbnailComponent()
+    :members:
+    :inherited-members:
+
+
+TextDisplay
+~~~~~~~~~~~
+
+.. attributetable:: TextDisplay
+
+.. autoclass:: TextDisplay()
+    :members:
+    :inherited-members:
+
+
+MediaGalleryComponent
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MediaGalleryComponent
+
+.. autoclass:: MediaGalleryComponent()
+    :members:
+    :inherited-members:
+
+
+FileComponent
+~~~~~~~~~~~~~
+
+.. attributetable:: FileComponent
+
+.. autoclass:: FileComponent()
+    :members:
+    :inherited-members:
+
+
+SeparatorComponent
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SeparatorComponent
+
+.. autoclass:: SeparatorComponent()
+    :members:
+    :inherited-members:
+
+
+Container
+~~~~~~~~~
+
+.. attributetable:: Container
+
+.. autoclass:: Container()
+    :members:
+    :inherited-members:
+
+
 AppCommand
 ~~~~~~~~~~~
 
@@ -299,7 +379,7 @@ Enumerations
 
     .. attribute:: action_row
 
-        Represents the group component which holds different components in a row.
+        Represents a component which holds different components in a row.
 
     .. attribute:: button
 
@@ -332,6 +412,54 @@ Enumerations
     .. attribute:: channel_select
 
         Represents a channel select component.
+
+    .. attribute:: section
+
+        Represents a component which holds different components in a section.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: text_display
+
+        Represents a text display component.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: thumbnail
+
+        Represents a thumbnail component.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: media_gallery
+
+        Represents a media gallery component.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: file
+
+        Represents a file component.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: separator
+
+        Represents a separator component.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: container
+
+        Represents a component which holds different components in a container.
+
+        .. versionadded:: 2.6
+
+    .. attribute:: label
+
+        Represents a label container component, usually in a modal.
+
+        .. versionadded:: 2.6
 
 .. class:: ButtonStyle
 
@@ -467,6 +595,19 @@ Enumerations
 
         The permission is for a user.
 
+.. class:: SeparatorSpacing
+
+    The separator's size type.
+
+    .. versionadded:: 2.6
+
+    .. attribute:: small
+
+        A small separator.
+    .. attribute:: large
+
+        A large separator.
+
 .. _discord_ui_kit:
 
 Bot UI Kit
@@ -482,6 +623,16 @@ View
 
 .. autoclass:: discord.ui.View
     :members:
+    :inherited-members:
+
+LayoutView
+~~~~~~~~~~
+
+.. attributetable:: discord.ui.LayoutView
+
+.. autoclass:: discord.ui.LayoutView
+    :members:
+    :inherited-members:
 
 Modal
 ~~~~~~
@@ -491,6 +642,7 @@ Modal
 .. autoclass:: discord.ui.Modal
     :members:
     :inherited-members:
+    :exclude-members: from_message
 
 Item
 ~~~~~~~
@@ -585,6 +737,105 @@ TextInput
 .. autoclass:: discord.ui.TextInput
     :members:
     :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+Container
+~~~~~~~~~
+
+.. attributetable:: discord.ui.Container
+
+.. autoclass:: discord.ui.Container
+    :members:
+    :inherited-members:
+    :exclude-members: callback
+
+
+File
+~~~~
+
+.. attributetable:: discord.ui.File
+
+.. autoclass:: discord.ui.File
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+Label
+~~~~~~
+
+.. attributetable:: discord.ui.Label
+
+.. autoclass:: discord.ui.Label
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+MediaGallery
+~~~~~~~~~~~~
+
+.. attributetable:: discord.ui.MediaGallery
+
+.. autoclass:: discord.ui.MediaGallery
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+Section
+~~~~~~~
+
+.. attributetable:: discord.ui.Section
+
+.. autoclass:: discord.ui.Section
+    :members:
+    :inherited-members:
+    :exclude-members: callback
+
+
+Separator
+~~~~~~~~~
+
+.. attributetable:: discord.ui.Separator
+
+.. autoclass:: discord.ui.Separator
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+TextDisplay
+~~~~~~~~~~~
+
+.. attributetable:: discord.ui.TextDisplay
+
+.. autoclass:: discord.ui.TextDisplay
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+Thumbnail
+~~~~~~~~~
+
+.. attributetable:: discord.ui.Thumbnail
+
+.. autoclass:: discord.ui.Thumbnail
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+ActionRow
+~~~~~~~~~
+
+.. attributetable:: discord.ui.ActionRow
+
+.. autoclass:: discord.ui.ActionRow
+    :members:
+    :inherited-members:
+    :exclude-members: callback
 
 .. _discord_app_commands:
 

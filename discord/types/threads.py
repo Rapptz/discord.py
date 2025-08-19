@@ -60,6 +60,7 @@ class Thread(TypedDict):
     type: ThreadType
     member_count: int
     message_count: int
+    total_message_sent: int
     rate_limit_per_user: int
     thread_metadata: ThreadMetadata
     member: NotRequired[ThreadMember]

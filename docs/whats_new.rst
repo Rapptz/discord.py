@@ -11,6 +11,86 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p6p0:
+
+v2.6.0
+--------
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add support for Discord's "Components v2" (:issue:`10166`)
+    - A new :class:`ui.LayoutView` is used to use these components which requires manual layouting.
+    - Backwards compatibility is maintained with everything, including :class:`ui.DynamicItem`.
+    - Adds the following new components with their UI counterpart
+        - :class:`SectionComponent` corresponds to  :class:`ui.Section`
+        - :class:`TextDisplay` corresponds to  :class:`ui.TextDisplay`
+        - :class:`ThumbnailComponent` corresponds to  :class:`ui.Thumbnail`
+        - :class:`MediaGalleryComponent` corresponds to  :class:`ui.MediaGallery`
+        - :class:`FileComponent` corresponds to  :class:`ui.File`
+        - :class:`SeparatorComponent` corresponds to  :class:`ui.Separator`
+        - :class:`Container` corresponds to  :class:`ui.Container`
+        - :class:`ActionRow` corresponds to  :class:`ui.ActionRow`
+
+- Add support for the first phase for :class:`discord.ui.Modal` improvements.
+    - This allows :class:`discord.ui.Select` within modals
+    - This also allows :class:`discord.ui.Label` for better control of the forms within modals.
+    - This changes :attr:`discord.ui.TextInput.label` to be optional and is deprecated over :class:`discord.ui.Label`.
+    - As of this writing, this Discord update is not available to users yet.
+
+- Add support for guild tags (also known as primary guilds) (:issue:`10211`)
+    - This is through the :class:`PrimaryGuild` class.
+    - You retrieve this via :attr:`Member.primary_guild`.
+
+- Add support for the new pins endpoint (:issue:`10205`)
+    - This turns :meth:`abc.Messageable.pins` into an async iterator.
+    - The old eager behaviour of using ``await`` is still supported, but is now deprecated.
+
+- Add support for guild onboarding (:issue:`10226`, :issue:`9260`)
+- Add support for :attr:`MemberFlags.automod_quarantined_guild_tag` (:issue:`10236`)
+- Add support new gradient and holographic role colours (:issue:`10214`, :issue:`10225`)
+- Add :attr:`Locale.language_code` attribute (:issue:`10222`)
+- Add support for guest invites (:issue:`10220`)
+- Add :attr:`File.uri` to get the ``attachment://<filename>`` URI of a file
+- Add support for :meth:`InteractionResponse.launch_activity` responses (:issue:`10193`)
+- Add ability to create a media-only forum channel via ``media`` parameter in :meth:`Guild.create_forum` (:issue:`10170`)
+- Add :attr:`Interaction.filesize_limit` (:issue:`10159`)
+- Add new colours from the new Discord themes (:issue:`10152`)
+    - This updates the old :meth:`Colour.dark_theme`, :meth:`Colour.light_theme`, :meth:`Colour.light_embed` and :meth:`Colour.dark_embed`
+    - This adds :meth:`Colour.ash_theme`, :meth:`Colour.ash_embed`, :meth:`Colour.onyx_theme`, and :meth:`Colour.onyx_embed`
+
+- Add support for new fields to read in :class:`Activity` (:issue:`10227`)
+    - Adds the new :class:`StatusDisplayType` enum
+
+- Add :meth:`Permissions.apps` classmethod category (:issue:`10147`)
+- Add more attributes to :class:`app_commands.AppCommandThread` and :class:`app_commands.AppCommandChannel` (:issue:`10180`, :issue:`10252`)
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix context install decorators to explicitly restrict commands
+- Fix error when sending non-interactive views via partial webhooks (:issue:`10235`)
+- Fix voice connection issues and upgrade the voice version to 8 (:issue:`10210`)
+- Fix calculation of hashed rate limit keys (:issue:`10215`)
+- Fix :attr:`Thread.applied_tags` being empty for media channels (:issue:`10178`)
+- Fix :meth:`Embed.to_dict` for user-inherited Embed classes (:issue:`10173`)
+- Fix potentially stuck ratelimit buckets in certain circumstances (:issue:`10160`)
+- Fix ``__bool__`` being incorrect for :class:`Embed` (:issue:`10154`)
+- Fix audit log ``automod_rule_trigger_type`` extra being missing (:issue:`10244`)
+- Properly transform media channels in app commands (:issue:`10177`)
+- |commands| Fix certain converters not working under ``Optional`` type hint in hybrids (:issue:`10239`, :issue:`10245`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Skip ``GUILD_MEMBER_ADD`` if the member is already cached (:issue:`10238`)
+- Deprecate various methods involving guild creation (:issue:`10164`, :issue:`10246`)
+- Deprecate the ``with_expiration`` parameter in :meth:`Client.fetch_invite` (:issue:`10259`)
+- Allow creating NSFW voice/stage channels (:issue:`10200`)
+- The :class:`Invite` is now returned when using :meth:`Invite.delete` or :meth:`Client.delete_invite` (:issue:`10181`)
+- Copy Select options when creating View class (:issue:`10143`)
+- Update PyNaCl minimum version dependency (:issue:`10127`)
+
 .. _vp2p5p2:
 
 v2.5.2

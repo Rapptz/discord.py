@@ -197,7 +197,7 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
 
         if flag.positional:
             if positional is not None:
-                raise TypeError(f"{flag.name!r} positional flag conflicts with {positional.name!r} flag.")
+                raise TypeError(f'{flag.name!r} positional flag conflicts with {positional.name!r} flag.')
             positional = flag
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)

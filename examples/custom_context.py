@@ -55,5 +55,5 @@ async def guess(ctx, number: int):
 # let people do very malicious things with your
 # bot. Try to use a file or something to keep
 # them private, and don't commit it to GitHub
-token = "your token here"
+token = 'your token here'
 bot.run(token)

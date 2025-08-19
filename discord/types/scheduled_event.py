@@ -81,16 +81,13 @@ class _WithUserCount(TypedDict):
     user_count: int
 
 
-class _StageInstanceScheduledEventWithUserCount(StageInstanceScheduledEvent, _WithUserCount):
-    ...
+class _StageInstanceScheduledEventWithUserCount(StageInstanceScheduledEvent, _WithUserCount): ...
 
 
-class _VoiceScheduledEventWithUserCount(VoiceScheduledEvent, _WithUserCount):
-    ...
+class _VoiceScheduledEventWithUserCount(VoiceScheduledEvent, _WithUserCount): ...
 
 
-class _ExternalScheduledEventWithUserCount(ExternalScheduledEvent, _WithUserCount):
-    ...
+class _ExternalScheduledEventWithUserCount(ExternalScheduledEvent, _WithUserCount): ...
 
 
 GuildScheduledEventWithUserCount = Union[

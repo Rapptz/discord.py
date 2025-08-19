@@ -419,8 +419,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> Optional[ContextMenu]:
-        ...
+    ) -> Optional[ContextMenu]: ...
 
     @overload
     def remove_command(
@@ -430,8 +429,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Optional[Union[Command[Any, ..., Any], Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], Group]]: ...
 
     @overload
     def remove_command(
@@ -441,8 +439,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]: ...
 
     def remove_command(
         self,
@@ -539,8 +536,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> Optional[ContextMenu]:
-        ...
+    ) -> Optional[ContextMenu]: ...
 
     @overload
     def get_command(
@@ -550,8 +546,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Optional[Union[Command[Any, ..., Any], Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], Group]]: ...
 
     @overload
     def get_command(
@@ -561,8 +556,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]: ...
 
     def get_command(
         self,
@@ -613,8 +607,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> List[ContextMenu]:
-        ...
+    ) -> List[ContextMenu]: ...
 
     @overload
     def get_commands(
@@ -622,8 +615,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input],
-    ) -> List[Union[Command[Any, ..., Any], Group]]:
-        ...
+    ) -> List[Union[Command[Any, ..., Any], Group]]: ...
 
     @overload
     def get_commands(
@@ -631,8 +623,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
-        ...
+    ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]: ...
 
     @overload
     def get_commands(
@@ -640,8 +631,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Optional[AppCommandType] = ...,
-    ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
-        ...
+    ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]: ...
 
     def get_commands(
         self,
@@ -693,8 +683,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> Generator[ContextMenu, None, None]:
-        ...
+    ) -> Generator[ContextMenu, None, None]: ...
 
     @overload
     def walk_commands(
@@ -702,8 +691,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Generator[Union[Command[Any, ..., Any], Group], None, None]:
-        ...
+    ) -> Generator[Union[Command[Any, ..., Any], Group], None, None]: ...
 
     @overload
     def walk_commands(
@@ -711,8 +699,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
-        ...
+    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]: ...
 
     def walk_commands(
         self,

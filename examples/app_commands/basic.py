@@ -8,6 +8,9 @@ MY_GUILD = discord.Object(id=0)  # replace with your guild id
 
 
 class MyClient(discord.Client):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
         # A CommandTree is a special type that holds all the application command
@@ -72,21 +75,34 @@ async def send(interaction: discord.Interaction, text_to_send: str):
 async def joined(interaction: discord.Interaction, member: Optional[discord.Member] = None):
     """Says when a member joined."""
     # If no member is explicitly provided then we use the command user here
-    member = member or interaction.user
+    user = member or interaction.user
+
+    # Tell the type checker that this is a Member
+    assert isinstance(user, discord.Member)
 
     # The format_dt function formats the date time into a human readable representation in the official client
-    await interaction.response.send_message(f'{member} joined {discord.utils.format_dt(member.joined_at)}')
+    # Joined at can be None in very bizarre cases so just handle that as well
+    if user.joined_at is None:
+        await interaction.response.send_message(f'{user} has no join date.')
+    else:
+        await interaction.response.send_message(f'{user} joined {discord.utils.format_dt(user.joined_at)}')
 
 
 # A Context Menu command is an app command that can be run on a member or on a message by
 # accessing a menu within the client, usually via right clicking.
 # It always takes an interaction as its first parameter and a Member or Message as its second parameter.
 
+
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Join Date')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
     # The format_dt function formats the date time into a human readable representation in the official client
-    await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
+    # Joined at can be None in very bizarre cases so just handle that as well
+
+    if member.joined_at is None:
+        await interaction.response.send_message(f'{member} has no join date.')
+    else:
+        await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
 
 
 # This context menu command only works on messages
@@ -97,8 +113,17 @@ async def report_message(interaction: discord.Interaction, message: discord.Mess
         f'Thanks for reporting this message by {message.author.mention} to our moderators.', ephemeral=True
     )
 
+    # Make sure that we're inside a guild
+    if interaction.guild is None:
+        await interaction.response.send_message('This command can only be used in a server.', ephemeral=True)
+        return
+
     # Handle report by sending it into a log channel
     log_channel = interaction.guild.get_channel(0)  # replace with your channel id
+
+    if log_channel is None or not isinstance(log_channel, discord.abc.Messageable):
+        await interaction.response.send_message('Log channel not found or not messageable.', ephemeral=True)
+        return
 
     embed = discord.Embed(title='Reported Message')
     if message.content:
