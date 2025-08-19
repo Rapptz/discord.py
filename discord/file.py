@@ -90,12 +90,12 @@ class File:
 
             A *non-exhaustive* list of supported formats are: `ogg`, `mp3`, `wav`, `aac`, and `flac`.
 
-        .. versionadded:: 2.6
+        .. versionadded:: 2.7
 
     duration: Optional[:class:`float`]
         The duration of the voice message in seconds
 
-        .. versionadded:: 2.6
+        .. versionadded:: 2.7
     """
 
     __slots__ = (
@@ -186,7 +186,7 @@ class File:
 
             Only supports generating the waveform for Opus format files, other files will be given a random waveform
 
-        .. versionadded:: 2.6"""
+        .. versionadded:: 2.7"""
         if self._waveform is None:
             try:
                 self._waveform = self.generate_waveform()
