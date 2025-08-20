@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional,
 from .item import Item
 from .text_display import TextDisplay
 from ..enums import ComponentType
-from ..utils import MISSING, get as _utils_get
+from ..utils import get as _utils_get
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -242,8 +242,8 @@ class Section(Item[V]):
         from .view import _component_to_item
 
         # using MISSING as accessory so we can create the new one with the parent set
-        self = cls(id=component.id, accessory=MISSING)
-        self.accessory = _component_to_item(component.accessory, self)
+        accessory = _component_to_item(component.accessory, None)
+        self = cls(id=component.id, accessory=accessory)
         self.id = component.id
         self._children = [_component_to_item(c, self) for c in component.children]
 
