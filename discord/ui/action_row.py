@@ -67,6 +67,7 @@ if TYPE_CHECKING:
     from ..components import SelectOption
     from ..interactions import Interaction
     from .container import Container
+    from .dynamic import DynamicItem
 
     SelectCallbackDecorator = Callable[[ItemCallbackType['S', BaseSelectT]], BaseSelectT]
 
@@ -194,7 +195,7 @@ class ActionRow(Item[V]):
         # it should error anyways.
         return True
 
-    def _swap_item(self, base, new, custom_id) -> None:
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
         child_index = self._children.index(base)
         self._children[child_index] = new  # type: ignore
 

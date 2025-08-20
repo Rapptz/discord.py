@@ -50,6 +50,7 @@ if TYPE_CHECKING:
 
     from ..components import Container as ContainerComponent
     from ..interactions import Interaction
+    from .dynamic import DynamicItem
 
 S = TypeVar('S', bound='Container', covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)
@@ -198,7 +199,7 @@ class Container(Item[V]):
     def _has_children(self):
         return True
 
-    def _swap_item(self, base, new, custom_id) -> None:
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
         child_index = self._children.index(base)
         self._children[child_index] = new  # type: ignore
 
