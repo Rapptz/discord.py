@@ -488,7 +488,7 @@ class MessageSnapshot:
         Extra features of the the message snapshot.
     stickers: List[:class:`StickerItem`]
         A list of sticker items given to the message.
-    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`, :class:`Container`, :class:`SectionComponent`, :class:`TextDisplay`, :class:`MediaGalleryComponent`, :class:`FileComponent`, :class:`SeparatorComponent`, :class:`ThumbnailComponent`]]
+    components: List[:class:`Component`]]
         A list of components in the message.
     """
 
@@ -2099,7 +2099,7 @@ class Message(PartialMessage, Hashable):
         A list of sticker items given to the message.
 
         .. versionadded:: 1.6
-    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`]]
+    components: List[:class:`Component`]
         A list of components in the message.
         If :attr:`Intents.message_content` is not enabled this will always be an empty list
         unless the bot is mentioned or the message is a direct message.
