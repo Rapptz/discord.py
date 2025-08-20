@@ -348,6 +348,7 @@ class ActionRow(Item[V]):
         The function being decorated should have three parameters, ``self`` representing
         the :class:`discord.ui.ActionRow`, the :class:`discord.Interaction` you receive and
         the :class:`discord.ui.Button` being pressed.
+
         .. note::
 
             Buttons with a URL or a SKU cannot be created with this function.
