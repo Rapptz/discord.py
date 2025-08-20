@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .view import LayoutView
+    from .dynamic import DynamicItem
     from ..components import SectionComponent
 
 V = TypeVar('V', bound='LayoutView', covariant=True)
@@ -116,6 +117,10 @@ class Section(Item[V]):
 
     def _is_v2(self) -> bool:
         return True
+
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
+        if self.accessory.is_dispatchable() and getattr(self.accessory, 'custom_id', None) == custom_id:
+            self.accessory = new  # type: ignore
 
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this section
