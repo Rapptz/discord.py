@@ -241,7 +241,6 @@ class Section(Item[V]):
     def from_component(cls, component: SectionComponent) -> Self:
         from .view import _component_to_item
 
-        # using MISSING as accessory so we can create the new one with the parent set
         accessory = _component_to_item(component.accessory, None)
         self = cls(id=component.id, accessory=accessory)
         self.id = component.id
