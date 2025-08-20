@@ -194,6 +194,10 @@ class ActionRow(Item[V]):
         # it should error anyways.
         return True
 
+    def _swap_item(self, base, new, custom_id) -> None:
+        child_index = self._children.index(base)
+        self._children[child_index] = new  # type: ignore
+
     @property
     def width(self):
         return 5
