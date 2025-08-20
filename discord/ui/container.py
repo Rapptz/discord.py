@@ -198,6 +198,10 @@ class Container(Item[V]):
     def _has_children(self):
         return True
 
+    def _swap_item(self, base, new, custom_id) -> None:
+        child_index = self._children.index(base)
+        self._children[child_index] = new  # type: ignore
+
     @property
     def children(self) -> List[Item[V]]:
         """List[:class:`Item`]: The children of this container."""

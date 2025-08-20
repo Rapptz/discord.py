@@ -300,6 +300,12 @@ class BaseView:
         if self.__timeout:
             self.__timeout_expiry = time.monotonic() + self.__timeout
 
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
+        # if an error is raised it is catched by the try/except block that calls
+        # this function
+        child_index = self._children.index(base)
+        self._children[child_index] = new  # type: ignore
+
     @property
     def timeout(self) -> Optional[float]:
         """Optional[:class:`float`]: The timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -954,11 +960,9 @@ class ViewStore:
         parent = base_item._parent or view
 
         try:
-            child_index = parent._children.index(base_item)  # type: ignore
+            parent._swap_item(base_item, item, custom_id)
         except ValueError:
             return
-        else:
-            parent._children[child_index] = item  # type: ignore
 
         item._view = view
         item._rendered_row = base_item._rendered_row

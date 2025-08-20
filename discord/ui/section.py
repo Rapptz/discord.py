@@ -111,6 +111,10 @@ class Section(Item[V]):
     def _is_v2(self) -> bool:
         return True
 
+    def _swap_item(self, base, new, custom_id) -> None:
+        if self.accessory.is_dispatchable() and getattr(self.accessory, 'custom_id', None) == custom_id:
+            self.accessory = new  # type: ignore
+
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this section
         and its children, if applicable. This includes the `accessory`.
