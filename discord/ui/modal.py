@@ -35,6 +35,7 @@ from .._types import ClientT
 from .item import Item
 from .view import View
 from .label import Label
+from .text_display import TextDisplay
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -204,7 +205,7 @@ class Modal(View):
         children = sorted(self._children, key=key)
         components: List[Dict[str, Any]] = []
         for child in children:
-            if isinstance(child, Label):
+            if isinstance(child, (Label, TextDisplay)):
                 components.append(child.to_component_dict())  # type: ignore
             else:
                 # Every implicit child wrapped in an ActionRow in a modal
