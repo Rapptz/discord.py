@@ -249,7 +249,14 @@ class Loop(Generic[LF]):
                     self._last_iteration_failed = True
                     if not self.reconnect:
                         raise
-                    await asyncio.sleep(backoff.delay())
+
+                    retry_after = backoff.delay()
+                    _log.exception(
+                        'Handling exception in internal background task %s. Retrying in %.2fs',
+                        self.coro.__qualname__,
+                        retry_after,
+                    )
+                    await asyncio.sleep(retry_after)
                 else:
                     if self._stop_next_iteration:
                         return
