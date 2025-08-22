@@ -103,6 +103,11 @@ class Section(Item[V]):
         return 5
 
     @property
+    def _total_count(self) -> int:
+        # Count the accessory, ourselves, and all children
+        return 2 + len(self._children)
+
+    @property
     def accessory(self) -> Item[V]:
         """:class:`Item`: The section's accessory."""
         return self._accessory

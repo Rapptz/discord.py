@@ -148,6 +148,10 @@ class Item(Generic[V]):
         return 1
 
     @property
+    def _total_count(self) -> int:
+        return 1
+
+    @property
     def view(self) -> Optional[V]:
         """Optional[Union[:class:`View`, :class:`LayoutView`]]: The underlying view for this item."""
         return self._view

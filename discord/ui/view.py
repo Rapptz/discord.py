@@ -428,12 +428,7 @@ class BaseView:
             raise ValueError('v2 items cannot be added to this view')
 
         item._update_view(self)
-        added = 1
-
-        if item._has_children():
-            added += len(tuple(item.walk_children()))  # type: ignore
-
-        self._add_count(added)
+        self._add_count(item._total_count)
         self._children.append(item)
         return self
 
@@ -454,10 +449,7 @@ class BaseView:
         except ValueError:
             pass
         else:
-            removed = 1
-            if item._has_children():
-                removed += len(tuple(item.walk_children()))  # type: ignore
-            self._add_count(-removed)
+            self._add_count(-item._total_count)
 
         return self
 
