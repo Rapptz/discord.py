@@ -204,6 +204,11 @@ class ActionRow(Item[V]):
         return 5
 
     @property
+    def _total_count(self) -> int:
+        # 1 for self and all children
+        return 1 + len(self._children)
+
+    @property
     def type(self) -> Literal[ComponentType.action_row]:
         return ComponentType.action_row
 

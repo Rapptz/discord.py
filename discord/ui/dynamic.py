@@ -168,6 +168,10 @@ class DynamicItem(Generic[BaseT], Item[Union[View, LayoutView]]):
     def width(self) -> int:
         return self.item.width
 
+    @property
+    def _total_count(self) -> int:
+        return self.item._total_count
+
     @classmethod
     async def from_custom_id(
         cls: Type[Self], interaction: Interaction[ClientT], item: Item[Any], match: re.Match[str], /
