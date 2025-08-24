@@ -83,6 +83,8 @@ __all__ = (
     'OnboardingMode',
     'SeparatorSpacing',
     'MediaItemLoadingState',
+    'CollectibleType',
+    'NameplatePalette',
 )
 
 
@@ -966,6 +968,24 @@ class MediaItemLoadingState(Enum):
     loading = 1
     loaded = 2
     not_found = 3
+
+
+class CollectibleType(Enum):
+    nameplate = 'nameplate'
+
+
+class NameplatePalette(Enum):
+    crimson = 'crimson'
+    berry = 'berry'
+    sky = 'sky'
+    teal = 'teal'
+    forest = 'forest'
+    bubble_gum = 'bubble_gum'
+    violet = 'violet'
+    cobalt = 'cobalt'
+    clover = 'clover'
+    lemon = 'lemon'
+    white = 'white'
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
