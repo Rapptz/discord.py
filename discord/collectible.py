@@ -81,7 +81,7 @@ class Collectible:
         self._asset: str = data['asset']
         self.sku_id: int = int(data['sku_id'])
         self.label: str = data['label']
-        self.expires_at: Optional[datetime] = parse_time(data['expires_at'])
+        self.expires_at: Optional[datetime] = parse_time(data.get('expires_at'))
 
         # nameplate
         self.palette: Optional[NameplatePalette]
