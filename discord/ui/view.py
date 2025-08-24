@@ -335,7 +335,9 @@ class BaseView:
 
     @property
     def total_children_count(self) -> int:
-        """:class:`int`: The total number of children in this view, including those from nested items."""
+        """:class:`int`: The total number of children in this view, including those from nested items.
+
+        .. versionadded:: 2.6"""
         return self._total_children
 
     @classmethod
@@ -654,6 +656,8 @@ class BaseView:
     def walk_children(self) -> Generator[Item[Any], None, None]:
         """An iterator that recursively walks through all the children of this view
         and its children, if applicable.
+
+        .. versionadded:: 2.6
 
         Yields
         ------
