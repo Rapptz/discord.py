@@ -235,3 +235,8 @@ class Modal(BaseView):
         }
 
         return payload
+
+    def add_item(self, item: Item[Any]) -> Self:
+        if len(self._children) >= 5:
+            raise ValueError('maximum number of children exceeded (5)')
+        return super().add_item(item)
