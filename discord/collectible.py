@@ -53,7 +53,7 @@ class Collectible:
     ----------
     label: :class:`str`
         The label of the collectible.
-    palette: :class:`NameplatePalette`
+    palette: Optional[:class:`NameplatePalette`]
         The palette of the collectible.
         This is only available if ``type`` is
         :class:`CollectibleType.nameplate`.
