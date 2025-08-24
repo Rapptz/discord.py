@@ -335,7 +335,9 @@ class BaseView:
 
     @property
     def total_children_count(self) -> int:
-        """:class:`int`: The total number of children in this view, including those from nested items."""
+        """:class:`int`: The total number of children in this view, including those from nested items.
+
+        .. versionadded:: 2.6"""
         return self._total_children
 
     @classmethod
