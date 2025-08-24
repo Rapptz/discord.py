@@ -39,14 +39,11 @@ if TYPE_CHECKING:
     from ..components import Component
     from ..enums import ComponentType
     from .view import View, LayoutView
-
-    V = TypeVar('V', bound=Union[View, LayoutView], covariant=True, default=Union[View, LayoutView])
 else:
     View = LayoutView = Any
-    from .item import V
 
 
-class DynamicItem(Generic[BaseT, V], Item[V]):
+class DynamicItem(Generic[BaseT], Item[Union[View, LayoutView]]):
     """Represents an item with a dynamic ``custom_id`` that can be used to store state within
     that ``custom_id``.
 
