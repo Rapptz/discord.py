@@ -655,6 +655,8 @@ class BaseView:
         """An iterator that recursively walks through all the children of this view
         and its children, if applicable.
 
+        .. versionadded:: 2.6
+
         Yields
         ------
         :class:`Item`
