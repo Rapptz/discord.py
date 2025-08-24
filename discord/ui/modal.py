@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
 from ..utils import MISSING, find
 from .._types import ClientT
 from .item import Item
-from .view import View
+from .view import BaseView
 from .select import BaseSelect
 from .text_input import TextInput
 
@@ -54,7 +54,7 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 
-class Modal(View):
+class Modal(BaseView):
     """Represents a UI modal.
 
     This object must be inherited to create a modal popup window within discord.
