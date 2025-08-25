@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from ..types.components import TextInput as TextInputPayload
     from ..types.interactions import ModalSubmitTextInputInteractionData as ModalSubmitTextInputInteractionDataPayload
-    from .view import View
+    from .view import BaseView
     from ..interactions import Interaction
 
 
@@ -47,7 +47,7 @@ __all__ = (
 )
 # fmt: on
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='BaseView', covariant=True)
 
 
 class TextInput(Item[V]):
