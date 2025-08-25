@@ -75,6 +75,7 @@ from .subscription import *
 from .presences import *
 from .primary_guild import *
 from .onboarding import *
+from .collectible import *
 
 
 class VersionInfo(NamedTuple):

@@ -33,6 +33,7 @@ from .enums import DefaultAvatar
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data, MISSING, _get_as_snowflake
 from .primary_guild import PrimaryGuild
+from .collectible import Collectible
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -49,6 +50,7 @@ if TYPE_CHECKING:
         User as UserPayload,
         AvatarDecorationData,
         PrimaryGuild as PrimaryGuildPayload,
+        UserCollectibles as UserCollectiblesPayload,
     )
 
 
@@ -78,6 +80,7 @@ class BaseUser(_UserTag):
         '_state',
         '_avatar_decoration_data',
         '_primary_guild',
+        '_collectibles',
     )
 
     if TYPE_CHECKING:
@@ -94,6 +97,7 @@ class BaseUser(_UserTag):
         _public_flags: int
         _avatar_decoration_data: Optional[AvatarDecorationData]
         _primary_guild: Optional[PrimaryGuildPayload]
+        _collectibles: Optional[UserCollectiblesPayload]
 
     def __init__(self, *, state: ConnectionState, data: Union[UserPayload, PartialUserPayload]) -> None:
         self._state = state
@@ -132,6 +136,7 @@ class BaseUser(_UserTag):
         self.system = data.get('system', False)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
         self._primary_guild = data.get('primary_guild', None)
+        self._collectibles = data.get('collectibles', None)
 
     @classmethod
     def _copy(cls, user: Self) -> Self:
@@ -149,6 +154,7 @@ class BaseUser(_UserTag):
         self._public_flags = user._public_flags
         self._avatar_decoration_data = user._avatar_decoration_data
         self._primary_guild = user._primary_guild
+        self._collectibles = user._collectibles
 
         return self
 
@@ -323,6 +329,16 @@ class BaseUser(_UserTag):
         if self._primary_guild is not None:
             return PrimaryGuild(state=self._state, data=self._primary_guild)
         return PrimaryGuild._default(self._state)
+
+    @property
+    def collectibles(self) -> List[Collectible]:
+        """List[:class:`Collectible`]: Returns a list of the user's collectibles.
+
+        .. versionadded:: 2.7
+        """
+        if self._collectibles is None:
+            return []
+        return [Collectible(state=self._state, type=key, data=value) for key, value in self._collectibles.items() if value]  # type: ignore
 
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the user is mentioned in the specified message.
