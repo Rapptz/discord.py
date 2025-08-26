@@ -300,6 +300,12 @@ class BaseView:
         if self.__timeout:
             self.__timeout_expiry = time.monotonic() + self.__timeout
 
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
+        # if an error is raised it is catched by the try/except block that calls
+        # this function
+        child_index = self._children.index(base)
+        self._children[child_index] = new  # type: ignore
+
     @property
     def timeout(self) -> Optional[float]:
         """Optional[:class:`float`]: The timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -329,7 +335,9 @@ class BaseView:
 
     @property
     def total_children_count(self) -> int:
-        """:class:`int`: The total number of children in this view, including those from nested items."""
+        """:class:`int`: The total number of children in this view, including those from nested items.
+
+        .. versionadded:: 2.6"""
         return self._total_children
 
     @classmethod
@@ -422,12 +430,7 @@ class BaseView:
             raise ValueError('v2 items cannot be added to this view')
 
         item._update_view(self)
-        added = 1
-
-        if item._has_children():
-            added += len(tuple(item.walk_children()))  # type: ignore
-
-        self._add_count(added)
+        self._add_count(item._total_count)
         self._children.append(item)
         return self
 
@@ -448,10 +451,7 @@ class BaseView:
         except ValueError:
             pass
         else:
-            removed = 1
-            if item._has_children():
-                removed += len(tuple(item.walk_children()))  # type: ignore
-            self._add_count(-removed)
+            self._add_count(-item._total_count)
 
         return self
 
@@ -656,6 +656,8 @@ class BaseView:
     def walk_children(self) -> Generator[Item[Any], None, None]:
         """An iterator that recursively walks through all the children of this view
         and its children, if applicable.
+
+        .. versionadded:: 2.6
 
         Yields
         ------
@@ -954,11 +956,9 @@ class ViewStore:
         parent = base_item._parent or view
 
         try:
-            child_index = parent._children.index(base_item)  # type: ignore
+            parent._swap_item(base_item, item, custom_id)
         except ValueError:
             return
-        else:
-            parent._children[child_index] = item  # type: ignore
 
         item._view = view
         item._rendered_row = base_item._rendered_row

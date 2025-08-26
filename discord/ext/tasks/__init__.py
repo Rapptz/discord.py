@@ -229,7 +229,7 @@ class Loop(Generic[LF]):
                     # Sometimes asyncio is cheeky and wakes up a few microseconds before our target
                     # time, causing it to repeat a run.
                     while self._is_explicit_time() and self._next_iteration <= self._last_iteration:
-                        _log.warn(
+                        _log.warning(
                             (
                                 'Clock drift detected for task %s. Woke up at %s but needed to sleep until %s. '
                                 'Sleeping until %s again to correct clock'
@@ -249,7 +249,14 @@ class Loop(Generic[LF]):
                     self._last_iteration_failed = True
                     if not self.reconnect:
                         raise
-                    await asyncio.sleep(backoff.delay())
+
+                    retry_after = backoff.delay()
+                    _log.exception(
+                        'Handling exception in internal background task %s. Retrying in %.2fs',
+                        self.coro.__qualname__,
+                        retry_after,
+                    )
+                    await asyncio.sleep(retry_after)
                 else:
                     if self._stop_next_iteration:
                         return

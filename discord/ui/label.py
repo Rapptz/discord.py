@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..types.components import LabelComponent as LabelComponentPayload
-    from .view import View
+    from .view import BaseView
 
 
 # fmt: off
@@ -44,7 +44,7 @@ __all__ = (
 )
 # fmt: on
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='BaseView', covariant=True)
 
 
 class Label(Item[V]):

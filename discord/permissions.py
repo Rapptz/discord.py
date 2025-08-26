@@ -88,6 +88,7 @@ if TYPE_CHECKING:
         use_soundboard: BoolOrNoneT
         use_external_sounds: BoolOrNoneT
         send_voice_messages: BoolOrNoneT
+        set_voice_channel_status: BoolOrNoneT
         create_expressions: BoolOrNoneT
         create_events: BoolOrNoneT
         send_polls: BoolOrNoneT
@@ -252,7 +253,7 @@ class Permissions(BaseFlags):
         permissions set to ``True``.
         """
         # Some of these are 0 because we don't want to set unnecessary bits
-        return cls(0b0000_0000_0000_1110_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
+        return cls(0b0000_0000_0000_1111_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -383,8 +384,12 @@ class Permissions(BaseFlags):
     @classmethod
     def voice(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
-        "Voice" permissions from the official Discord UI set to ``True``."""
-        return cls(0b0000_0000_0000_0000_0010_0100_1000_0000_0000_0011_1111_0000_0000_0011_0000_0000)
+        "Voice" permissions from the official Discord UI set to ``True``.
+
+        .. versionchanged:: 2.7
+            Added :attr:`set_voice_channel_status` permission.
+        """
+        return cls(0b0000_0000_0000_0001_0010_0100_1000_0000_0000_0011_1111_0000_0000_0011_0000_0000)
 
     @classmethod
     def stage(cls) -> Self:
@@ -840,6 +845,14 @@ class Permissions(BaseFlags):
         return 1 << 46
 
     @flag_value
+    def set_voice_channel_status(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can set voice channel status.
+
+        .. versionadded:: 2.7
+        """
+        return 1 << 48
+
+    @flag_value
     def send_polls(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can send poll messages.
 
@@ -989,6 +1002,7 @@ class PermissionOverwrite:
         use_soundboard: Optional[bool]
         use_external_sounds: Optional[bool]
         send_voice_messages: Optional[bool]
+        set_voice_channel_status: Optional[bool]
         create_expressions: Optional[bool]
         create_events: Optional[bool]
         send_polls: Optional[bool]

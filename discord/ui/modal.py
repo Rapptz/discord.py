@@ -33,8 +33,9 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
 from ..utils import MISSING, find
 from .._types import ClientT
 from .item import Item
-from .view import View
-from .label import Label
+from .view import BaseView
+from .select import BaseSelect
+from .text_input import TextInput
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -53,7 +54,7 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 
-class Modal(View):
+class Modal(BaseView):
     """Represents a UI modal.
 
     This object must be inherited to create a modal popup window within discord.
@@ -204,9 +205,7 @@ class Modal(View):
         children = sorted(self._children, key=key)
         components: List[Dict[str, Any]] = []
         for child in children:
-            if isinstance(child, Label):
-                components.append(child.to_component_dict())  # type: ignore
-            else:
+            if isinstance(child, (BaseSelect, TextInput)):
                 # Every implicit child wrapped in an ActionRow in a modal
                 # has a single child of width 5
                 # It's also deprecated to use ActionRow in modals
@@ -216,6 +215,8 @@ class Modal(View):
                         'components': [child.to_component_dict()],
                     }
                 )
+            else:
+                components.append(child.to_component_dict())
 
         return components
 
@@ -234,3 +235,8 @@ class Modal(View):
         }
 
         return payload
+
+    def add_item(self, item: Item[Any]) -> Self:
+        if len(self._children) >= 5:
+            raise ValueError('maximum number of children exceeded (5)')
+        return super().add_item(item)

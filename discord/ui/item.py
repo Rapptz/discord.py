@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from ..components import Component
     from .action_row import ActionRow
     from .container import Container
+    from .dynamic import DynamicItem
 
 I = TypeVar('I', bound='Item[Any]')
 V = TypeVar('V', bound='BaseView', covariant=True)
@@ -118,6 +119,9 @@ class Item(Generic[V]):
             return self._provided_custom_id
         return True
 
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
+        raise ValueError
+
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__item_repr_attributes__)
         return f'<{self.__class__.__name__} {attrs}>'
@@ -141,6 +145,10 @@ class Item(Generic[V]):
 
     @property
     def width(self) -> int:
+        return 1
+
+    @property
+    def _total_count(self) -> int:
         return 1
 
     @property

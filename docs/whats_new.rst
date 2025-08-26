@@ -11,6 +11,21 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p6p1:
+
+v2.6.1
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix :attr:`ui.Section.children` and :attr:`ui.Section.accessory` having ``None`` as the :attr:`Item.parent` (:issue:`10269`)
+- Fix error when using a :class:`ui.DynamicItem` inside an :class:`ui.Section`
+- Fix :class:`ui.DynamicItem` not working when set as an :attr:`ui.Section.acessory` (:issue:`10271`)
+- Fix :attr:`ui.LayoutView.total_children_count` being inaccurate when adding nested items
+- Fix crash when accessing :attr:`AuditLogEntry.category` for unknown audit log actions
+- |tasks| Add logging statement when a handled exception occurs (:issue:`10276`)
+
 .. _vp2p6p0:
 
 v2.6.0

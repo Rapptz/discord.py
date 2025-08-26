@@ -6091,23 +6091,6 @@ PollMedia
 .. autoclass:: PollMedia
     :members:
 
-UnfurledMediaItem
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: UnfurledMediaItem
-
-.. autoclass:: UnfurledMediaItem
-    :members:
-
-
-MediaGalleryItem
-~~~~~~~~~~~~~~~~
-
-.. attributetable:: MediaGalleryItem
-
-.. autoclass:: MediaGalleryItem
-    :members:
-
 
 Exceptions
 ------------

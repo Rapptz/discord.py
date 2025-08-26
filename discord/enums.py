@@ -488,7 +488,7 @@ class AuditLogAction(Enum):
             AuditLogAction.home_settings_update:                     AuditLogActionCategory.update,
         }
         # fmt: on
-        return lookup[self]
+        return lookup.get(self, None)
 
     @property
     def target_type(self) -> Optional[str]:

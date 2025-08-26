@@ -29,12 +29,13 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional,
 from .item import Item
 from .text_display import TextDisplay
 from ..enums import ComponentType
-from ..utils import MISSING, get as _utils_get
+from ..utils import get as _utils_get
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .view import LayoutView
+    from .dynamic import DynamicItem
     from ..components import SectionComponent
 
 V = TypeVar('V', bound='LayoutView', covariant=True)
@@ -57,11 +58,6 @@ class Section(Item[V]):
         The section accessory.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
-
-    Attributes
-    ----------
-    accessory: :class:`Item`
-        The section accessory.
     """
 
     __item_repr_attributes__ = (
@@ -72,7 +68,7 @@ class Section(Item[V]):
 
     __slots__ = (
         '_children',
-        'accessory',
+        '_accessory',
     )
 
     def __init__(
@@ -83,13 +79,11 @@ class Section(Item[V]):
     ) -> None:
         super().__init__()
         self._children: List[Item[V]] = []
-        if children:
-            if len(children) > 3:
-                raise ValueError('maximum number of children exceeded')
-            self._children.extend(
-                [c if isinstance(c, Item) else TextDisplay(c) for c in children],
-            )
-        self.accessory: Item[V] = accessory
+        for child in children:
+            self.add_item(child)
+
+        accessory._parent = self
+        self._accessory: Item[V] = accessory
         self.id = id
 
     def __repr__(self) -> str:
@@ -108,8 +102,30 @@ class Section(Item[V]):
     def width(self):
         return 5
 
+    @property
+    def _total_count(self) -> int:
+        # Count the accessory, ourselves, and all children
+        return 2 + len(self._children)
+
+    @property
+    def accessory(self) -> Item[V]:
+        """:class:`Item`: The section's accessory."""
+        return self._accessory
+
+    @accessory.setter
+    def accessory(self, value: Item[V]) -> None:
+        if not isinstance(value, Item):
+            raise TypeError(f'Expected an Item, got {value.__class__.__name__!r} instead')
+
+        value._parent = self
+        self._accessory = value
+
     def _is_v2(self) -> bool:
         return True
+
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
+        if self.accessory.is_dispatchable() and getattr(self.accessory, 'custom_id', None) == custom_id:
+            self.accessory = new  # type: ignore
 
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this section
@@ -235,9 +251,8 @@ class Section(Item[V]):
     def from_component(cls, component: SectionComponent) -> Self:
         from .view import _component_to_item
 
-        # using MISSING as accessory so we can create the new one with the parent set
-        self = cls(id=component.id, accessory=MISSING)
-        self.accessory = _component_to_item(component.accessory, self)
+        accessory = _component_to_item(component.accessory, None)
+        self = cls(id=component.id, accessory=accessory)
         self.id = component.id
         self._children = [_component_to_item(c, self) for c in component.children]
 

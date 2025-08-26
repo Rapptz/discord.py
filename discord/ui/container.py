@@ -50,6 +50,7 @@ if TYPE_CHECKING:
 
     from ..components import Container as ContainerComponent
     from ..interactions import Interaction
+    from .dynamic import DynamicItem
 
 S = TypeVar('S', bound='Container', covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)
@@ -198,6 +199,10 @@ class Container(Item[V]):
     def _has_children(self):
         return True
 
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
+        child_index = self._children.index(base)
+        self._children[child_index] = new  # type: ignore
+
     @property
     def children(self) -> List[Item[V]]:
         """List[:class:`Item`]: The children of this container."""
@@ -228,6 +233,11 @@ class Container(Item[V]):
     @property
     def width(self):
         return 5
+
+    @property
+    def _total_count(self) -> int:
+        # 1 for self and all children
+        return 1 + len(tuple(self.walk_children()))
 
     def _is_v2(self) -> bool:
         return True
@@ -308,10 +318,8 @@ class Container(Item[V]):
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
-        if item._has_children() and self._view:
-            self._view._add_count(len(tuple(item.walk_children())))  # type: ignore
-        elif self._view:
-            self._view._add_count(1)
+        if self._view:
+            self._view._add_count(item._total_count)
 
         self._children.append(item)
         item._update_view(self.view)
@@ -336,10 +344,7 @@ class Container(Item[V]):
             pass
         else:
             if self._view:
-                if item._has_children():
-                    self._view._add_count(-len(tuple(item.walk_children())))  # type: ignore
-                else:
-                    self._view._add_count(-1)
+                self._view._add_count(-item._total_count)
         return self
 
     def find_item(self, id: int, /) -> Optional[Item[V]]:
