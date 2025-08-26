@@ -396,6 +396,7 @@ class SelectMenu(Component):
             'min_values': self.min_values,
             'max_values': self.max_values,
             'disabled': self.disabled,
+            'required': self.required,
         }
         if self.id is not None:
             payload['id'] = self.id
