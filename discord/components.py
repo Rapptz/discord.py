@@ -1355,11 +1355,11 @@ class LabelComponent(Component):
     __slots__ = (
         'label',
         'description',
-        'commponent',
+        'component',
         'id',
     )
 
-    __repr_info__ = ('label', 'description', 'commponent', 'id,')
+    __repr_info__ = ('label', 'description', 'component', 'id,')
 
     def __init__(self, data: LabelComponentPayload, state: Optional[ConnectionState]) -> None:
         self.component: Component = _component_factory(data['component'], state)  # type: ignore
