@@ -355,6 +355,16 @@ class Asset(AssetMixin):
             animated=False,
         )
 
+    @classmethod
+    def _from_user_collectible(cls, state: _State, asset: str, animated: bool = False) -> Self:
+        name = 'static.png' if not animated else 'asset.webm'
+        return cls(
+            state,
+            url=f'{cls.BASE}/assets/collectibles/{asset}{name}',
+            key=asset,
+            animated=animated,
+        )
+
     def __str__(self) -> str:
         return self._url
 
