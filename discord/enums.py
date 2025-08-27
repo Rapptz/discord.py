@@ -275,7 +275,7 @@ class MessageType(Enum):
     guild_incident_report_false_alarm = 39
     purchase_notification = 44
     poll_result = 46
-    guild_emoji_added = 63
+    emoji_added = 63
 
 
 class SpeakingState(Enum):
