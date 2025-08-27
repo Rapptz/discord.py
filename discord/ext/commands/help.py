@@ -69,13 +69,13 @@ if TYPE_CHECKING:
 
     class _HelpCommandOptions(TypedDict, total=False):
         show_hidden: bool
-        verify_checks: bool
+        verify_checks: Optional[bool]
         command_attrs: _CommandKwargs
 
     class _BaseHelpCommandOptions(_HelpCommandOptions, total=False):
         sort_commands: bool
-        dm_help: bool
-        dm_help_threshold: int
+        dm_help: Optional[bool]
+        dm_help_threshold: Optional[int]
         no_category: str
         paginator: Paginator
         commands_heading: str
@@ -1364,8 +1364,8 @@ class MinimalHelpCommand(HelpCommand):
     def __init__(self, **options: Unpack[_MinimalHelpCommandOptions]) -> None:
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.commands_heading: str = options.pop('commands_heading', 'Commands')
-        self.dm_help: bool = options.pop('dm_help', False)
-        self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
+        self.dm_help: Optional[bool] = options.pop('dm_help', False)
+        self.dm_help_threshold: Optional[int] = options.pop('dm_help_threshold', 1000)
         self.aliases_heading: str = options.pop('aliases_heading', 'Aliases:')
         self.no_category: str = options.pop('no_category', 'No Category')
 

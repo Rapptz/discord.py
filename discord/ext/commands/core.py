@@ -68,9 +68,9 @@ if TYPE_CHECKING:
 
     class _CommandDecoratorKwargs(TypedDict, total=False):
         enabled: bool
-        help: str
-        brief: str
-        usage: str
+        help: Optional[str]
+        brief: Optional[str]
+        usage: Optional[str]
         rest_is_raw: bool
         aliases: List[str]
         description: str
