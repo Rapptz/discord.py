@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 import discord.abc
 from .asset import Asset
 from .colour import Colour
-from .enums import DefaultAvatar
+from .enums import DefaultAvatar, NameEffect, NameFont, try_enum
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data, MISSING, _get_as_snowflake
 from .primary_guild import PrimaryGuild
@@ -51,6 +51,7 @@ if TYPE_CHECKING:
         AvatarDecorationData,
         PrimaryGuild as PrimaryGuildPayload,
         UserCollectibles as UserCollectiblesPayload,
+        DisplayNameStyle as DisplayNameStylePayload,
     )
 
 
@@ -58,6 +59,16 @@ __all__ = (
     'User',
     'ClientUser',
 )
+
+
+class DisplayNameStyle:
+    def __init__(self, *, data: DisplayNameStylePayload) -> None:
+        self.font: NameFont = try_enum(NameFont, data['font_id'])
+        self.effect: NameEffect = try_enum(NameEffect, data['effect_id'])
+        self.colors: List[discord.Colour] = [discord.Colour(color) for color in data.get('colors', [])]
+
+    def __repr__(self) -> str:
+        return f'<DisplayNameStyle font={self.font} effect={self.effect} colors={self.colors}>'
 
 
 class _UserTag:
@@ -81,6 +92,7 @@ class BaseUser(_UserTag):
         '_avatar_decoration_data',
         '_primary_guild',
         '_collectibles',
+        '_display_name_style',
     )
 
     if TYPE_CHECKING:
@@ -98,6 +110,7 @@ class BaseUser(_UserTag):
         _avatar_decoration_data: Optional[AvatarDecorationData]
         _primary_guild: Optional[PrimaryGuildPayload]
         _collectibles: Optional[UserCollectiblesPayload]
+        _display_name_style: Optional[DisplayNameStylePayload]
 
     def __init__(self, *, state: ConnectionState, data: Union[UserPayload, PartialUserPayload]) -> None:
         self._state = state
@@ -137,6 +150,7 @@ class BaseUser(_UserTag):
         self._avatar_decoration_data = data.get('avatar_decoration_data')
         self._primary_guild = data.get('primary_guild', None)
         self._collectibles = data.get('collectibles', None)
+        self._display_name_style = data.get('display_name_styles', None) or None
 
     @classmethod
     def _copy(cls, user: Self) -> Self:
@@ -155,6 +169,7 @@ class BaseUser(_UserTag):
         self._avatar_decoration_data = user._avatar_decoration_data
         self._primary_guild = user._primary_guild
         self._collectibles = user._collectibles
+        self._display_name_style = user._display_name_style
 
         return self
 
@@ -339,6 +354,12 @@ class BaseUser(_UserTag):
         if self._collectibles is None:
             return []
         return [Collectible(state=self._state, type=key, data=value) for key, value in self._collectibles.items() if value]  # type: ignore
+
+    @property
+    def display_name_style(self) -> Optional[DisplayNameStyle]:
+        if self._display_name_style is None:
+            return None
+        return DisplayNameStyle(data=self._display_name_style)
 
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the user is mentioned in the specified message.

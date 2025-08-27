@@ -23,12 +23,14 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .snowflake import Snowflake
-from typing import Literal, Optional, TypedDict
+from typing import Literal, Optional, TypedDict, List
 from typing_extensions import NotRequired
 
 
 PremiumType = Literal[0, 1, 2, 3]
 NameplatePallete = Literal['crimson', 'berry', 'sky', 'teal', 'forest', 'bubble_gum', 'violet', 'cobalt', 'clover']
+DisplayNameFont = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+DisplayNameEffect = Literal[1, 2, 3, 4, 5]
 
 
 class _UserSKU(TypedDict):
@@ -70,6 +72,12 @@ class PartialUser(TypedDict):
     collectibles: NotRequired[UserCollectibles]
 
 
+class DisplayNameStyle(TypedDict):
+    font_id: DisplayNameFont
+    effect_id: DisplayNameEffect
+    colors: List[int]  # 1-2
+
+
 class User(PartialUser, total=False):
     bot: bool
     system: bool
@@ -80,3 +88,4 @@ class User(PartialUser, total=False):
     flags: int
     premium_type: PremiumType
     public_flags: int
+    display_name_styles: DisplayNameStyle
