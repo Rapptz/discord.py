@@ -4198,7 +4198,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: gradient
 
-        A two colour gradient is used, using both colors provided.
+        There is a two colour gradient using both colors provided.
 
     .. attribute:: neon
 
@@ -4210,7 +4210,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: pop
 
-        A coloured drop-down shadow is shown.
+        A coloured dropshadow is shown.
 
 .. _discord-api-audit-logs:
 
