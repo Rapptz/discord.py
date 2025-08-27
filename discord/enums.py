@@ -85,6 +85,8 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
+    'NameFont',
+    'NameEffect',
 )
 
 

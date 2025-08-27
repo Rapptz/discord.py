@@ -58,10 +58,23 @@ if TYPE_CHECKING:
 __all__ = (
     'User',
     'ClientUser',
+    'DisplayNameStyle',
 )
 
 
 class DisplayNameStyle:
+    """Represents a user's display name style.
+
+    Attributes
+    -----------
+    font: :class:`NameFont`
+        The font.
+    effect: :class:`NameEffect`
+        The applied effect.
+    colors: List[:class:`Colour`]
+        The colors used in the effect. Max of 2.
+    """
+
     def __init__(self, *, data: DisplayNameStylePayload) -> None:
         self.font: NameFont = try_enum(NameFont, data['font_id'])
         self.effect: NameEffect = try_enum(NameEffect, data['effect_id'])

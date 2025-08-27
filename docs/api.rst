@@ -4132,6 +4132,86 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
+.. class:: NameFont
+
+    Represents the available fonts for a user display name style.
+
+    .. versionadded:: 2.7
+        
+    .. attribute:: default
+
+        The default font is used.
+
+    .. attribute:: bangers
+
+        The 'Bangers' font is used.
+
+    .. attribute:: bio_rhyme
+
+        The 'BioRhyme' font is used.
+
+    .. attribute:: cherry_bomb
+
+        The 'Cherry Bomb' font is used.
+
+    .. attribute:: chicle
+
+        The 'Chicle' font is used.
+
+    .. attribute:: compagnon
+
+        The 'Compagnon' font is used.
+
+    .. attribute:: museo_moderno
+
+        The 'Museo Moderno' font is used.
+
+    .. attribute:: neo_castel
+
+        The 'Neo Castel' font is used.
+
+    .. attribute:: pixelify
+
+        The 'Pixelify' font is used.
+
+    .. attribute:: ribes
+
+        The 'Ribes' font is used.
+
+    .. attribute:: sinistre
+
+        The 'Sinistre' font is used.
+
+    .. attribute:: zilla_slab
+
+        The 'Zilla Slab' font is used.
+
+.. class:: NameEffect
+
+    Represents the available effects for a user display name style.
+
+    .. versionadded:: 2.7
+
+    .. attribute:: solid
+
+        The first color provided is used.
+
+    .. attribute:: gradient
+
+        A two colour gradient is used, using both colors provided.
+
+    .. attribute:: neon
+
+        There is a neon glow around the name.
+
+    .. attribute:: toon
+
+        There is a subtle vertical gradient and stroke around the name.
+
+    .. attribute:: pop
+
+        A coloured drop-down shadow is shown.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -5834,6 +5914,14 @@ Collectible
 .. attributetable:: Collectible
 
 .. autoclass:: Collectible()
+    :members:
+
+DisplayNameStyle
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: DisplayNameStyle
+
+.. autoclass:: DisplayNameStyle()
     :members:
 
 CallMessage
