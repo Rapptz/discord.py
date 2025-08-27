@@ -56,7 +56,7 @@ if TYPE_CHECKING:
 
     from .bot import BotBase
     from .context import Context
-    from .core import Command, _CommandDecoratorKwargs
+    from .core import Command, _GroupDecoratorKwargs
 
     class _CogKwargs(TypedDict, total=False, extra_items=Any):
         name: str
@@ -66,7 +66,7 @@ if TYPE_CHECKING:
         group_nsfw: bool
         group_auto_locale_strings: bool
         group_extras: Dict[Any, Any]
-        command_attrs: _CommandDecoratorKwargs
+        command_attrs: _GroupDecoratorKwargs
 
 
 __all__ = (
