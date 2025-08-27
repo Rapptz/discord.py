@@ -1070,7 +1070,7 @@ class DefaultHelpCommand(HelpCommand):
         self.width: int = options.pop('width', 80)
         self.indent: int = options.pop('indent', 2)
         self.sort_commands: bool = options.pop('sort_commands', True)
-        self.dm_help: bool = options.pop('dm_help', False)
+        self.dm_help: Optional[bool] = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
         self.arguments_heading: str = options.pop('arguments_heading', 'Arguments:')
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
