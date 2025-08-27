@@ -29,7 +29,7 @@ from typing_extensions import NotRequired
 
 PremiumType = Literal[0, 1, 2, 3]
 NameplatePallete = Literal['crimson', 'berry', 'sky', 'teal', 'forest', 'bubble_gum', 'violet', 'cobalt', 'clover']
-DisplayNameFont = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+DisplayNameFont = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 DisplayNameEffect = Literal[1, 2, 3, 4, 5]
 
 
@@ -75,7 +75,7 @@ class PartialUser(TypedDict):
 class DisplayNameStyle(TypedDict):
     font_id: DisplayNameFont
     effect_id: DisplayNameEffect
-    colors: List[int]  # 1-2
+    colors: List[int]
 
 
 class User(PartialUser, total=False):
