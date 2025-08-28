@@ -394,7 +394,7 @@ class HelpCommand:
 
     def __init__(self, **options: Unpack[_HelpCommandOptions]) -> None:
         self.show_hidden: bool = options.pop('show_hidden', False)
-        self.verify_checks: bool = options.pop('verify_checks', True)
+        self.verify_checks: Optional[bool] = options.pop('verify_checks', True)
         self.command_attrs = attrs = options.pop('command_attrs', {})
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
