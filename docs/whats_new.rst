@@ -11,6 +11,28 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p6p3:
+
+v2.6.3
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix :attr:`ui.Select.required` not being applied properly
+- Fix potential attribute error when accessing :class:`LabelComponent`
+- Fix issue when stacking decorators such as :func:`app_commands.guild_install` and :func:`app_commands.user_install`
+
+.. _vp2p6p2:
+
+v2.6.2
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix a bug with :class:`ui.DynamicItem` causing it to fail at runtime when passing a generic.
+
 .. _vp2p6p1:
 
 v2.6.1
