@@ -72,7 +72,7 @@ if TYPE_CHECKING:
         brief: Optional[str]
         usage: Optional[str]
         rest_is_raw: bool
-        aliases: List[str]
+        aliases: Union[List[str], Tuple[str, ...]]
         description: str
         hidden: bool
         checks: List[UserCheck[Context[Any]]]
