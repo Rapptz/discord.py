@@ -67,10 +67,12 @@ if TYPE_CHECKING:
         default_permissions: bool
         nsfw: bool
         description: str
+        case_insensitive: bool
 
     class _HybridGroupDecoratorKwargs(_HybridGroupKwargs, total=False):
         description: Union[str, app_commands.locale_str]
-        fallback: Union[str, app_commands.locale_str]
+        fallback: str
+        fallback_locale: Optional[app_commands.locale_str]
 
 
 __all__ = (
