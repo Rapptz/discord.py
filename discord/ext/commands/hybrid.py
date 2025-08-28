@@ -71,7 +71,7 @@ if TYPE_CHECKING:
 
     class _HybridGroupDecoratorKwargs(_HybridGroupKwargs, total=False):
         description: Union[str, app_commands.locale_str]
-        fallback: str
+        fallback: Optional[str]
         fallback_locale: Optional[app_commands.locale_str]
 
 
