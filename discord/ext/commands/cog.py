@@ -45,21 +45,20 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
-    TypedDict,
 )
 
 from ._types import _BaseCommand, BotT
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, Unpack
+    from typing_extensions import Self, Unpack, TypedDict
     from discord.abc import Snowflake
     from discord._types import ClientT
 
     from .bot import BotBase
     from .context import Context
-    from .core import Command, _CommandDecoratorKwargs
+    from .core import Command, _GroupDecoratorKwargs
 
-    class _CogKwargs(TypedDict, total=False):
+    class _CogKwargs(TypedDict, total=False, extra_items=Any):
         name: str
         group_name: Union[str, app_commands.locale_str]
         description: str
@@ -67,7 +66,7 @@ if TYPE_CHECKING:
         group_nsfw: bool
         group_auto_locale_strings: bool
         group_extras: Dict[Any, Any]
-        command_attrs: _CommandDecoratorKwargs
+        command_attrs: _GroupDecoratorKwargs
 
 
 __all__ = (
