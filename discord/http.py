@@ -688,7 +688,9 @@ class HTTPClient:
 
                         # Global rate limit 429 wont have ratelimit headers (also can't tell if it's one-shot)
                         elif response.headers.get('X-RateLimit-Global'):
-                            self.global_reset_at = self.loop.time() + float(response.headers['Retry-After'])
+                            retry_after: float = float(response.headers['Retry-After'])
+                            _log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
+                            self.global_reset_at = self.loop.time() + retry_after
 
                         # Endpoint does not have ratelimit headers; it's one-shot.
                         else:
