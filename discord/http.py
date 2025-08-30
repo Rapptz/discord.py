@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 import sys
 from typing import (
     Any,
@@ -46,7 +47,6 @@ from typing import (
     Union,
 )
 from urllib.parse import quote as _uriquote
-from collections import deque
 import datetime
 
 import aiohttp
@@ -347,7 +347,9 @@ class Ratelimit:
     """Represents a Discord rate limit.
 
     This is similar to a semaphore except tailored to Discord's rate limits. This is aware of
-    the expiry of a token window, along with the number of tokens available.
+    the expiry of a token window, along with the number of tokens available. The goal of this
+    design is to increase throughput of requests being sent concurrently by forcing everything
+    into a single lock queue per route.
     """
 
     __slots__ = (
@@ -391,7 +393,7 @@ class Ratelimit:
         self.remaining = self.limit - self.outgoing
         self.reset_at = 0.0
 
-    def update(self, response: aiohttp.ClientResponse) -> None:
+    def update(self, response: aiohttp.ClientResponse) -> bool:
 
         # Shared scope 429 has longer "reset_at", determined using the retry-after field
         limit = int(response.headers['X-Ratelimit-Limit'])
@@ -495,8 +497,8 @@ class Ratelimit:
             # Ensure only 1 request goes through the inner acquire logic at a time
             self.pending += 1
             async with self._lock:
-                await self._wait_global(start_time)
                 await self._wait()
+                await self._wait_global(start_time)
                 self.remaining -= 1 # one shot changing this doesn't matter
                 self.pending -= 1
                 self.outgoing += 1
@@ -693,7 +695,7 @@ class HTTPClient:
                             self.global_reset_at = self.loop.time() + retry_after
 
                         # Endpoint does not have ratelimit headers; it's one-shot.
-                        else:
+                        elif not ratelimit.one_shot:
                             ratelimit.no_headers()
 
                         # Errors have text involved in them so this is safe to call
@@ -749,10 +751,10 @@ class HTTPClient:
                 except OSError as e:
                     if tries == 4 or e.errno not in (54, 10054):
                         raise ValueError("Connection reset by peer")
-                    retry_after: int = 1 + tries * 2
-                    fmt = 'OS error for %s %s. Retrying in %.2f seconds.'
-                    _log.warning(fmt, method, url, retry_after)
-                    await asyncio.sleep(retry_after)
+                    retry_seconds: int = 1 + tries * 2
+                    fmt = 'OS error for %s %s. Retrying in %d seconds.'
+                    _log.warning(fmt, method, url, retry_seconds)
+                    await asyncio.sleep(retry_seconds)
 
         # We've run out of retries, raise
         if response is not None:
