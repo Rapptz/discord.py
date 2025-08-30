@@ -412,7 +412,7 @@ class Ratelimit:
 
         # 1. Completely ignore if the ratelimit window has expired; that data is useless
         if self.http.loop.time() >= reset_at:
-            return
+            return False
         
         # 2. Always use the longest reset_at value
         update = False
