@@ -343,6 +343,7 @@ class Route:
             str(k) for k in (self.channel_id, self.guild_id, self.webhook_id, self.webhook_token) if k is not None
         )
 
+
 class Ratelimit:
     """Represents a Discord rate limit.
 
@@ -380,9 +381,7 @@ class Ratelimit:
         self._event: asyncio.Event = asyncio.Event()
 
     def __repr__(self) -> str:
-        return (
-            f'<RateLimitBucket limit={self.limit} remaining={self.remaining} pending={self.pending}>'
-        )
+        return f'<RateLimitBucket limit={self.limit} remaining={self.remaining} pending={self.pending}>'
 
     def no_headers(self) -> None:
         self.one_shot = True
@@ -394,18 +393,16 @@ class Ratelimit:
         self.reset_at = 0.0
 
     def update(self, response: aiohttp.ClientResponse) -> bool:
-
         # Shared scope 429 has longer "reset_at", determined using the retry-after field
         limit = int(response.headers['X-Ratelimit-Limit'])
         if response.headers.get('X-RateLimit-Scope') == 'shared':
             reset_at = self.http.loop.time() + float(response.headers['Retry-After'])
             remaining = 0
         else:
-            
             # Consider a lower remaining value because updates can be out of order, so self.outgoing is used
             reset_at = self.http.loop.time() + (float(response.headers['X-Ratelimit-Reset']) - time.time())
             remaining = min(int(response.headers['X-Ratelimit-Remaining']), limit - self.outgoing)
-        
+
         # The checks below combats out-of-order responses and alternating sub ratelimits.
         # As a result, there will be lower throughput for routes with subratelimits.
         # Unless we document and maintain the undocumented and unstable subratelimits ourselves.
@@ -413,18 +410,18 @@ class Ratelimit:
         # 1. Completely ignore if the ratelimit window has expired; that data is useless
         if self.http.loop.time() >= reset_at:
             return False
-        
+
         # 2. Always use the longest reset_at value
         update = False
         if reset_at > self.reset_at:
             self.reset_at = reset_at
             update = True
-        
+
         # 3. Always use the lowest remaining value
         if remaining < self.remaining:
             self.remaining = remaining
             update = True
- 
+
         self.limit = limit
         self.one_shot = False
 
@@ -433,10 +430,9 @@ class Ratelimit:
 
     def is_inactive(self) -> bool:
         delta = self.http.loop.time() - self._last_request
-        return delta >= 300 and (self.one_shot or (self.outgoing == 0 and self.pending == 0)) 
+        return delta >= 300 and (self.one_shot or (self.outgoing == 0 and self.pending == 0))
 
     async def _wait_global(self, start_time: float):
-
         # Sleep up to 3 times, to account for global reset at overwriting during sleeps
         for i in range(3):
             seconds = self.http.global_reset_at - start_time
@@ -445,13 +441,11 @@ class Ratelimit:
                 continue
             break
         else:
-            raise ValueError("Global reset at changed more than 3 times")
+            raise ValueError('Global reset at changed more than 3 times')
 
     async def _wait(self):
-
         # Consider waiting if none is remaining
         if not self.remaining:
-
             # If reset_at is not set yet, wait for the last request, if outgoing, to finish first
             # for up to 3 seconds instead of using aiohttp's default 5 min timeout.
             if not self.reset_at and (not self._last_request or self.http.loop.time() - self._last_request < 3):
@@ -464,9 +458,8 @@ class Ratelimit:
 
             # If none are still remaining then start sleeping
             if not self.remaining and not self.one_shot:
-                
                 # Sleep up to 3 times, giving room for a bucket update and a bucket change
-                # or 2 sub-ratelimit bucket changes, prioritizing is handled in update() 
+                # or 2 sub-ratelimit bucket changes, prioritizing is handled in update()
                 for i in range(3):
                     seconds = self.reset_at - self.http.loop.time()
                     copy = self.reset_at
@@ -480,26 +473,25 @@ class Ratelimit:
                     if copy == self.reset_at:
                         self.reset()
                     elif not self.remaining and not self.one_shot:
-                        continue # sleep again
+                        continue  # sleep again
                     break
                 else:
-                    raise ValueError("Reset at changed more than 3 times")
+                    raise ValueError('Reset at changed more than 3 times')
 
     async def acquire(self):
         start_time: float = self.http.loop.time()
-        
+
         # Resources confirmed to be "one shots" after the first request like interaction response
         # don't have ratelimits and can skip the entire queue logic except global wait
         if self.one_shot:
             await self._wait_global(start_time)
         else:
-
             # Ensure only 1 request goes through the inner acquire logic at a time
             self.pending += 1
             async with self._lock:
                 await self._wait()
                 await self._wait_global(start_time)
-                self.remaining -= 1 # one shot changing this doesn't matter
+                self.remaining -= 1  # one shot changing this doesn't matter
                 self.pending -= 1
                 self.outgoing += 1
 
@@ -670,10 +662,8 @@ class HTTPClient:
                         # Endpoint has ratelimit headers
                         new_bucket_hash = response.headers.get('X-Ratelimit-Bucket')
                         if new_bucket_hash:
-
                             # Ratelimit headers are up to date and relevant
                             if ratelimit.update(response):
-
                                 # Adjust key if the bucket has changed. Either encountered a sub-ratelimit
                                 # or Discord just wants to change ratelimit values for an update probably.
                                 if new_bucket_hash != bucket_hash:
@@ -708,7 +698,7 @@ class HTTPClient:
 
                         # We are being ratelimited
                         elif response.status == 429:
-                            retry_after: float = float(response.headers['Retry-After']) # only in headers for cf ban
+                            retry_after: float = float(response.headers['Retry-After'])  # only in headers for cf ban
 
                             # Hit Cloudflare ban for too many invalid requests (10,000 per 10 minutes)
                             # An invalid HTTP request is 401, 403, or 429 (excluding "shared" scope).
@@ -731,7 +721,7 @@ class HTTPClient:
 
                             fmt = 'We are being rate limited. %s %s responded with 429. Retrying in %.2f seconds.'
                             _log.warning(fmt, method, url, retry_after)
-                        
+
                         # We've received a 500, 502, 504, or 524, unconditional retry
                         elif response.status in {500, 502, 504, 524}:
                             await asyncio.sleep(1 + tries * 2)
@@ -750,7 +740,7 @@ class HTTPClient:
                 # This is handling exceptions from the request
                 except OSError as e:
                     if tries == 4 or e.errno not in (54, 10054):
-                        raise ValueError("Connection reset by peer")
+                        raise ValueError('Connection reset by peer')
                     retry_seconds: int = 1 + tries * 2
                     fmt = 'OS error for %s %s. Retrying in %d seconds.'
                     _log.warning(fmt, method, url, retry_seconds)
