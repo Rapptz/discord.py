@@ -1359,7 +1359,7 @@ class LabelComponent(Component):
         'id',
     )
 
-    __repr_info__ = ('label', 'description', 'component', 'id,')
+    __repr_info__ = ('label', 'description', 'component')
 
     def __init__(self, data: LabelComponentPayload, state: Optional[ConnectionState]) -> None:
         self.component: Component = _component_factory(data['component'], state)  # type: ignore
