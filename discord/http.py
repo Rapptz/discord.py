@@ -392,11 +392,11 @@ class Ratelimit:
         self.remaining = self.limit - self.outgoing
         self.reset_at = 0.0
 
-    def update(self, response: aiohttp.ClientResponse) -> bool:
+    def update(self, response: aiohttp.ClientResponse, data:  Union[Dict[str, Any], str]) -> bool:
         # Shared scope 429 has longer "reset_at", determined using the retry-after field
         limit = int(response.headers['X-Ratelimit-Limit'])
         if response.headers.get('X-RateLimit-Scope') == 'shared':
-            reset_at = self.http.loop.time() + float(response.headers['Retry-After'])
+            reset_at = self.http.loop.time() + data['retry_after']
             remaining = 0
         else:
             # Consider a lower remaining value because updates can be out of order, so self.outgoing is used
@@ -657,11 +657,14 @@ class HTTPClient:
                     async with self.__session.request(method, url, **kwargs) as response:
                         _log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), response.status)
 
+                        # Errors have text involved in them so this is safe to call
+                        data = await json_or_text(response)
+
                         # Endpoint has ratelimit headers
                         new_bucket_hash = response.headers.get('X-Ratelimit-Bucket')
                         if new_bucket_hash:
                             # Ratelimit headers are up to date and relevant
-                            if ratelimit.update(response):
+                            if ratelimit.update(response, data):
                                 # Adjust key if the bucket has changed. Either encountered a sub-ratelimit
                                 # or Discord just wants to change ratelimit values for an update probably.
                                 if new_bucket_hash != bucket_hash:
@@ -678,16 +681,13 @@ class HTTPClient:
 
                         # Global rate limit 429 wont have ratelimit headers (also can't tell if it's one-shot)
                         elif response.headers.get('X-RateLimit-Global'):
-                            retry_after: float = float(response.headers['Retry-After'])
+                            retry_after: float = data['retry_after']
                             _log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self.global_reset_at = self.loop.time() + retry_after
 
                         # Endpoint does not have ratelimit headers; it's one-shot.
                         elif not ratelimit.one_shot:
                             ratelimit.no_headers()
-
-                        # Errors have text involved in them so this is safe to call
-                        data = await json_or_text(response)
 
                         # The request was successful so just return the text/json
                         if 300 > response.status >= 200:
