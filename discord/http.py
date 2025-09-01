@@ -441,7 +441,7 @@ class Ratelimit:
                 continue
             break
         else:
-            raise ValueError('Global reset at changed more than 3 times')
+            raise RuntimeError('Global reset at changed more than 3 times')
 
     async def _wait(self):
         # Consider waiting if none is remaining
@@ -476,7 +476,7 @@ class Ratelimit:
                         continue  # sleep again
                     break
                 else:
-                    raise ValueError('Reset at changed more than 3 times')
+                    raise RuntimeError('Reset at changed more than 3 times')
 
     async def acquire(self):
         start_time: float = self.http.loop.time()
