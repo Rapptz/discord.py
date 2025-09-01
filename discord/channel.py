@@ -2486,7 +2486,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         # This takes advantage of the fact that dicts are ordered since Python 3.7
-        tags = [ForumTag.from_data(state=self._state, data=tag) for tag in data.get('available_tags', [])]
+        tags = [ForumTag.from_data(state=self._state, data=tag) for tag in data.get('available_tags', []) or []]
         self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
         self.default_layout: ForumLayoutType = try_enum(ForumLayoutType, data.get('default_forum_layout', 0))
         self._available_tags: Dict[int, ForumTag] = {tag.id: tag for tag in tags}
