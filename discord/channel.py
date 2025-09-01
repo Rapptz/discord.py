@@ -2330,7 +2330,7 @@ class ForumTag(Hashable):
     def from_data(cls, *, state: ConnectionState, data: ForumTagPayload) -> Self:
         self = cls.__new__(cls)
         self.name = data['name']
-        self.id = int(data['id'])
+        self.id = int(data.get('id', 0))
         self.moderated = data.get('moderated', False)
 
         emoji_name = data['emoji_name'] or ''
