@@ -721,7 +721,7 @@ class HTTPClient:
                             _log.warning(fmt, method, url, retry_after)
 
                         # We've received a 500, 502, 504, or 524, unconditional retry
-                        elif response.status in {500, 502, 504, 524}:
+                        elif response.status in {500, 502, 504, 524} and tries < 4:
                             await asyncio.sleep(1 + tries * 2)
                             continue
 
