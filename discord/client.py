@@ -137,7 +137,6 @@ if TYPE_CHECKING:
         allowed_mentions: AllowedMentions
         heartbeat_timeout: float
         guild_ready_timeout: float
-        assume_unsync_clock: bool
         enable_debug_events: bool
         enable_raw_presences: bool
         http_trace: aiohttp.TraceConfig
@@ -243,14 +242,6 @@ class Client:
         The maximum number of seconds to wait for the GUILD_CREATE stream to end before
         preparing the member cache and firing READY. The default timeout is 2 seconds.
 
-        .. versionadded:: 1.4
-    assume_unsync_clock: :class:`bool`
-        Whether to assume the system clock is unsynced. This applies to the ratelimit handling
-        code. If this is set to ``True``, the default, then the library uses the time to reset
-        a rate limit bucket given by Discord. If this is ``False`` then your system clock is
-        used to calculate how long to sleep for. If this is set to ``False`` it is recommended to
-        sync your system clock to Google's NTP server.
-
         .. versionadded:: 1.3
     enable_debug_events: :class:`bool`
         Whether to enable events that are useful only for debugging gateway related information.
@@ -306,7 +297,6 @@ class Client:
         connector: Optional[aiohttp.BaseConnector] = options.get('connector', None)
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
-        unsync_clock: bool = options.pop('assume_unsync_clock', True)
         http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
         max_ratelimit_timeout: Optional[float] = options.pop('max_ratelimit_timeout', None)
         self.http: HTTPClient = HTTPClient(
@@ -314,7 +304,6 @@ class Client:
             connector,
             proxy=proxy,
             proxy_auth=proxy_auth,
-            unsync_clock=unsync_clock,
             http_trace=http_trace,
             max_ratelimit_timeout=max_ratelimit_timeout,
         )
