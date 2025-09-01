@@ -743,11 +743,14 @@ class HTTPClient:
                         continue
                     raise
 
-        # We've run out of retries, raise
         if response is not None:
+            # We've run out of retries, raise.
+            if response.status >= 500:
+                raise DiscordServerError(response, data)
+
             raise HTTPException(response, data)
-        else:
-            raise RuntimeError('Unreachable code in HTTP handling')
+
+        raise RuntimeError('Unreachable code in HTTP handling')
 
     async def get_from_cdn(self, url: str) -> bytes:
         kwargs = {}
