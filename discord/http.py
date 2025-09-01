@@ -737,12 +737,11 @@ class HTTPClient:
 
                 # This is handling exceptions from the request
                 except OSError as e:
-                    if tries == 4 or e.errno not in (54, 10054):
-                        raise ValueError('Connection reset by peer')
-                    retry_seconds: int = 1 + tries * 2
-                    fmt = 'OS error for %s %s. Retrying in %d seconds.'
-                    _log.warning(fmt, method, url, retry_seconds)
-                    await asyncio.sleep(retry_seconds)
+                    # Connection reset by peer
+                    if tries < 4 and e.errno in (54, 10054):
+                        await asyncio.sleep(1 + tries * 2)
+                        continue
+                    raise
 
         # We've run out of retries, raise
         if response is not None:
