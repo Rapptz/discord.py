@@ -673,7 +673,7 @@ class HTTPClient:
                                         fmt = '%s has found its initial rate limit bucket hash (%s).'
                                         _log.debug(fmt, route_key, new_bucket_hash)
                                     self._bucket_hashes[route_key] = new_bucket_hash
-                                    ratelimit.key = new_bucket_hash + route.major_parameters
+                                    ratelimit.key = f'{new_bucket_hash}:{route.major_parameters}'
                                     self._buckets[ratelimit.key] = ratelimit
 
                         # Global rate limit 429 wont have ratelimit headers (also can't tell if it's one-shot)
