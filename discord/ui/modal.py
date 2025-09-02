@@ -72,7 +72,7 @@ class Modal(BaseView):
         class Questionnaire(ui.Modal, title='Questionnaire Response'):
             name = ui.Label(text='Name', component=ui.TextInput())
             answer = ui.Label(text='Answer', component=ui.TextInput(style=discord.TextStyle.paragraph))
-        
+
             async def on_submit(self, interaction: discord.Interaction):
                 await interaction.response.send_message(f'Thanks for your response, {self.name.component.value}!', ephemeral=True)
 
