@@ -396,7 +396,7 @@ class Ratelimit:
         # Shared scope 429 has longer "reset_at", determined using the retry-after field
         limit = int(response.headers['X-Ratelimit-Limit'])
         if response.headers.get('X-RateLimit-Scope') == 'shared':
-            reset_at = self.http.loop.time() + data['retry_after'] # type: ignore
+            reset_at = self.http.loop.time() + data['retry_after']  # type: ignore
             remaining = 0
         else:
             # Consider a lower remaining value because updates can be out of order, so self.outgoing is used
@@ -681,7 +681,7 @@ class HTTPClient:
 
                         # Global rate limit 429 wont have ratelimit headers (also can't tell if it's one-shot)
                         elif response.headers.get('X-RateLimit-Global'):
-                            retry_after: float = data['retry_after'] # type: ignore
+                            retry_after: float = data['retry_after']  # type: ignore
                             _log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self.global_reset_at = self.loop.time() + retry_after
 
