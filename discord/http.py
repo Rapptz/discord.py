@@ -502,8 +502,8 @@ class Ratelimit:
     async def release(self):
         if not self.one_shot:
             self.outgoing -= 1
-            self._event.set()
-            self._event.clear()
+            if self._future and not self._future.done():
+                self._future.set_result(None)
 
     async def __aenter__(self) -> Self:
         await self.acquire()
