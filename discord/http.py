@@ -453,7 +453,7 @@ class Ratelimit:
             # for up to 3 seconds instead of using aiohttp's default 5 min timeout.
             if not self.reset_at and (not self._last_request or self.http.loop.time() - self._last_request < 3):
                 try:
-                    self._future = asyncio.Future()
+                    self._future = self.http.loop.create_future()
                     await asyncio.wait_for(self._future, 3)
                 except asyncio.TimeoutError:
                     fmt = 'Initial request for rate limit bucket (%s) never finished. Skipping.'
