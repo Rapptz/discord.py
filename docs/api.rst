@@ -874,6 +874,7 @@ Members
     - avatar
     - username
     - discriminator
+    - primary guild
 
     This requires :attr:`Intents.members` to be enabled.
 
