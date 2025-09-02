@@ -458,7 +458,7 @@ class Ratelimit:
                 except asyncio.TimeoutError:
                     fmt = 'Initial request for rate limit bucket (%s) never finished. Skipping.'
                     _log.warning(fmt, self.key)
-                    self._future.cancel() # type: ignore
+                    self._future.cancel()  # type: ignore
 
             # If none are still remaining then start sleeping
             if not self.remaining and not self.one_shot:
