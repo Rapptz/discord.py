@@ -364,7 +364,7 @@ class Ratelimit:
         'http',
         '_last_request',
         '_lock',
-        '_event',
+        '_future',
     )
 
     def __init__(self, http: HTTPClient, key: str) -> None:
@@ -378,15 +378,15 @@ class Ratelimit:
         self.http: HTTPClient = http
         self._last_request: float = 0.0
         self._lock: asyncio.Lock = asyncio.Lock()
-        self._event: asyncio.Event = asyncio.Event()
+        self._future: Optional[asyncio.Future] = None
 
     def __repr__(self) -> str:
         return f'<RateLimitBucket limit={self.limit} remaining={self.remaining} pending={self.pending}>'
 
     def no_headers(self) -> None:
         self.one_shot = True
-        self._event.set()
-        self._event.clear()
+        if self._future and not self._future.done():
+            self._future.set_result(None)
 
     def reset(self) -> None:
         self.remaining = self.limit - self.outgoing
@@ -450,11 +450,12 @@ class Ratelimit:
             # for up to 3 seconds instead of using aiohttp's default 5 min timeout.
             if not self.reset_at and (not self._last_request or self.http.loop.time() - self._last_request < 3):
                 try:
-                    await asyncio.wait_for(self._event.wait(), 3)
+                    self._future = asyncio.Future()
+                    await asyncio.wait_for(self._future, 3)
                 except asyncio.TimeoutError:
                     fmt = 'Initial request for rate limit bucket (%s) never finished. Skipping.'
                     _log.warning(fmt, self.key)
-                    pass
+                    self._future.cancel()
 
             # If none are still remaining then start sleeping
             if not self.remaining and not self.one_shot:
@@ -792,8 +793,6 @@ class HTTPClient:
             trace_configs=None if self.http_trace is None else [self.http_trace],
             cookie_jar=aiohttp.DummyCookieJar(),
         )
-        self._global_over = asyncio.Event()
-        self._global_over.set()
 
         old_token = self.token
         self.token = token
