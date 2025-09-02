@@ -385,8 +385,7 @@ class Ratelimit:
 
     def no_headers(self) -> None:
         self.one_shot = True
-        if self._future and not self._future.done():
-            self._future.set_result(None)
+        self._wake()
 
     def reset(self) -> None:
         self.remaining = self.limit - self.outgoing
@@ -431,6 +430,10 @@ class Ratelimit:
     def is_inactive(self) -> bool:
         delta = self.http.loop.time() - self._last_request
         return delta >= 300 and (self.one_shot or (self.outgoing == 0 and self.pending == 0))
+
+    def _wake(self) -> None:
+        if self._future and not self._future.done():
+            self._future.set_result(None)
 
     async def _wait_global(self, start_time: float):
         # Sleep up to 3 times, to account for global reset at overwriting during sleeps
@@ -502,8 +505,7 @@ class Ratelimit:
     async def release(self):
         if not self.one_shot:
             self.outgoing -= 1
-            if self._future and not self._future.done():
-                self._future.set_result(None)
+            self._wake()
 
     async def __aenter__(self) -> Self:
         await self.acquire()
