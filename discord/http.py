@@ -378,7 +378,7 @@ class Ratelimit:
         self.http: HTTPClient = http
         self._last_request: float = 0.0
         self._lock: asyncio.Lock = asyncio.Lock()
-        self._future: Optional[asyncio.Future] = None
+        self._future: Optional[asyncio.Future[None]] = None
 
     def __repr__(self) -> str:
         return f'<RateLimitBucket limit={self.limit} remaining={self.remaining} pending={self.pending}>'
