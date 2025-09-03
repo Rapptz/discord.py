@@ -449,10 +449,10 @@ class Ratelimit:
 
     async def _wait(self):
         # Consider waiting if none is remaining
-        if not self.remaining:
+        if self.remaining == 0:
             # If reset_at is not set yet, wait for the last request, if outgoing, to finish first
             # for up to 3 seconds instead of using aiohttp's default 5 min timeout.
-            if not self.reset_at and (not self._last_request or self.http.loop.time() - self._last_request < 3):
+            if self.reset_at == 0.0 and (self._last_request == 0.0 or self.http.loop.time() - self._last_request < 3):
                 try:
                     self._future = self.http.loop.create_future()
                     await asyncio.wait_for(self._future, 3)
@@ -462,7 +462,7 @@ class Ratelimit:
                     self._future.cancel()  # type: ignore
 
             # If none are still remaining then start sleeping
-            if not self.remaining and not self.one_shot:
+            if self.remaining == 0 and not self.one_shot:
                 # Sleep up to 3 times, giving room for a bucket update and a bucket change
                 # or 2 sub-ratelimit bucket changes, prioritizing is handled in update()
                 for i in range(3):
@@ -477,7 +477,7 @@ class Ratelimit:
                         await asyncio.sleep(seconds)
                     if copy == self.reset_at:
                         self.reset()
-                    elif not self.remaining and not self.one_shot:
+                    elif self.remaining == 0 and not self.one_shot:
                         continue  # sleep again
                     break
                 else:
