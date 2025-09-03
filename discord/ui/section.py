@@ -137,8 +137,7 @@ class Section(Item[V]):
             An item in this section.
         """
 
-        for child in self.children:
-            yield child
+        yield from self.children
         yield self.accessory
 
     def _update_view(self, view) -> None:

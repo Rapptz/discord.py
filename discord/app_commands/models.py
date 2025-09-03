@@ -1164,7 +1164,7 @@ class AppCommandGroup:
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
         self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
 
-    def to_dict(self) -> 'ApplicationCommandOption':
+    def to_dict(self) -> ApplicationCommandOption:
         return {
             'name': self.name,
             'type': self.type.value,

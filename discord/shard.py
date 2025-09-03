@@ -80,9 +80,9 @@ class EventType:
 class EventItem:
     __slots__ = ('type', 'shard', 'error')
 
-    def __init__(self, etype: int, shard: Optional['Shard'], error: Optional[Exception]) -> None:
+    def __init__(self, etype: int, shard: Optional[Shard], error: Optional[Exception]) -> None:
         self.type: int = etype
-        self.shard: Optional['Shard'] = shard
+        self.shard: Optional[Shard] = shard
         self.error: Optional[Exception] = error
 
     def __lt__(self, other: object) -> bool:
