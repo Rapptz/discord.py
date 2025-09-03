@@ -453,13 +453,13 @@ class Ratelimit:
             # If reset_at is not set yet, wait for the last request, if outgoing, to finish first
             # for up to 3 seconds instead of using aiohttp's default 5 min timeout.
             if self.reset_at == 0.0 and (self._last_request == 0.0 or self.http.loop.time() - self._last_request < 3):
+                self._future = future = self.http.loop.create_future()
                 try:
-                    self._future = self.http.loop.create_future()
-                    await asyncio.wait_for(self._future, 3)
+                    await asyncio.wait_for(future, 3)
                 except asyncio.TimeoutError:
                     fmt = 'Initial request for rate limit bucket (%s) never finished. Skipping.'
                     _log.warning(fmt, self.key)
-                    self._future.cancel()  # type: ignore
+                    future.cancel()
 
             # If none are still remaining then start sleeping
             if self.remaining == 0 and not self.one_shot:
