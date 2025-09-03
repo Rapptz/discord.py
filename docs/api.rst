@@ -874,6 +874,7 @@ Members
     - avatar
     - username
     - discriminator
+    - primary guild
 
     This requires :attr:`Intents.members` to be enabled.
 
@@ -1923,6 +1924,14 @@ of :class:`enum.Enum`.
     .. attribute:: poll_result
 
         The system message sent when a poll has closed.
+
+        .. versionadded:: 2.5
+
+    .. attribute:: emoji_added
+
+        The system message sent when a custom emoji is added to the guild.
+
+        .. versionadded:: 2.7
 
 .. class:: UserFlags
 
@@ -3063,10 +3072,11 @@ of :class:`enum.Enum`.
         a :class:`Member` with the ID of the person who triggered the automod rule.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
-        set to an unspecified proxy object with 2 attributes:
+        set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
         - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``channel``: The channel of the message sent by the member when they were flagged. `None` if the member was quarantined when they just joined the guild.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
