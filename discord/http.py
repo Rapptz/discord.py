@@ -394,7 +394,7 @@ class Ratelimit:
     def update(self, response: aiohttp.ClientResponse, data: Union[Dict[str, Any], str]) -> bool:
         limit = int(response.headers['X-Ratelimit-Limit'])
         reset_at = self.http.loop.time() + (float(response.headers['X-Ratelimit-Reset']) - time.time())
-        
+
         # Shared scope (which only appears on 429s) could have a longer "reset_at".
         if response.headers.get('X-RateLimit-Scope') == 'shared':
             reset_at = max(reset_at, self.http.loop.time() + data['retry_after'])  # type: ignore
