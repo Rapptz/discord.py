@@ -391,11 +391,11 @@ class Ratelimit:
         self.remaining = self.limit - self.outgoing
         self.reset_at = 0.0
 
-    def update(self, response: aiohttp.ClientResponse, data: Union[Dict[str, Any], str]) -> bool:
+    def update(self, response: aiohttp.ClientResponse, data: Dict[str, Any]) -> bool:
         # Shared scope 429 has longer "reset_at", determined using the retry-after field
         limit = int(response.headers['X-Ratelimit-Limit'])
         if response.headers.get('X-RateLimit-Scope') == 'shared':
-            reset_at = self.http.loop.time() + data['retry_after']  # type: ignore
+            reset_at = self.http.loop.time() + data['retry_after']
             remaining = 0
         else:
             # Consider a lower remaining value because updates can be out of order, so self.outgoing is used
