@@ -1925,6 +1925,14 @@ of :class:`enum.Enum`.
 
         The system message sent when a poll has closed.
 
+        .. versionadded:: 2.5
+
+    .. attribute:: emoji_added
+
+        The system message sent when a custom emoji is added to the guild.
+
+        .. versionadded:: 2.7
+
 .. class:: UserFlags
 
     Represents Discord User flags.
