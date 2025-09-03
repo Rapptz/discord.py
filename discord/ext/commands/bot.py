@@ -89,8 +89,8 @@ if TYPE_CHECKING:
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
     class _BotOptions(_ClientOptions, total=False):
-        owner_id: int
-        owner_ids: Collection[int]
+        owner_id: Optional[int]
+        owner_ids: Optional[Collection[int]]
         strip_after_prefix: bool
         case_insensitive: bool
 

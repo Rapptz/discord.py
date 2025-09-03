@@ -124,25 +124,25 @@ if TYPE_CHECKING:
     from .flags import MemberCacheFlags
 
     class _ClientOptions(TypedDict, total=False):
-        max_messages: int
-        proxy: str
-        proxy_auth: aiohttp.BasicAuth
-        shard_id: int
-        shard_count: int
+        max_messages: Optional[int]
+        proxy: Optional[str]
+        proxy_auth: Optional[aiohttp.BasicAuth]
+        shard_id: Optional[int]
+        shard_count: Optional[int]
         application_id: int
         member_cache_flags: MemberCacheFlags
         chunk_guilds_at_startup: bool
-        status: Status
-        activity: BaseActivity
-        allowed_mentions: AllowedMentions
+        status: Optional[Status]
+        activity: Optional[BaseActivity]
+        allowed_mentions: Optional[AllowedMentions]
         heartbeat_timeout: float
         guild_ready_timeout: float
         assume_unsync_clock: bool
         enable_debug_events: bool
         enable_raw_presences: bool
         http_trace: aiohttp.TraceConfig
-        max_ratelimit_timeout: float
-        connector: aiohttp.BaseConnector
+        max_ratelimit_timeout: Optional[float]
+        connector: Optional[aiohttp.BaseConnector]
 
 
 # fmt: off
