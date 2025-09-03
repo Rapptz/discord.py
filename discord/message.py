@@ -2843,14 +2843,14 @@ class Message(PartialMessage, Hashable):
             if call_ended:
                 duration = utils._format_call_duration(self.call.duration)  # type: ignore # call can't be None here
                 if missed:
-                    return 'You missed a call from {0.author.name} that lasted {1}.'.format(self, duration)
+                    return f'You missed a call from {self.author.name} that lasted {duration}.'
                 else:
-                    return '{0.author.name} started a call that lasted {1}.'.format(self, duration)
+                    return f'{self.author.name} started a call that lasted {duration}.'
             else:
                 if missed:
-                    return '{0.author.name} started a call. \N{EM DASH} Join the call'.format(self)
+                    return f'{self.author.name} started a call. \N{EM DASH} Join the call'
                 else:
-                    return '{0.author.name} started a call.'.format(self)
+                    return f'{self.author.name} started a call.'
 
         if self.type is MessageType.purchase_notification and self.purchase_notification is not None:
             guild_product_purchase = self.purchase_notification.guild_product_purchase
