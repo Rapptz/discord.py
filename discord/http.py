@@ -433,7 +433,7 @@ class Ratelimit:
         return delta >= 300 and (self.one_shot or (self.outgoing == 0 and self.pending == 0))
 
     def _wake(self) -> None:
-        if self._future and not self._future.done():
+        if self._future is not None and not self._future.done():
             self._future.set_result(None)
 
     async def _wait_global(self, start_time: float):
