@@ -286,6 +286,10 @@ class VoiceClient(VoiceProtocol):
 
     @property
     def voice_privacy_code(self) -> Optional[str]:
+        """:class:`float`: The voice privacy code of the current voice session.
+
+        This can be None if there is no active DAVE session happening.
+        """
         return self._connection.dave_session.voice_privacy_code if self._connection.dave_session else None
 
     def checked_add(self, attr: str, value: int, limit: int) -> None:
