@@ -38,7 +38,7 @@ dependencies = { file = "requirements.txt" }
 [project.optional-dependencies]
 voice = [
     "PyNaCl>=1.5.0,<1.6",
-    "davey"
+    "davey==0.1.0"
 ]
 docs = [
     "sphinx==4.4.0",
