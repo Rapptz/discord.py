@@ -266,7 +266,7 @@ class VoiceConnectionState:
 
     @property
     def max_dave_protocol_version(self) -> int:
-        return davey.DAVE_PROTOCOL_VERSION
+        return davey.DAVE_PROTOCOL_VERSION if has_dave else 0
 
     @property
     def can_encrypt(self) -> bool:
@@ -274,6 +274,8 @@ class VoiceConnectionState:
 
     async def reinit_dave_session(self) -> None:
         if self.dave_protocol_version > 0:
+            if not has_dave:
+                raise RuntimeError('davey library needed in order to use E2EE voice')
             if self.dave_session:
                 self.dave_session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
             else:

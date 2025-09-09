@@ -992,7 +992,8 @@ class DiscordVoiceWebSocket:
             self._connection.mode = data['mode']
             await self.load_secret_key(data)
             self._connection.dave_protocol_version = data['dave_protocol_version']
-            await self._connection.reinit_dave_session()
+            if data['dave_protocol_version'] > 0:
+                await self._connection.reinit_dave_session()
         elif op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
