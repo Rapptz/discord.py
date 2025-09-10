@@ -218,7 +218,7 @@ class VoiceConnectionState:
         self.ws: DiscordVoiceWebSocket = MISSING
         self.dave_session: Optional[davey.DaveSession] = None
         self.dave_protocol_version: int = 0
-        self.dave_pending_transition: Optional[Dict[str, Any]] = None
+        self.dave_pending_transitions: Dict[int, int] = {}
         self.dave_downgraded: bool = False
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
@@ -301,33 +301,24 @@ class VoiceConnectionState:
 
     async def _execute_transition(self, transition_id: int) -> None:
         _log.debug('Executing transition id %d', transition_id)
-        if not self.dave_pending_transition:
+        if transition_id not in self.dave_pending_transitions:
             _log.warning("Received execute transition, but we don't have a pending transition for id %d", transition_id)
             return
 
-        if transition_id == self.dave_pending_transition['transition_id']:
-            old_version = self.dave_protocol_version
-            self.dave_protocol_version = self.dave_pending_transition['protocol_version']
+        old_version = self.dave_protocol_version
+        self.dave_protocol_version = self.dave_pending_transitions.pop(transition_id)
 
-            if old_version != self.dave_protocol_version and self.dave_protocol_version == 0:
-                self.dave_downgraded = True
-                _log.debug('DAVE Session downgraded')
-            elif transition_id > 0 and self.dave_downgraded:
-                self.dave_downgraded = False
-                if self.dave_session:
-                    self.dave_session.set_passthrough_mode(True, 10)
-                _log.debug('DAVE Session upgraded')
+        if old_version != self.dave_protocol_version and self.dave_protocol_version == 0:
+            self.dave_downgraded = True
+            _log.debug('DAVE Session downgraded')
+        elif transition_id > 0 and self.dave_downgraded:
+            self.dave_downgraded = False
+            if self.dave_session:
+                self.dave_session.set_passthrough_mode(True, 10)
+            _log.debug('DAVE Session upgraded')
 
-            # In the future, the session should be signaled too, but for now theres just v1
-            _log.debug('Transition id %d executed', transition_id)
-        else:
-            _log.debug(
-                'Received execute transition for an unexpected transition id %d when the expected transition id is %d',
-                transition_id,
-                self.dave_pending_transition['transition_id'],
-            )
-
-        self.dave_pending_transition = None
+        # In the future, the session should be signaled too, but for now theres just v1
+        _log.debug('Transition id %d executed', transition_id)
 
     async def voice_state_update(self, data: GuildVoiceStatePayload) -> None:
         channel_id = data['channel_id']

@@ -1006,7 +1006,7 @@ class DiscordVoiceWebSocket:
                     data['transition_id'],
                     data['protocol_version'],
                 )
-                state.dave_pending_transition = data
+                state.dave_pending_transitions[data['transition_id']] = data['protocol_version']
                 if data['transition_id'] == 0:
                     await state._execute_transition(data['transition_id'])
                 else:
@@ -1052,10 +1052,7 @@ class DiscordVoiceWebSocket:
                 try:
                     state.dave_session.process_commit(msg[5:])
                     if transition_id != 0:
-                        state.dave_pending_transition = {
-                            'transition_id': transition_id,
-                            'protocol_version': state.dave_protocol_version,
-                        }
+                        state.dave_pending_transitions[transition_id] = state.dave_protocol_version
                         await self.send_transition_ready(transition_id)
                     _log.debug('MLS commit processed for transition id %d', transition_id)
                 except Exception:
@@ -1065,10 +1062,7 @@ class DiscordVoiceWebSocket:
                 try:
                     state.dave_session.process_welcome(msg[5:])
                     if transition_id != 0:
-                        state.dave_pending_transition = {
-                            'transition_id': transition_id,
-                            'protocol_version': state.dave_protocol_version,
-                        }
+                        state.dave_pending_transitions[transition_id] = state.dave_protocol_version
                         await self.send_transition_ready(transition_id)
                     _log.debug('MLS welcome processed for transition id %d', transition_id)
                 except Exception:
