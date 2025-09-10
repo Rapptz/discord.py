@@ -392,6 +392,8 @@ class Select(BaseSelect[V]):
     """Represents a UI select menu with a list of custom options. This is represented
     to the user as a dropdown menu.
 
+    This can only be used in :class:`ActionRow` or :class:`Label`.
+
     .. versionadded:: 2.0
 
     Parameters
