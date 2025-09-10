@@ -41,7 +41,10 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..interactions import Interaction
-    from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
+    from ..types.interactions import (
+        ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload,
+        ResolvedData as ResolvedDataPayload,
+    )
 
 
 # fmt: off
@@ -168,23 +171,67 @@ class Modal(BaseView):
         """
         _log.error('Ignoring exception in modal %r:', self, exc_info=error)
 
-    def _refresh(self, interaction: Interaction, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(
+        self,
+        interaction: Interaction,
+        components: Sequence[ModalSubmitComponentInteractionDataPayload],
+        resolved: Optional[ResolvedDataPayload],
+    ) -> None:
         for component in components:
             if component['type'] == 1:
-                self._refresh(interaction, component['components'])
+                self._refresh(interaction, component['components'], resolved)  # type: ignore
             elif component['type'] == 18:
-                self._refresh(interaction, [component['component']])
+                self._refresh(interaction, [component['component']], resolved)  # type: ignore
             else:
-                item = find(lambda i: getattr(i, 'custom_id', None) == component['custom_id'], self.walk_children())  # type: ignore
+                item = find(
+                    lambda i: getattr(i, 'custom_id', getattr(i, 'id', None))
+                    == component.get('custom_id', component.get('id', None)),
+                    self.walk_children(),
+                )
                 if item is None:
-                    _log.debug('Modal interaction referencing unknown item custom_id %s. Discarding', component['custom_id'])
+                    _log.debug(
+                        'Modal interaction referencing unknown item (custom_id, id): %s. Discarding',
+                        (component.get('custom_id'), component.get('id')),
+                    )
                     continue
+
+                # you may be wondering why we do this resolved stuff here
+                # well the resolved field is only sent once for all select menus,
+                # in the interaction payload, not per select menu like in messages
+                # so we have to manually add the correct resolved data to each
+                # select menu
+                component_type = component['type']
+                if component_type in (5, 6, 7, 8):
+                    resolved = resolved or {}
+                    selected_values = component.get('values', [])
+
+                    if component_type in (5, 6, 7):
+                        users = {k: v for k, v in resolved.get('users', {}).items() if k in selected_values}
+                        members = {k: v for k, v in resolved.get('members', {}).items() if k in selected_values}
+                        roles = {k: v for k, v in resolved.get('roles', {}).items() if k in selected_values}
+
+                        if component_type == 5:  # user select
+                            component['resolved'] = {'users': users, 'members': members}  # type: ignore
+                        elif component_type == 6:  # role select
+                            component['resolved'] = {'roles': roles}  # type: ignore
+                        elif component_type == 7:  # mentionable select
+                            component['resolved'] = {'users': users, 'members': members, 'roles': roles}  # type: ignore
+                    else:  # channel select
+                        component['resolved'] = {  # type: ignore
+                            'channels': {k: v for k, v in resolved.get('channels', {}).items() if k in selected_values}
+                        }
+
                 item._refresh_state(interaction, component)  # type: ignore
 
-    async def _scheduled_task(self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
+    async def _scheduled_task(
+        self,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: Optional[ResolvedDataPayload],
+    ):
         try:
             self._refresh_timeout()
-            self._refresh(interaction, components)
+            self._refresh(interaction, components, resolved)
 
             allow = await self.interaction_check(interaction)
             if not allow:
@@ -221,10 +268,13 @@ class Modal(BaseView):
         return components
 
     def _dispatch_submit(
-        self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]
+        self,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: Optional[ResolvedDataPayload],
     ) -> asyncio.Task[None]:
         return asyncio.create_task(
-            self._scheduled_task(interaction, components), name=f'discord-ui-modal-dispatch-{self.id}'
+            self._scheduled_task(interaction, components, resolved), name=f'discord-ui-modal-dispatch-{self.id}'
         )
 
     def to_dict(self) -> Dict[str, Any]:

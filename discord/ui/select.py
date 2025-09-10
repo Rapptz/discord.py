@@ -585,6 +585,10 @@ class UserSelect(BaseSelect[V]):
         Number of items must be in range of ``min_values`` and ``max_values``.
 
         .. versionadded:: 2.4
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.7
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -612,6 +616,7 @@ class UserSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
+        required: bool = False,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
     ) -> None:
@@ -622,6 +627,7 @@ class UserSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -687,6 +693,10 @@ class RoleSelect(BaseSelect[V]):
         Number of items must be in range of ``min_values`` and ``max_values``.
 
         .. versionadded:: 2.4
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -713,6 +723,7 @@ class RoleSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -724,6 +735,7 @@ class RoleSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -785,6 +797,10 @@ class MentionableSelect(BaseSelect[V]):
         Number of items must be in range of ``min_values`` and ``max_values``.
 
         .. versionadded:: 2.4
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -811,6 +827,7 @@ class MentionableSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -822,6 +839,7 @@ class MentionableSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -889,6 +907,10 @@ class ChannelSelect(BaseSelect[V]):
         Number of items must be in range of ``min_values`` and ``max_values``.
 
         .. versionadded:: 2.4
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -919,6 +941,7 @@ class ChannelSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -930,6 +953,7 @@ class ChannelSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             channel_types=channel_types,
             default_values=_handle_select_defaults(default_values, self.type),

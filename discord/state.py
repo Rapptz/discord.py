@@ -828,7 +828,8 @@ class ConnectionState(Generic[ClientT]):
             inner_data = data['data']
             custom_id = inner_data['custom_id']
             components = inner_data['components']
-            self._view_store.dispatch_modal(custom_id, interaction, components)
+            resolved = inner_data.get('resolved')
+            self._view_store.dispatch_modal(custom_id, interaction, components, resolved)
         self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data: gw.PresenceUpdateEvent) -> None:
