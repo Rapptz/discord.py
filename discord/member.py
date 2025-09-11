@@ -914,7 +914,7 @@ class Member(discord.abc.Messageable, _UserTag):
             The datetime object passed to ``timed_out_until`` was not timezone-aware.
         ValueError
             You tried to edit the bio, avatar or banner of a member that is not the bot's own member.
-            Or the wrong image format passed for ``avatar``.
+            Or the wrong image format passed for ``avatar`` or ``banner``.
 
         Returns
         --------
