@@ -590,7 +590,7 @@ class UserSelect(BaseSelect[V]):
     required: :class:`bool`
         Whether the select is required. Only applicable within modals.
 
-        .. versionadded:: 2.7
+        .. versionadded:: 2.6
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
