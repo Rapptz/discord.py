@@ -815,11 +815,21 @@ class Member(discord.abc.Messageable, _UserTag):
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         timed_out_until: Optional[datetime.datetime] = MISSING,
         bypass_verification: bool = MISSING,
+        avatar: Optional[bytes] = MISSING,
+        banner: Optional[bytes] = MISSING,
+        bio: Optional[str] = MISSING,
         reason: Optional[str] = None,
     ) -> Optional[Member]:
         """|coro|
 
         Edits the member's data.
+
+        .. note::
+
+            To upload an avatar or banner, a :term:`py:bytes-like object` must be passed in that
+            represents the image being uploaded. If this is done through a file
+            then the file must be opened via ``open('some_filename', 'rb')`` and
+            the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
         Depending on the parameter passed, this requires different permissions listed below:
 
@@ -876,6 +886,20 @@ class Member(discord.abc.Messageable, _UserTag):
             Indicates if the member should be allowed to bypass the guild verification requirements.
 
             .. versionadded:: 2.2
+        avatar: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the image to upload. Could be ``None`` to denote no avatar.
+            Only image formats supported for uploading are JPEG, PNG, GIF, and WEBP.
+            This can only be set when editing the bot's own member.
+            .. versionadded:: 2.7
+        banner: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the image to upload. Could be ``None`` to denote no banner.
+            Only image formats supported for uploading are JPEG, PNG, GIF and WEBP..
+            This can only be set when editing the bot's own member.
+            .. versionadded:: 2.7
+        bio: Optional[:class:`str`]
+            The new bio for the member. Use ``None`` to remove the bio.
+            This can only be set when editing the bot's own member.
+            .. versionadded:: 2.7
 
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
@@ -888,6 +912,9 @@ class Member(discord.abc.Messageable, _UserTag):
             The operation failed.
         TypeError
             The datetime object passed to ``timed_out_until`` was not timezone-aware.
+        ValueError
+            You tried to edit the bio, avatar or banner of a member that is not the bot's own member.
+            Or the wrong image format passed for ``avatar``.
 
         Returns
         --------
@@ -899,13 +926,32 @@ class Member(discord.abc.Messageable, _UserTag):
         guild_id = self.guild.id
         me = self._state.self_id == self.id
         payload: Dict[str, Any] = {}
+        bot_payload: Dict[str, Any] = {}
 
         if nick is not MISSING:
             nick = nick or ''
             if me:
-                await http.change_my_nickname(guild_id, nick, reason=reason)
+                bot_payload['nick'] = nick
             else:
                 payload['nick'] = nick
+
+        if avatar is not MISSING:
+            if avatar is None:
+                bot_payload['avatar'] = None
+            else:
+                bot_payload['avatar'] = utils._bytes_to_base64_data(avatar)
+
+        if banner is not MISSING:
+            if banner is None:
+                bot_payload['banner'] = None
+            else:
+                bot_payload['banner'] = utils._bytes_to_base64_data(banner)
+
+        if bio is not MISSING:
+            bot_payload['bio'] = bio or ''
+
+        if not me and bot_payload:
+            raise ValueError(f"Editing the bio, avatar or banner is only for the bot's own member.")
 
         if deafen is not MISSING:
             payload['deaf'] = deafen
@@ -954,7 +1000,12 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if payload:
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
-            return Member(data=data, guild=self.guild, state=self._state)
+        elif bot_payload:
+            data = await http.edit_my_member(guild_id, reason=reason, **bot_payload)
+        else:
+            return None
+
+        return Member(data=data, guild=self.guild, state=self._state)
 
     async def request_to_speak(self) -> None:
         """|coro|
