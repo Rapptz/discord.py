@@ -1043,7 +1043,7 @@ class DiscordVoiceWebSocket:
                 )
                 if isinstance(result, davey.CommitWelcome):
                     await self.send_binary(
-                        DiscordVoiceWebSocket.MLS_KEY_PACKAGE,
+                        DiscordVoiceWebSocket.MLS_COMMIT_WELCOME,
                         result.commit + result.welcome if result.welcome else result.commit,
                     )
                 _log.debug('MLS proposals processed')
