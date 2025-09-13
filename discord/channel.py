@@ -2879,6 +2879,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         applied_tags: Sequence[ForumTag] = ...,
         view: LayoutView,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
         reason: Optional[str] = ...,
     ) -> ThreadWithMessage: ...
 
@@ -2901,6 +2902,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         applied_tags: Sequence[ForumTag] = ...,
         view: View = ...,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
         reason: Optional[str] = ...,
     ) -> ThreadWithMessage: ...
 
@@ -2922,6 +2924,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         applied_tags: Sequence[ForumTag] = MISSING,
         view: BaseView = MISSING,
         suppress_embeds: bool = False,
+        silent: bool = False,
         reason: Optional[str] = None,
     ) -> ThreadWithMessage:
         """|coro|
@@ -2976,6 +2979,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             A list of stickers to upload. Must be a maximum of 3.
         suppress_embeds: :class:`bool`
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+        silent: :class:`bool`
+            Whether to suppress push and desktop notifications for the message. This will increment the mention counter
+            in the UI, but will not actually send a notification.
+
+            .. versionadded:: 2.2
         reason: :class:`str`
             The reason for creating a new thread. Shows up on the audit log.
 
@@ -3008,8 +3016,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
-        if suppress_embeds:
-            flags = MessageFlags._from_value(4)
+        if suppress_embeds or silent:
+            flags = MessageFlags._from_value(0)
+            flags.suppress_embeds = suppress_embeds
+            flags.suppress_notifications = silent
         else:
             flags = MISSING
 
