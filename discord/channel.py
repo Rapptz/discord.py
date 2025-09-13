@@ -2983,7 +2983,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             Whether to suppress push and desktop notifications for the message. This will increment the mention counter
             in the UI, but will not actually send a notification.
 
-            .. versionadded:: 2.2
+            .. versionadded:: 2.7
         reason: :class:`str`
             The reason for creating a new thread. Shows up on the audit log.
 
