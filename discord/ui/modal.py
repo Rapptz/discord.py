@@ -195,31 +195,9 @@ class Modal(BaseView):
                     )
                     continue
 
-                # you may be wondering why we do this resolved stuff here
-                # well the resolved field is only sent once for all select menus,
-                # in the interaction payload, not per select menu like in messages
-                # so we have to manually add the correct resolved data to each
-                # select menu
-                component_type = component['type']
-                if component_type in (5, 6, 7, 8):
-                    resolved = resolved or {}
-                    selected_values = component.get('values', [])
-
-                    if component_type in (5, 6, 7):
-                        users = {k: v for k, v in resolved.get('users', {}).items() if k in selected_values}
-                        members = {k: v for k, v in resolved.get('members', {}).items() if k in selected_values}
-                        roles = {k: v for k, v in resolved.get('roles', {}).items() if k in selected_values}
-
-                        if component_type == 5:  # user select
-                            component['resolved'] = {'users': users, 'members': members}  # type: ignore
-                        elif component_type == 6:  # role select
-                            component['resolved'] = {'roles': roles}  # type: ignore
-                        elif component_type == 7:  # mentionable select
-                            component['resolved'] = {'users': users, 'members': members, 'roles': roles}  # type: ignore
-                    else:  # channel select
-                        component['resolved'] = {  # type: ignore
-                            'channels': {k: v for k, v in resolved.get('channels', {}).items() if k in selected_values}
-                        }
+                # resolved items for selects are sent at once in the modal submit payload
+                if component['type'] in (5, 6, 7, 8):
+                    component['resolved'] = resolved  # type: ignore
 
                 item._refresh_state(interaction, component)  # type: ignore
 

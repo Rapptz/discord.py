@@ -359,14 +359,15 @@ class BaseSelect(Item[V]):
     def _refresh_state(self, interaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
         values = selected_values.get({})
         payload: List[PossibleValue]
+        string_values = data.get('values', [])
         try:
             resolved = Namespace._get_resolved_items(
                 interaction,
                 data['resolved'],  # pyright: ignore[reportTypedDictNotRequiredAccess]
             )
-            payload = list(resolved.values())
+            payload = [v for k, v in resolved.items() if k.id in string_values]
         except KeyError:
-            payload = data.get('values', [])  # type: ignore
+            payload = list(string_values)
 
         self._values = values[self.custom_id] = payload
         selected_values.set(values)
