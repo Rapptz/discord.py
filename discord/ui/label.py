@@ -76,8 +76,7 @@ class Label(Item[V]):
         The description text to display right below the label text.
         Can only be up to 100 characters.
     component: :class:`Item`
-        The component to display below the label. Currently only
-        supports :class:`TextInput` and :class:`Select`.
+        The component to display below the label.
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
