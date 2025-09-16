@@ -188,8 +188,7 @@ class Modal(BaseView):
                     continue
 
                 item = find(
-                    lambda i: getattr(i, 'custom_id', None)
-                    == custom_id,
+                    lambda i: getattr(i, 'custom_id', None) == custom_id,
                     self.walk_children(),
                 )
                 if item is None:
