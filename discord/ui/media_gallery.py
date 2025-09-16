@@ -51,8 +51,7 @@ class MediaGallery(Item[V]):
 
     Can contain up to 10 :class:`.MediaGalleryItem`\s.
 
-    This is a top-level layout component that can only be used on :class:`LayoutView`,
-    or :class:`Container`.
+    This is a top-level layout component that can only be used on :class:`LayoutView`.
 
     .. versionadded:: 2.6
 
