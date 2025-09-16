@@ -62,8 +62,7 @@ class Label(Item[V]):
     description: Optional[:class:`str`]
         The description text to display right below the label text.
         Can only be up to 100 characters.
-    component: Union[:class:`discord.ui.TextInput`, :class:`discord.ui.Select`, :class:`discord.ui.UserSelect`, :class:`discord.ui.RoleSelect`, :class:`discord.ui.MentionableSelect`, :class:`discord.ui.ChannelSelect`]
-        The component to display below the label.
+    component: :class:`Item`
     id: Optional[:class:`int`]
         The ID of the component. This must be unique across the view.
 
