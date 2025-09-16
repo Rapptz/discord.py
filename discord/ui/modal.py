@@ -200,7 +200,7 @@ class Modal(BaseView):
 
                 # resolved items for selects are sent at once in the modal submit payload
                 if component['type'] in (5, 6, 7, 8):
-                    component['resolved'] = resolved  # type: ignore
+                    component['resolved'] = resolved or {}  # type: ignore
 
                 item._refresh_state(interaction, component)  # type: ignore
 
