@@ -709,6 +709,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         # Try to detect Optional[discord.Attachment] or discord.Attachment special converter
         if converter is discord.Attachment:
+            if attachments.is_empty():
+                return None if param.default is param.empty else param.default
             try:
                 return next(attachments)
             except StopIteration:
