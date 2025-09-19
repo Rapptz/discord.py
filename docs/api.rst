@@ -2824,6 +2824,7 @@ of :class:`enum.Enum`.
         which was created.
 
         Possible attributes for :class:`AuditLogDiff`:
+
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.description`
@@ -2843,6 +2844,7 @@ of :class:`enum.Enum`.
         which was updated.
 
         Possible attributes for :class:`AuditLogDiff`:
+
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.description`
@@ -2862,6 +2864,7 @@ of :class:`enum.Enum`.
         which was deleted.
 
         Possible attributes for :class:`AuditLogDiff`:
+
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.description`
