@@ -96,6 +96,16 @@ class File:
         The duration of the voice message in seconds
 
         .. versionadded:: 2.7
+
+    waveform: Optional[List[:class:`int`]]
+        The waveform data of the voice message
+
+        .. note::
+            If a waveform is not given, it will be generated for files where voice is ``True``
+
+            Accurate generation is only provided for the Opus format. Other formats will be provided with a random waveform
+
+        .. versionadded:: 2.7
     """
 
     __slots__ = (
@@ -107,7 +117,7 @@ class File:
         '_owner',
         '_closer',
         'duration',
-        '_waveform',
+        'waveform',
         'voice',
     )
 
@@ -160,7 +170,6 @@ class File:
                 raise ValueError('Maximum value of ints is 255 for waveforms')
             elif min(waveform) < 0:
                 raise ValueError('Minimum value of ints is 0 for waveforms')
-        self._waveform = waveform
 
         if voice is MISSING:
             voice = duration is not None
@@ -169,6 +178,15 @@ class File:
         if duration is None and voice:
             raise TypeError('Voice messages must have a duration')
 
+        if waveform is None and voice:
+            try:
+                self.waveform = self.generate_waveform()
+            except Exception:
+                self.waveform = list(os.urandom(256))
+            self.reset()
+        else:
+            self.waveform = waveform
+
     @property
     def filename(self) -> str:
         """:class:`str`: The filename to display when uploading to Discord.
@@ -176,24 +194,6 @@ class File:
         a string then the ``filename`` will default to the string given.
         """
         return 'SPOILER_' + self._filename if self.spoiler else self._filename
-
-    @property
-    def waveform(self) -> list[int]:
-        """List[:class:`int`]: The waveform data for the voice message.
-
-        .. note::
-            If a waveform was not given, it will be generated
-
-            Only supports generating the waveform for Opus format files, other files will be given a random waveform
-
-        .. versionadded:: 2.7"""
-        if self._waveform is None:
-            try:
-                self._waveform = self.generate_waveform()
-            except Exception:
-                self._waveform = list(os.urandom(256))
-            self.reset()
-        return self._waveform
 
     @filename.setter
     def filename(self, value: str) -> None:
@@ -241,7 +241,7 @@ class File:
 
         if self.voice:
             payload['duration_secs'] = self.duration
-            payload['waveform'] = base64.b64encode(bytes(self.waveform)).decode('utf-8')
+            payload['waveform'] = base64.b64encode(bytes(self.waveform)).decode('utf-8')  # type: ignore
 
         return payload
 
