@@ -227,8 +227,7 @@ class ActionRow(Item[V]):
             An item in the action row.
         """
 
-        for child in self.children:
-            yield child
+        yield from self.children
 
     def content_length(self) -> int:
         """:class:`int`: Returns the total length of all text content in this action row."""

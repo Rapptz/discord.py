@@ -83,6 +83,8 @@ __all__ = (
     'OnboardingMode',
     'SeparatorSpacing',
     'MediaItemLoadingState',
+    'CollectibleType',
+    'NameplatePalette',
 )
 
 
@@ -273,6 +275,7 @@ class MessageType(Enum):
     guild_incident_report_false_alarm = 39
     purchase_notification = 44
     poll_result = 46
+    emoji_added = 63
 
 
 class SpeakingState(Enum):
@@ -966,6 +969,24 @@ class MediaItemLoadingState(Enum):
     loading = 1
     loaded = 2
     not_found = 3
+
+
+class CollectibleType(Enum):
+    nameplate = 'nameplate'
+
+
+class NameplatePalette(Enum):
+    crimson = 'crimson'
+    berry = 'berry'
+    sky = 'sky'
+    teal = 'teal'
+    forest = 'forest'
+    bubble_gum = 'bubble_gum'
+    violet = 'violet'
+    cobalt = 'cobalt'
+    clover = 'clover'
+    lemon = 'lemon'
+    white = 'white'
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

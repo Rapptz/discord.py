@@ -35,6 +35,12 @@ if TYPE_CHECKING:
     from .types.user import PrimaryGuild as PrimaryGuildPayload
     from typing_extensions import Self
 
+# fmt: off
+__all__ = (
+    'PrimaryGuild',
+)
+# fmt: on
+
 
 class PrimaryGuild:
     """Represents the primary guild identity of a :class:`User`

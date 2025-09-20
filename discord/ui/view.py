@@ -426,9 +426,6 @@ class BaseView:
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
-        if item._is_v2() and not self._is_layout():
-            raise ValueError('v2 items cannot be added to this view')
-
         item._update_view(self)
         self._add_count(item._total_count)
         self._children.append(item)
@@ -736,6 +733,9 @@ class View(BaseView):
     def add_item(self, item: Item[Any]) -> Self:
         if len(self._children) >= 25:
             raise ValueError('maximum number of children exceeded')
+
+        if item._is_v2():
+            raise ValueError('v2 items cannot be added to this view')
 
         super().add_item(item)
         try:

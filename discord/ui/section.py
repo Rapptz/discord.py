@@ -87,7 +87,7 @@ class Section(Item[V]):
         self.id = id
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} children={len(self._children)}>'
+        return f'<{self.__class__.__name__} children={len(self._children)} accessory={self._accessory!r}>'
 
     @property
     def type(self) -> Literal[ComponentType.section]:
@@ -137,8 +137,7 @@ class Section(Item[V]):
             An item in this section.
         """
 
-        for child in self.children:
-            yield child
+        yield from self.children
         yield self.accessory
 
     def _update_view(self, view) -> None:
