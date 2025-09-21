@@ -85,7 +85,10 @@ if TYPE_CHECKING:
     from ..interactions import Interaction
     from ..message import Message
     from ..types.components import ComponentBase as ComponentBasePayload
-    from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
+    from ..types.interactions import (
+        ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload,
+        ResolvedData as ResolvedDataPayload,
+    )
     from ..state import ConnectionState
     from .modal import Modal
 
@@ -1041,13 +1044,14 @@ class ViewStore:
         custom_id: str,
         interaction: Interaction,
         components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: ResolvedDataPayload,
     ) -> None:
         modal = self._modals.get(custom_id)
         if modal is None:
             _log.debug('Modal interaction referencing unknown custom_id %s. Discarding', custom_id)
             return
 
-        self.add_task(modal._dispatch_submit(interaction, components))
+        self.add_task(modal._dispatch_submit(interaction, components, resolved))
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:
         # This is called before re-adding the view
