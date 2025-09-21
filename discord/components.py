@@ -133,6 +133,7 @@ class Component:
     - :class:`FileComponent`
     - :class:`SeparatorComponent`
     - :class:`Container`
+    - :class:`LabelComponent`
     - :class:`FileUploadComponent`
 
     This class is abstract and cannot be instantiated.
