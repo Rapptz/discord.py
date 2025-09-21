@@ -53,6 +53,8 @@ V = TypeVar('V', bound='BaseView', covariant=True)
 class TextInput(Item[V]):
     """Represents a UI text input.
 
+    This a top-level layout component that can only be used in :class:`Label`.
+
     .. container:: operations
 
         .. describe:: str(x)
