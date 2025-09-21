@@ -30,7 +30,7 @@ from typing_extensions import NotRequired
 from .emoji import PartialEmoji
 from .channel import ChannelType
 
-ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18]
+ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
 DefaultValueType = Literal['user', 'role', 'channel']
@@ -192,7 +192,15 @@ class LabelComponent(ComponentBase):
     type: Literal[18]
     label: str
     description: NotRequired[str]
-    component: Union[StringSelectComponent, TextInput]
+    component: Union[SelectMenu, TextInput, FileUploadComponent]
+
+
+class FileUploadComponent(ComponentBase):
+    type: Literal[19]
+    custom_id: str
+    max_values: NotRequired[int]
+    min_values: NotRequired[int]
+    required: NotRequired[bool]
 
 
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
@@ -207,4 +215,4 @@ ContainerChildComponent = Union[
     SeparatorComponent,
     ThumbnailComponent,
 ]
-Component = Union[ActionRowChildComponent, LabelComponent, ContainerChildComponent]
+Component = Union[ActionRowChildComponent, LabelComponent, FileUploadComponent, ContainerChildComponent]
