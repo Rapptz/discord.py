@@ -175,9 +175,13 @@ class Modal(BaseView):
             elif component['type'] == 18:
                 self._refresh(interaction, [component['component']])
             else:
-                item = find(lambda i: getattr(i, 'custom_id', None) == component['custom_id'], self.walk_children())  # type: ignore
+                custom_id = component.get('custom_id')
+                if custom_id is None:
+                    continue
+
+                item = find(lambda i: getattr(i, 'custom_id', None) == custom_id, self.walk_children())
                 if item is None:
-                    _log.debug('Modal interaction referencing unknown item custom_id %s. Discarding', component['custom_id'])
+                    _log.debug('Modal interaction referencing unknown item custom_id %s. Discarding', custom_id)
                     continue
                 item._refresh_state(interaction, component)  # type: ignore
 
