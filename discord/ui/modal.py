@@ -36,12 +36,17 @@ from .item import Item
 from .view import BaseView
 from .select import BaseSelect
 from .text_input import TextInput
+from ..interactions import Namespace
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..interactions import Interaction
-    from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
+    from ..types.interactions import (
+        ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload,
+        ResolvedData as ResolvedDataPayload,
+    )
+    from ..app_commands.namespace import ResolveKey
 
 
 # fmt: off
@@ -168,27 +173,41 @@ class Modal(BaseView):
         """
         _log.error('Ignoring exception in modal %r:', self, exc_info=error)
 
-    def _refresh(self, interaction: Interaction, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(
+        self,
+        interaction: Interaction,
+        components: Sequence[ModalSubmitComponentInteractionDataPayload],
+        resolved: Dict[ResolveKey, Any],
+    ) -> None:
         for component in components:
             if component['type'] == 1:
-                self._refresh(interaction, component['components'])
+                self._refresh(interaction, component['components'], resolved)  # type: ignore
             elif component['type'] == 18:
-                self._refresh(interaction, [component['component']])
+                self._refresh(interaction, [component['component']], resolved)  # type: ignore
             else:
                 custom_id = component.get('custom_id')
                 if custom_id is None:
                     continue
 
-                item = find(lambda i: getattr(i, 'custom_id', None) == custom_id, self.walk_children())
+                item = find(
+                    lambda i: getattr(i, 'custom_id', None) == custom_id,
+                    self.walk_children(),
+                )
                 if item is None:
                     _log.debug('Modal interaction referencing unknown item custom_id %s. Discarding', custom_id)
                     continue
-                item._refresh_state(interaction, component)  # type: ignore
 
-    async def _scheduled_task(self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
+                item._handle_submit(interaction, component, resolved)  # type: ignore
+
+    async def _scheduled_task(
+        self,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: Dict[ResolveKey, Any],
+    ):
         try:
             self._refresh_timeout()
-            self._refresh(interaction, components)
+            self._refresh(interaction, components, resolved)
 
             allow = await self.interaction_check(interaction)
             if not allow:
@@ -225,10 +244,18 @@ class Modal(BaseView):
         return components
 
     def _dispatch_submit(
-        self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]
+        self,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: ResolvedDataPayload,
     ) -> asyncio.Task[None]:
+        try:
+            namespace = Namespace._get_resolved_items(interaction, resolved)
+        except KeyError:
+            namespace = {}
+
         return asyncio.create_task(
-            self._scheduled_task(interaction, components), name=f'discord-ui-modal-dispatch-{self.id}'
+            self._scheduled_task(interaction, components, namespace), name=f'discord-ui-modal-dispatch-{self.id}'
         )
 
     def to_dict(self) -> Dict[str, Any]:

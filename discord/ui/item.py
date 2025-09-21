@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from .action_row import ActionRow
     from .container import Container
     from .dynamic import DynamicItem
+    from ..app_commands.namespace import ResolveKey
 
 I = TypeVar('I', bound='Item[Any]')
 V = TypeVar('V', bound='BaseView', covariant=True)
@@ -96,6 +97,9 @@ class Item(Generic[V]):
 
     def _refresh_component(self, component: Component) -> None:
         return None
+
+    def _handle_submit(self, interaction: Interaction, data: Dict[str, Any], resolved: Dict[ResolveKey, Any]) -> None:
+        return self._refresh_state(interaction, data)
 
     def _refresh_state(self, interaction: Interaction, data: Dict[str, Any]) -> None:
         return None
