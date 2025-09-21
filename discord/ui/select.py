@@ -598,6 +598,10 @@ class UserSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -629,6 +633,7 @@ class UserSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -640,6 +645,7 @@ class UserSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -700,6 +706,10 @@ class RoleSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the roles that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -731,6 +741,7 @@ class RoleSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -742,6 +753,7 @@ class RoleSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -797,6 +809,10 @@ class MentionableSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users/roles that should be selected by default.
         if :class:`.Object` is passed, then the type must be specified in the constructor.
@@ -829,6 +845,7 @@ class MentionableSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -840,6 +857,7 @@ class MentionableSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -902,6 +920,10 @@ class ChannelSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the channels that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -937,6 +959,7 @@ class ChannelSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -948,6 +971,7 @@ class ChannelSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             channel_types=channel_types,
             default_values=_handle_select_defaults(default_values, self.type),
