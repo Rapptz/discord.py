@@ -78,6 +78,7 @@ if TYPE_CHECKING:
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
     from ..interactions import Interaction
+    from ..app_commands.namespace import ResolveKey
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
@@ -356,7 +357,24 @@ class BaseSelect(Item[V]):
     def _refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def _refresh_state(self, interaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
+    def _handle_submit(
+        self, interaction: Interaction, data: SelectMessageComponentInteractionData, resolved: Dict[ResolveKey, Any]
+    ) -> None:
+        payload: List[PossibleValue]
+        values = selected_values.get({})
+        string_values = data.get('values', [])
+        payload = [v for k, v in resolved.items() if k.id in string_values]
+        if not payload:
+            payload = list(string_values)
+
+        self._values = values[self.custom_id] = payload
+        selected_values.set(values)
+
+    def _refresh_state(
+        self,
+        interaction: Interaction,
+        data: SelectMessageComponentInteractionData,
+    ) -> None:
         values = selected_values.get({})
         payload: List[PossibleValue]
         try:
@@ -366,7 +384,7 @@ class BaseSelect(Item[V]):
             )
             payload = list(resolved.values())
         except KeyError:
-            payload = data.get('values', [])  # type: ignore
+            payload = list(data.get('values', []))
 
         self._values = values[self.custom_id] = payload
         selected_values.set(values)
