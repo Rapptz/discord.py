@@ -217,7 +217,15 @@ class ModalSubmitSelectInteractionData(ComponentBase):
     values: List[str]
 
 
-ModalSubmitComponentItemInteractionData = Union[ModalSubmitSelectInteractionData, ModalSubmitTextInputInteractionData]
+class ModalSubmitFileUploadInteractionData(ComponentBase):
+    type: Literal[19]
+    custom_id: str
+    values: List[str]
+
+
+ModalSubmitComponentItemInteractionData = Union[
+    ModalSubmitSelectInteractionData, ModalSubmitTextInputInteractionData, ModalSubmitFileUploadInteractionData
+]
 
 
 class ModalSubmitActionRowInteractionData(TypedDict):

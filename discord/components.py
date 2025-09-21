@@ -72,6 +72,7 @@ if TYPE_CHECKING:
         ContainerComponent as ContainerComponentPayload,
         UnfurledMediaItem as UnfurledMediaItemPayload,
         LabelComponent as LabelComponentPayload,
+        FileUploadComponent as FileUploadComponentPayload,
     )
 
     from .emoji import Emoji
@@ -112,6 +113,7 @@ __all__ = (
     'TextDisplay',
     'SeparatorComponent',
     'LabelComponent',
+    'FileUploadComponent',
 )
 
 
@@ -131,6 +133,7 @@ class Component:
     - :class:`FileComponent`
     - :class:`SeparatorComponent`
     - :class:`Container`
+    - :class:`FileUploadComponent`
 
     This class is abstract and cannot be instantiated.
 
@@ -1384,6 +1387,71 @@ class LabelComponent(Component):
         return payload
 
 
+class FileUploadComponent(Component):
+    """Represents a file upload component from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    .. note::
+
+        The user constructible and usable type for creating a file upload is
+        :class:`discord.ui.FileUpload` not this one.
+
+    .. versionadded:: 2.7
+
+    Attributes
+    ------------
+    custom_id: Optional[:class:`str`]
+        The ID of the component that gets received during an interaction.
+    min_values: :class:`int`
+        The minimum number of files that must be uploaded for this component.
+        Defaults to 1 and must be between 0 and 10.
+    max_values: :class:`int`
+        The maximum number of files that must be uploaded for this component.
+        Defaults to 1 and must be between 1 and 10.
+    id: Optional[:class:`int`]
+        The ID of this component.
+    required: :class:`bool`
+        Whether the component is required.
+        Defaults to ``True``.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        'custom_id',
+        'min_values',
+        'max_values',
+        'required',
+        'id',
+    )
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+
+    def __init__(self, data: FileUploadComponentPayload, /) -> None:
+        self.custom_id: str = data['custom_id']
+        self.min_values: int = data.get('min_values', 1)
+        self.max_values: int = data.get('max_values', 1)
+        self.required: bool = data.get('required', True)
+        self.id: Optional[int] = data.get('id')
+
+    @property
+    def type(self) -> Literal[ComponentType.file_upload]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.file_upload
+
+    def to_dict(self) -> FileUploadComponentPayload:
+        payload: FileUploadComponentPayload = {
+            'type': self.type.value,
+            'custom_id': self.custom_id,
+            'min_values': self.min_values,
+            'max_values': self.max_values,
+            'required': self.required,
+        }
+        if self.id is not None:
+            payload['id'] = self.id
+
+        return payload
+
+
 def _component_factory(data: ComponentPayload, state: Optional[ConnectionState] = None) -> Optional[Component]:
     if data['type'] == 1:
         return ActionRow(data)
@@ -1409,3 +1477,5 @@ def _component_factory(data: ComponentPayload, state: Optional[ConnectionState] 
         return Container(data, state)
     elif data['type'] == 18:
         return LabelComponent(data, state)
+    elif data['type'] == 19:
+        return FileUploadComponent(data)

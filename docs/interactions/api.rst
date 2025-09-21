@@ -193,6 +193,16 @@ Container
     :inherited-members:
 
 
+FileUploadComponent
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: FileUploadComponent
+
+.. autoclass:: FileUploadComponent()
+    :members:
+    :inherited-members:
+
+
 AppCommand
 ~~~~~~~~~~~
 
@@ -478,6 +488,12 @@ Enumerations
         Represents a label container component, usually in a modal.
 
         .. versionadded:: 2.6
+
+    .. attribute:: file_upload
+
+       Represents a file upload component, usually in a modal.
+
+         .. versionadded:: 2.7
 
 .. class:: ButtonStyle
 
@@ -854,6 +870,17 @@ ActionRow
     :members:
     :inherited-members:
     :exclude-members: callback
+
+
+FileUpload
+~~~~~~~~~~~
+
+.. attributetable:: discord.ui.FileUpload
+
+.. autoclass:: discord.ui.FileUpload
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
 
 .. _discord_app_commands:
 
