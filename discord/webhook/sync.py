@@ -1108,7 +1108,7 @@ class SyncWebhook(BaseWebhook):
         ) as params:
             adapter: WebhookAdapter = _get_webhook_adapter()
             thread_id: Optional[int] = None
-            if thread is not MISSING:
+            if thread:
                 thread_id = thread.id
 
             data = adapter.execute_webhook(
@@ -1166,7 +1166,7 @@ class SyncWebhook(BaseWebhook):
             raise ValueError('This webhook does not have a token associated with it')
 
         thread_id: Optional[int] = None
-        if thread is not MISSING:
+        if thread:
             thread_id = thread.id
 
         adapter: WebhookAdapter = _get_webhook_adapter()
@@ -1280,7 +1280,7 @@ class SyncWebhook(BaseWebhook):
             previous_allowed_mentions=previous_mentions,
         ) as params:
             thread_id: Optional[int] = None
-            if thread is not MISSING:
+            if thread:
                 thread_id = thread.id
 
             adapter: WebhookAdapter = _get_webhook_adapter()
@@ -1326,7 +1326,7 @@ class SyncWebhook(BaseWebhook):
             raise ValueError('This webhook does not have a token associated with it')
 
         thread_id: Optional[int] = None
-        if thread is not MISSING:
+        if thread:
             thread_id = thread.id
 
         adapter: WebhookAdapter = _get_webhook_adapter()
