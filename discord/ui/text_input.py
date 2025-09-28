@@ -144,10 +144,18 @@ class TextInput(Item[V]):
             id=id,
         )
         self.row = row
-        self.id = id
 
     def __str__(self) -> str:
         return self.value
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this text input."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
 
     @property
     def custom_id(self) -> str:

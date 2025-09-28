@@ -100,7 +100,15 @@ class File(Item[V]):
                 spoiler=bool(spoiler),
                 id=id,
             )
-        self.id = id
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this file component."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
 
     def _is_v2(self):
         return True
