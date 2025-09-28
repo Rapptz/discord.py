@@ -68,11 +68,11 @@ if TYPE_CHECKING:
 
     class _CommandDecoratorKwargs(TypedDict, total=False):
         enabled: bool
-        help: str
-        brief: str
-        usage: str
+        help: Optional[str]
+        brief: Optional[str]
+        usage: Optional[str]
         rest_is_raw: bool
-        aliases: List[str]
+        aliases: Union[List[str], Tuple[str, ...]]
         description: str
         hidden: bool
         checks: List[UserCheck[Context[Any]]]
@@ -449,7 +449,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.brief: Optional[str] = kwargs.get('brief')
         self.usage: Optional[str] = kwargs.get('usage')
         self.rest_is_raw: bool = kwargs.get('rest_is_raw', False)
-        self.aliases: Union[List[str], Tuple[str]] = kwargs.get('aliases', [])
+        self.aliases: Union[List[str], Tuple[str, ...]] = kwargs.get('aliases', [])
         self.extras: Dict[Any, Any] = kwargs.get('extras', {})
 
         if not isinstance(self.aliases, (list, tuple)):
