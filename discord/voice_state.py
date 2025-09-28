@@ -280,9 +280,11 @@ class VoiceConnectionState:
                 self.dave_session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
             else:
                 self.dave_session = davey.DaveSession(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
-            await self.voice_client.ws.send_binary(
-                DiscordVoiceWebSocket.MLS_KEY_PACKAGE, self.dave_session.get_serialized_key_package()
-            )
+
+            if self.dave_session is not None:
+                await self.voice_client.ws.send_binary(
+                    DiscordVoiceWebSocket.MLS_KEY_PACKAGE, self.dave_session.get_serialized_key_package()
+                )
         elif self.dave_session:
             self.dave_session.reset()
             self.dave_session.set_passthrough_mode(True, 10)
