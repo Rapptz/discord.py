@@ -276,7 +276,7 @@ class VoiceConnectionState:
         if self.dave_protocol_version > 0:
             if not has_dave:
                 raise RuntimeError('davey library needed in order to use E2EE voice')
-            if self.dave_session:
+            if self.dave_session is not None:
                 self.dave_session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
             else:
                 self.dave_session = davey.DaveSession(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)

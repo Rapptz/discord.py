@@ -287,7 +287,7 @@ class VoiceClient(VoiceProtocol):
     @property
     def voice_privacy_code(self) -> Optional[str]:
         """:class:`str`: Get the voice privacy code of this E2EE session's group.
-        
+
         A new privacy code is created and cached each time a new transition is executed.
         This can be None if there is no active DAVE session happening.
         """
