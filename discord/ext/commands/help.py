@@ -69,12 +69,12 @@ if TYPE_CHECKING:
 
     class _HelpCommandOptions(TypedDict, total=False):
         show_hidden: bool
-        verify_checks: bool
+        verify_checks: Optional[bool]
         command_attrs: _CommandKwargs
 
     class _BaseHelpCommandOptions(_HelpCommandOptions, total=False):
         sort_commands: bool
-        dm_help: bool
+        dm_help: Optional[bool]
         dm_help_threshold: int
         no_category: str
         paginator: Paginator
@@ -394,7 +394,7 @@ class HelpCommand:
 
     def __init__(self, **options: Unpack[_HelpCommandOptions]) -> None:
         self.show_hidden: bool = options.pop('show_hidden', False)
-        self.verify_checks: bool = options.pop('verify_checks', True)
+        self.verify_checks: Optional[bool] = options.pop('verify_checks', True)
         self.command_attrs = attrs = options.pop('command_attrs', {})
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
@@ -1070,7 +1070,7 @@ class DefaultHelpCommand(HelpCommand):
         self.width: int = options.pop('width', 80)
         self.indent: int = options.pop('indent', 2)
         self.sort_commands: bool = options.pop('sort_commands', True)
-        self.dm_help: bool = options.pop('dm_help', False)
+        self.dm_help: Optional[bool] = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
         self.arguments_heading: str = options.pop('arguments_heading', 'Arguments:')
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
@@ -1364,7 +1364,7 @@ class MinimalHelpCommand(HelpCommand):
     def __init__(self, **options: Unpack[_MinimalHelpCommandOptions]) -> None:
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.commands_heading: str = options.pop('commands_heading', 'Commands')
-        self.dm_help: bool = options.pop('dm_help', False)
+        self.dm_help: Optional[bool] = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
         self.aliases_heading: str = options.pop('aliases_heading', 'Aliases:')
         self.no_category: str = options.pop('no_category', 'No Category')
