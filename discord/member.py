@@ -926,32 +926,32 @@ class Member(discord.abc.Messageable, _UserTag):
         guild_id = self.guild.id
         me = self._state.self_id == self.id
         payload: Dict[str, Any] = {}
-        bot_payload: Dict[str, Any] = {}
+        self_payload: Dict[str, Any] = {}
 
         if nick is not MISSING:
             nick = nick or ''
             if me:
-                bot_payload['nick'] = nick
+                self_payload['nick'] = nick
             else:
                 payload['nick'] = nick
 
         if avatar is not MISSING:
             if avatar is None:
-                bot_payload['avatar'] = None
+                self_payload['avatar'] = None
             else:
-                bot_payload['avatar'] = utils._bytes_to_base64_data(avatar)
+                self_payload['avatar'] = utils._bytes_to_base64_data(avatar)
 
         if banner is not MISSING:
             if banner is None:
-                bot_payload['banner'] = None
+                self_payload['banner'] = None
             else:
-                bot_payload['banner'] = utils._bytes_to_base64_data(banner)
+                self_payload['banner'] = utils._bytes_to_base64_data(banner)
 
         if bio is not MISSING:
-            bot_payload['bio'] = bio or ''
+            self_payload['bio'] = bio or ''
 
-        if not me and bot_payload:
-            raise ValueError(f"Editing the bio, avatar or banner is only for the bot's own member.")
+        if not me and self_payload:
+            raise ValueError("Editing the bio, avatar or banner is only for the bot's own member.")
 
         if deafen is not MISSING:
             payload['deaf'] = deafen
@@ -1000,8 +1000,8 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if payload:
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
-        elif bot_payload:
-            data = await http.edit_my_member(guild_id, reason=reason, **bot_payload)
+        elif self_payload:
+            data = await http.edit_my_member(guild_id, reason=reason, **self_payload)
         else:
             return None
 
