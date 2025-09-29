@@ -4211,6 +4211,10 @@ of :class:`enum.Enum`.
     .. attribute:: pop
 
         A coloured dropshadow is shown.
+    .. attribute:: glow
+    
+        An alternative for the gradient style is used.
+    
 
 .. _discord-api-audit-logs:
 
