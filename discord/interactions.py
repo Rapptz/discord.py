@@ -382,7 +382,7 @@ class Interaction(Generic[ClientT]):
 
     @utils.cached_slot_property('_cs_command_id')
     def command_id(self) -> Optional[int]:
-        """Optional[:class:`int`]: The ID of the command belonging to this interaction.
+        """Optional[:class:`int`]: The ID of the command that triggered this interaction.
 
         Only applicable if :attr:`type` is one of, :attr:`InteractionType.application_command` or
         :attr:`InteractionType.autocomplete`.
