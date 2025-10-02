@@ -58,7 +58,7 @@ speed = [
     "aiodns>=1.1; sys_platform != 'win32'",
     "Brotli",
     "cchardet==2.1.7; python_version < '3.10'",
-    "zstandard>=0.23.0"
+    "zstandard>=0.23.0; python_version <= '3.13'"
 ]
 test = [
     "coverage[toml]",
