@@ -75,6 +75,9 @@ import zlib
 
 import yarl
 
+if sys.version_info >= (3, 14):
+    import compression.zstd
+
 try:
     import orjson  # type: ignore
 except ModuleNotFoundError:
@@ -1432,6 +1435,21 @@ if _HAS_ZSTD:
         def __init__(self) -> None:
             decompressor = zstandard.ZstdDecompressor()
             self.context = decompressor.decompressobj()
+
+        def decompress(self, data: bytes, /) -> str | None:
+            # Each WS message is a complete gateway message
+            return self.context.decompress(data).decode('utf-8')
+
+    _ActiveDecompressionContext: Type[_DecompressionContext] = _ZstdDecompressionContext
+elif sys.version_info >= (3, 14):
+
+    class _ZstdDecompressionContext:
+        __slots__ = ('context',)
+
+        COMPRESSION_TYPE: str = 'zstd-stream'
+
+        def __init__(self) -> None:
+            self.context = compression.zstd.ZstdDecompressor()
 
         def decompress(self, data: bytes, /) -> str | None:
             # Each WS message is a complete gateway message
