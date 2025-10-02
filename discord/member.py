@@ -890,15 +890,18 @@ class Member(discord.abc.Messageable, _UserTag):
             A :term:`py:bytes-like object` representing the image to upload. Could be ``None`` to denote no avatar.
             Only image formats supported for uploading are JPEG, PNG, GIF, and WEBP.
             This can only be set when editing the bot's own member.
+
             .. versionadded:: 2.7
         banner: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload. Could be ``None`` to denote no banner.
             Only image formats supported for uploading are JPEG, PNG, GIF and WEBP..
             This can only be set when editing the bot's own member.
+
             .. versionadded:: 2.7
         bio: Optional[:class:`str`]
             The new bio for the member. Use ``None`` to remove the bio.
             This can only be set when editing the bot's own member.
+
             .. versionadded:: 2.7
 
         reason: Optional[:class:`str`]
