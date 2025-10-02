@@ -71,12 +71,13 @@ import types
 import typing
 import warnings
 import logging
-import zlib
 
 import yarl
 
 if sys.version_info >= (3, 14):
     import compression.zstd
+else:
+    import zlib
 
 try:
     import orjson  # type: ignore
