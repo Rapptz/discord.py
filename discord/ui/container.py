@@ -208,10 +208,6 @@ class Container(Item[V]):
         """List[:class:`Item`]: The children of this container."""
         return self._children.copy()
 
-    @children.setter
-    def children(self, value: List[Item[V]]) -> None:
-        self._children = value
-
     @property
     def accent_colour(self) -> Optional[Union[Colour, int]]:
         """Optional[Union[:class:`discord.Colour`, :class:`int`]]: The colour of the container, or ``None``."""
