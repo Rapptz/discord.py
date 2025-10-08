@@ -117,6 +117,7 @@ class Section(Item[V]):
         if not isinstance(value, Item):
             raise TypeError(f'Expected an Item, got {value.__class__.__name__!r} instead')
 
+        value._update_view(self.view)
         value._parent = self
         self._accessory = value
 
