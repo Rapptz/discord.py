@@ -87,7 +87,7 @@ try:
     _HAS_ZSTD = True
 except ImportError:
     try:
-        from compression.zstd import ZstdDecompressor
+        from compression.zstd import ZstdDecompressor  # type: ignore
     except ImportError:
         import zlib
 
