@@ -165,7 +165,7 @@ class Emoji(_EmojiTag, AssetMixin):
     @property
     def url(self) -> str:
         """:class:`str`: Returns the URL of the emoji."""
-        fmt = 'gif' if self.animated else 'png'
+        fmt = 'webp' if self.animated else 'png'
         return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
 
     @property
