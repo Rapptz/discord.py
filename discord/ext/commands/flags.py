@@ -178,6 +178,14 @@ def validate_flag_name(name: str, forbidden: Set[str]) -> None:
 
 def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[str, Any]) -> Dict[str, Flag]:
     annotations = namespace.get('__annotations__', {})
+    if '__annotate__' in namespace:
+        # In Python 3.14, classes no longer get `__annotations__` and instead a function
+        # under __annotate__ is used instead that that takes a format argument on how to
+        # receive those annotations.
+        # Format 1 is full value, Format 3 is value and ForwardRef for undefined ones
+        # So format 3 is the one we're typically used to
+        annotations = namespace['__annotate__'](3)
+
     case_insensitive = namespace['__commands_flag_case_insensitive__']
     flags: Dict[str, Flag] = {}
     cache: Dict[str, Any] = {}
