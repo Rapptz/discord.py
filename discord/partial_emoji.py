@@ -245,7 +245,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         if self.is_unicode_emoji():
             return ''
 
-        fmt = 'gif' if self.animated else 'png'
+        fmt = 'webp' if self.animated else 'png'
         return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
 
     async def read(self) -> bytes:
