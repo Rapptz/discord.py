@@ -139,3 +139,8 @@ class Label(Item[V]):
 
     def is_dispatchable(self) -> bool:
         return False
+
+    @property
+    def _total_count(self) -> int:
+        # Count the component and ourselves
+        return 2
