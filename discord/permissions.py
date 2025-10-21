@@ -381,7 +381,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.7
             Added :attr:`pin_messages` and :attr:`bypass_slowmode` permissions.
         """
-        return cls(0b0000_0000_0001_0110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
+        return cls(0b0000_0000_0001_1110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
 
     @classmethod
     def voice(cls) -> Self:
