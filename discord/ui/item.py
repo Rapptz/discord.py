@@ -55,6 +55,21 @@ ItemCallbackType = Callable[[V, Interaction[Any], I], Coroutine[Any, Any, Any]]
 ContainedItemCallbackType = Callable[[C, Interaction[Any], I], Coroutine[Any, Any, Any]]
 
 
+class _ItemCallback:
+    __slots__ = ('parent', 'callback', 'item')
+
+    def __init__(self, callback: ContainedItemCallbackType[Any, Any], parent: Any, item: Item[Any]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
+        self.parent: Any = parent
+        self.item: Item[Any] = item
+
+    def __repr__(self) -> str:
+        return f'<ItemCallback callback={self.callback!r} parent={self.parent!r} item={self.item!r}>'
+
+    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
+        return self.callback(self.parent, interaction, self.item)
+
+
 class Item(Generic[V]):
     """Represents the base UI item that all UI components inherit from.
 

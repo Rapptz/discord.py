@@ -50,7 +50,7 @@ import sys
 import time
 import os
 
-from .item import Item, ItemCallbackType
+from .item import Item, ItemCallbackType, _ItemCallback
 from .select import Select
 from .dynamic import DynamicItem
 from ..components import (
@@ -207,18 +207,6 @@ class _ViewWeights:
         self.weights = [0, 0, 0, 0, 0]
 
 
-class _ViewCallback:
-    __slots__ = ('view', 'callback', 'item')
-
-    def __init__(self, callback: ItemCallbackType[Any, Any], view: BaseView, item: Item[BaseView]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
-        self.view: BaseView = view
-        self.item: Item[BaseView] = item
-
-    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
-        return self.callback(self.view, interaction, self.item)
-
-
 class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
@@ -257,7 +245,7 @@ class BaseView:
                 parents[raw] = item
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
-                item.callback = _ViewCallback(raw, self, item)  # type: ignore
+                item.callback = _ItemCallback(raw, self, item)  # type: ignore
                 item._view = self
                 if isinstance(item, Select):
                     item.options = [option.copy() for option in item.options]
