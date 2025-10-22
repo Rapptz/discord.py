@@ -28,7 +28,6 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Coroutine,
     Dict,
     Generator,
     Iterator,
