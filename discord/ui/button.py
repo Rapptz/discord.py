@@ -30,7 +30,7 @@ import inspect
 import os
 
 
-from .item import Item, ContainedItemCallbackType as ItemCallbackType
+from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from ..enums import ButtonStyle, ComponentType
 from ..partial_emoji import PartialEmoji, _EmojiTag
 from ..components import Button as ButtonComponent
@@ -304,6 +304,9 @@ class Button(Item[V]):
             sku_id=self.sku_id,
             id=self.id,
         )
+        if isinstance(new.callback, _ItemCallback):
+            new.callback.item = new
+        new._update_view(self.view)
         return new
 
     def __deepcopy__(self, memo) -> Self:
