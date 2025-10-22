@@ -129,10 +129,10 @@ class ActionRow(Item[V]):
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
+        self._weight: int = sum(i.width for i in self._children)
         self._children: List[Item[V]] = self._init_children()
         for child in children:
             self.add_item(child)
-        self._weight: int = sum(i.width for i in self._children)
 
         if self._weight > 5:
             raise ValueError('maximum number of children exceeded')
