@@ -179,7 +179,7 @@ class ActionRow(Item[V]):
             newch = child.copy()
             newch._parent = new
             if isinstance(newch.callback, _ItemCallback):
-                newch.callback.parent = self
+                newch.callback.parent = new
             children.append(newch)
         new._children = children
         new._parent = self._parent
