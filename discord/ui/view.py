@@ -239,13 +239,13 @@ class BaseView:
                 item._update_view(self)
                 parent = getattr(item, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
-                    parent._view = self
+                    parent._update_view(self)
                 children.append(item)
                 parents[raw] = item
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
                 item.callback = _ItemCallback(raw, self, item)  # type: ignore
-                item._view = self
+                item._update_view(self)
                 if isinstance(item, Select):
                     item.options = [option.copy() for option in item.options]
                 setattr(self, raw.__name__, item)

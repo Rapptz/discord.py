@@ -39,10 +39,11 @@ from typing import (
     Sequence,
 )
 from contextvars import ContextVar
+import copy
 import inspect
 import os
 
-from .item import Item, ContainedItemCallbackType as ItemCallbackType
+from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
@@ -70,7 +71,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias, TypeGuard
+    from typing_extensions import TypeAlias, TypeGuard, Self
 
     from .view import BaseView
     from .action_row import ActionRow
@@ -268,6 +269,14 @@ class BaseSelect(Item[V]):
 
         self.row = row
         self._values: List[PossibleValue] = []
+
+    def copy(self) -> Self:
+        new = copy.copy(self)
+        if isinstance(new.callback, _ItemCallback):
+            new.callback.item = new
+        new._parent = self._parent
+        new._update_view(self.view)
+        return new
 
     @property
     def id(self) -> Optional[int]:

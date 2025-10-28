@@ -182,6 +182,15 @@ class Container(Item[V]):
             child._update_view(view)
         return True
 
+    def copy(self) -> Container[V]:
+        new = copy.deepcopy(self)
+        for child in new._children:
+            newch = child.copy()
+            newch._parent = new
+        new._parent = self._parent
+        new._update_view(self.view)
+        return new
+
     def _has_children(self):
         return True
 

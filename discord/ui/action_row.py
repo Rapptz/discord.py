@@ -129,8 +129,8 @@ class ActionRow(Item[V]):
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
-        self._weight: int = sum(i.width for i in self._children)
         self._children: List[Item[V]] = self._init_children()
+        self._weight: int = sum(i.width for i in self._children)
         for child in children:
             self.add_item(child)
 
@@ -183,7 +183,7 @@ class ActionRow(Item[V]):
             children.append(newch)
         new._children = children
         new._parent = self._parent
-        new._update_view(self)
+        new._update_view(self.view)
         return new
 
     def __deepcopy__(self, memo) -> ActionRow[V]:
