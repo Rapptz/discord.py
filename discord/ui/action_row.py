@@ -24,12 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import copy
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     ClassVar,
-    Coroutine,
     Dict,
     Generator,
     List,
@@ -42,7 +42,7 @@ from typing import (
     overload,
 )
 
-from .item import Item, ContainedItemCallbackType as ItemCallbackType
+from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from .button import Button, button as _button
 from .select import select as _select, Select, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
 from ..components import ActionRow as ActionRowComponent
@@ -65,7 +65,6 @@ if TYPE_CHECKING:
     )
     from ..emoji import Emoji
     from ..components import SelectOption
-    from ..interactions import Interaction
     from .container import Container
     from .dynamic import DynamicItem
 
@@ -75,18 +74,6 @@ S = TypeVar('S', bound=Union['ActionRow', 'Container', 'LayoutView'], covariant=
 V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('ActionRow',)
-
-
-class _ActionRowCallback:
-    __slots__ = ('row', 'callback', 'item')
-
-    def __init__(self, callback: ItemCallbackType[S, Any], row: ActionRow, item: Item[Any]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
-        self.row: ActionRow = row
-        self.item: Item[Any] = item
-
-    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
-        return self.callback(self.row, interaction, self.item)
 
 
 class ActionRow(Item[V]):
@@ -143,8 +130,9 @@ class ActionRow(Item[V]):
     ) -> None:
         super().__init__()
         self._children: List[Item[V]] = self._init_children()
-        self._children.extend(children)
         self._weight: int = sum(i.width for i in self._children)
+        for child in children:
+            self.add_item(child)
 
         if self._weight > 5:
             raise ValueError('maximum number of children exceeded')
@@ -173,8 +161,8 @@ class ActionRow(Item[V]):
 
         for func in self.__action_row_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = _ActionRowCallback(func, self, item)  # type: ignore
-            item._parent = getattr(func, '__discord_ui_parent__', self)
+            item.callback = _ItemCallback(func, self, item)  # type: ignore
+            item._parent = self
             setattr(self, func.__name__, item)
             children.append(item)
         return children
@@ -183,6 +171,23 @@ class ActionRow(Item[V]):
         self._view = view
         for child in self._children:
             child._view = view
+
+    def copy(self) -> ActionRow[V]:
+        new = copy.copy(self)
+        children = []
+        for child in new._children:
+            newch = child.copy()
+            newch._parent = new
+            if isinstance(newch.callback, _ItemCallback):
+                newch.callback.parent = new
+            children.append(newch)
+        new._children = children
+        new._parent = self._parent
+        new._update_view(self.view)
+        return new
+
+    def __deepcopy__(self, memo) -> ActionRow[V]:
+        return self.copy()
 
     def _has_children(self):
         return True

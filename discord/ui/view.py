@@ -28,7 +28,6 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Coroutine,
     Dict,
     Generator,
     Iterator,
@@ -50,7 +49,7 @@ import sys
 import time
 import os
 
-from .item import Item, ItemCallbackType
+from .item import Item, ItemCallbackType, _ItemCallback
 from .select import Select
 from .dynamic import DynamicItem
 from ..components import (
@@ -207,18 +206,6 @@ class _ViewWeights:
         self.weights = [0, 0, 0, 0, 0]
 
 
-class _ViewCallback:
-    __slots__ = ('view', 'callback', 'item')
-
-    def __init__(self, callback: ItemCallbackType[Any, Any], view: BaseView, item: Item[BaseView]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
-        self.view: BaseView = view
-        self.item: Item[BaseView] = item
-
-    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
-        return self.callback(self.view, interaction, self.item)
-
-
 class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
@@ -252,13 +239,13 @@ class BaseView:
                 item._update_view(self)
                 parent = getattr(item, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
-                    parent._view = self
+                    parent._update_view(self)
                 children.append(item)
                 parents[raw] = item
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
-                item.callback = _ViewCallback(raw, self, item)  # type: ignore
-                item._view = self
+                item.callback = _ItemCallback(raw, self, item)  # type: ignore
+                item._update_view(self)
                 if isinstance(item, Select):
                     item.options = [option.copy() for option in item.options]
                 setattr(self, raw.__name__, item)
