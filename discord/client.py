@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+import inspect
 import logging
 from typing import (
     TYPE_CHECKING,
@@ -2052,7 +2053,7 @@ class Client:
             The coroutine passed is not actually a coroutine.
         """
 
-        if not asyncio.iscoroutinefunction(coro):
+        if not inspect.iscoroutinefunction(coro):
             raise TypeError('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
