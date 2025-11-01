@@ -1232,7 +1232,7 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
     This allows for a locale-independent way of presenting data using Discord specific Markdown.
 
     +-------------+--------------------------------+-------------------------+
-    |    Style    |       Example Output           |       Description       |
+    |    Style    |        Example Output          |       Description       |
     +=============+================================+=========================+
     | t           | 22:57                          | Short Time              |
     +-------------+--------------------------------+-------------------------+
