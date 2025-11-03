@@ -274,6 +274,47 @@ class ActionRow(Item[V]):
 
         return self
 
+    def insert_item_at(self, position: int, item: Item[Any]) -> Self:
+        """Insert an item to this action row.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        ----------
+        position: int
+            The position at which to add the item. `0` to insert at the beginning.
+        item: :class:`Item`
+            The item to add to the action row.
+
+        Raises
+        ------
+        TypeError
+            An :class:`Item` was not passed.
+        ValueError
+            Maximum number of children has been exceeded (5)
+            or (40) for the entire view.
+        """
+
+        if (self._weight + item.width) > 5:
+            raise ValueError('maximum number of children exceeded')
+
+        if len(self._children) >= 5:
+            raise ValueError('maximum number of children exceeded')
+
+        if not isinstance(item, Item):
+            raise TypeError(f'expected Item not {item.__class__.__name__}')
+
+        if self._view:
+            self._view._add_count(1)
+
+        item._update_view(self.view)
+        item._parent = self
+        self._weight += 1
+        self._children.insert(position, item)
+
+        return self
+
     def remove_item(self, item: Item[Any]) -> Self:
         """Removes an item from the action row.
 

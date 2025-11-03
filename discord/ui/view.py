@@ -405,6 +405,37 @@ class BaseView:
 
         return view
 
+    def insert_item_at(self, position: int, item: Item[Any]) -> Self:
+        """Insert an item to the view.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        -----------
+        position: int
+            The position at which to add the item. `0` to insert at the beginning.
+        item: :class:`Item`
+            The item to add to the view.
+
+        Raises
+        --------
+        TypeError
+            An :class:`Item` was not passed.
+        ValueError
+            Maximum number of children has been exceeded, the
+            row the item is trying to be added to is full or the item
+            you tried to add is not allowed in this View.
+        """
+
+        if not isinstance(item, Item):
+            raise TypeError(f'expected Item not {item.__class__.__name__}')
+
+        item._update_view(self)
+        self._add_count(item._total_count)
+        self._children.insert(position, item)
+        return self
+
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to the view.
 
@@ -732,6 +763,23 @@ class View(BaseView):
             )
 
         return components
+
+    def insert_item_at(self, position: int, item: Item[Any]) -> Self:
+        if len(self._children) >= 25:
+            raise ValueError('maximum number of children exceeded')
+
+        if item._is_v2():
+            raise ValueError('v2 items cannot be added to this view')
+
+        super().insert_item_at(position, item)
+        try:
+            self.__weights.add_item(item)
+        except ValueError as e:
+            # if the item has no space left then remove it from _children
+            self._children.remove(item)
+            raise e
+
+        return self
 
     def add_item(self, item: Item[Any]) -> Self:
         if len(self._children) >= 25:
