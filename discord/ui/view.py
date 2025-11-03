@@ -885,6 +885,12 @@ class LayoutView(BaseView):
         super().add_item(item)
         return self
 
+    def insert_item_at(self, position: int, item: Item[Any]) -> Self:
+        if self._total_children >= 40:
+            raise ValueError('maximum number of children exceeded (40)')
+        super().insert_item_at(position, item)
+        return self
+
     def content_length(self) -> int:
         """:class:`int`: Returns the total length of all text content in the view's items.
 
