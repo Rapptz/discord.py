@@ -735,7 +735,6 @@ class AppCommandChannel(Hashable):
                 id=_get_as_snowflake(default_reaction_emoji, 'emoji_id') or None,  # Coerce 0 -> None
                 name=default_reaction_emoji.get('emoji_name') or '',
             )
-
         self.default_sort_order: Optional[ForumOrderType] = None
         default_sort_order = data.get('default_sort_order')
         if default_sort_order is not None:
@@ -753,7 +752,7 @@ class AppCommandChannel(Hashable):
 
     @property
     def available_tags(self) -> Sequence[ForumTag]:
-        """Sequence[:class:`ForumTag`]: Returns all the available tags in a :class:`~discord.ForumChannel`.
+        """Sequence[:class:`~discord.ForumTag`]: Returns all the available tags in a :class:`~discord.ForumChannel`.
 
         .. versionadded:: 2.7
         """
