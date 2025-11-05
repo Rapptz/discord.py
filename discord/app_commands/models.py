@@ -605,6 +605,9 @@ class AppCommandChannel(Hashable):
         :attr:`~discord.Permissions.manage_messages` bypass slowmode.
 
         .. versionadded:: 2.6
+
+        .. versionchanged:: 2.7
+            This can now return ``None`` if it does not have a slowmode feature.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work" or "age restricted".
 
