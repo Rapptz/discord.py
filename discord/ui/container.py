@@ -29,7 +29,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
-    Coroutine,
     Dict,
     Generator,
     List,
@@ -39,7 +38,7 @@ from typing import (
     Union,
 )
 
-from .item import Item, ContainedItemCallbackType as ItemCallbackType
+from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from .view import _component_to_item, LayoutView
 from ..enums import ComponentType
 from ..utils import get as _utils_get
@@ -49,25 +48,12 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..components import Container as ContainerComponent
-    from ..interactions import Interaction
     from .dynamic import DynamicItem
 
 S = TypeVar('S', bound='Container', covariant=True)
 V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('Container',)
-
-
-class _ContainerCallback:
-    __slots__ = ('container', 'callback', 'item')
-
-    def __init__(self, callback: ItemCallbackType[S, Any], container: Container, item: Item[Any]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
-        self.container: Container = container
-        self.item: Item[Any] = item
-
-    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
-        return self.callback(self.container, interaction, self.item)
 
 
 class Container(Item[V]):
@@ -163,7 +149,7 @@ class Container(Item[V]):
                 # action rows can be created inside containers, and then callbacks can exist here
                 # so we create items based off them
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
-                item.callback = _ContainerCallback(raw, self, item)  # type: ignore
+                item.callback = _ItemCallback(raw, self, item)  # type: ignore
                 setattr(self, raw.__name__, item)
                 # this should not fail because in order for a function to be here it should be from
                 # an action row and must have passed the check in __init_subclass__, but still
@@ -195,6 +181,15 @@ class Container(Item[V]):
         for child in self._children:
             child._update_view(view)
         return True
+
+    def copy(self) -> Container[V]:
+        new = copy.deepcopy(self)
+        for child in new._children:
+            newch = child.copy()
+            newch._parent = new
+        new._parent = self._parent
+        new._update_view(self.view)
+        return new
 
     def _has_children(self):
         return True
