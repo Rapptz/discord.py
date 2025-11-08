@@ -3087,7 +3087,7 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        description: str,
+        description: str = MISSING,
         emoji: str,
         file: File,
         reason: Optional[str] = None,
@@ -3107,7 +3107,7 @@ class Guild(Hashable):
         description: :class:`str`
             The sticker's description.
         emoji: :class:`str`
-            The name of a unicode emoji that represents the sticker's expression.
+            The raw unicode emoji that represents the sticker's expression.
         file: :class:`File`
             The file of the sticker to upload.
         reason: :class:`str`
@@ -3127,19 +3127,10 @@ class Guild(Hashable):
         """
         payload = {
             'name': name,
+            'description': description or '',
+            'tags': emoji,
         }
-
-        payload['description'] = description
-
-        try:
-            emoji = unicodedata.name(emoji)
-        except TypeError:
-            pass
-        else:
-            emoji = emoji.replace(' ', '_')
-
-        payload['tags'] = emoji
-
+        
         data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
         if self._state.cache_guild_expressions:
             return self._state.store_sticker(self, data)
