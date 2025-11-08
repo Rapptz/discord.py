@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import copy
 import datetime
-import unicodedata
 from typing import (
     Any,
     AsyncIterator,
