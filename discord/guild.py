@@ -3129,7 +3129,7 @@ class Guild(Hashable):
             'description': description or '',
             'tags': emoji,
         }
-        
+
         data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
         if self._state.cache_guild_expressions:
             return self._state.store_sticker(self, data)
