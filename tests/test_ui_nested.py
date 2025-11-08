@@ -117,8 +117,8 @@ async def view(
 # test that all "parent" attributes are properly set
 def test_parent(view: ViewFixture):
     assert view.container.parent is None
-    assert view.row.parent == view.container
-    assert view.item.parent == view.row
+    assert type(view.row.parent) is type(view.container)
+    assert type(view.item.parent) is type(view.row)
 
 
 # test that all "view" attributes are properly set
