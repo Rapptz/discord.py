@@ -64,7 +64,10 @@ async def view(
         container = row.parent
         assert isinstance(container, discord.ui.Container)
         assert container.parent is None
-        assert button.view == row.view == container.view is not None
+        assert button.view is not None
+        assert row.view is not None
+        assert container.view is not None
+        assert button.view == row.view == container.view
 
     class Item(item_type):
         async def callback(self, interaction):
