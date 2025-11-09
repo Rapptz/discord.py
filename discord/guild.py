@@ -3104,7 +3104,8 @@ class Guild(Hashable):
         name: :class:`str`
             The sticker name. Must be between 2 and 30 characters.
         description: :class:`str`
-            The sticker's description. Must be between 2 and 100 characters.
+            The sticker's description. Can be an empty string or a string between 2 and 100 characters.
+            Defaults to an empty string if not provided.
         emoji: :class:`str`
             The emoji tag associated with the sticker. This corresponds to the
             ``tags`` field in Discord's API, which is used for emoji autocomplete
