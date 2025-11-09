@@ -3102,11 +3102,15 @@ class Guild(Hashable):
         Parameters
         -----------
         name: :class:`str`
-            The sticker name. Must be at least 2 characters.
+            The sticker name. Must be between 2 and 30 characters.
         description: :class:`str`
-            The sticker's description.
+            The sticker's description. Must be between 2 and 100 characters.
         emoji: :class:`str`
-            The raw unicode emoji that represents the sticker's expression.
+            The emoji tag associated with the sticker. This corresponds to the
+            ``tags`` field in Discord's API, which is used for emoji autocomplete
+            and suggestion purposes. For correct rendering in Discord's UI, this
+            should ideally be a raw Unicode emoji or the string ID
+            of a custom emoji. Any string up to 200 characters is accepted.
         file: :class:`File`
             The file of the sticker to upload.
         reason: :class:`str`
