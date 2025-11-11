@@ -1653,7 +1653,7 @@ class Messageable:
             The message that was sent.
         """
 
-        channel = await self._get_channel()
+        destination = await self._get_channel()
         state = self._state
         content = str(content) if content is not None else None
         previous_allowed_mention = state.allowed_mentions
@@ -1703,9 +1703,9 @@ class Messageable:
             flags=flags,
             poll=poll,
         ) as params:
-            data = await state.http.send_message(channel.id, params=params)
+            data = await state.http.send_message(destination.id, params=params)
 
-        ret = state.create_message(channel=channel, data=data)
+        ret = state.create_message(channel=destination, data=data)
         if view and not view.is_finished() and view.is_dispatchable():
             state.store_view(view, ret.id)
 
@@ -1723,17 +1723,17 @@ class Messageable:
 
         Example Usage: ::
 
-            async with channel.typing():
+            async with destination.typing():
                 # simulate something heavy
                 await asyncio.sleep(20)
 
-            await channel.send('Done!')
+            await destination.send('Done!')
 
         Example Usage: ::
 
-            await channel.typing()
+            await destination.typing()
             # Do some computational magic for about 10 seconds
-            await channel.send('Done!')
+            await destination.send('Done!')
 
         .. versionchanged:: 2.0
             This no longer works with the ``with`` syntax, ``async with`` must be used instead.
@@ -1768,9 +1768,9 @@ class Messageable:
             The message asked for.
         """
 
-        channel = await self._get_channel()
-        data = await self._state.http.get_message(channel.id, id)
-        return self._state.create_message(channel=channel, data=data)
+        destination = await self._get_channel()
+        data = await self._state.http.get_message(destination.id, id)
+        return self._state.create_message(channel=destination, data=data)
 
     async def __pins(
         self,
@@ -1779,7 +1779,7 @@ class Messageable:
         before: Optional[SnowflakeTime] = None,
         oldest_first: bool = False,
     ) -> AsyncIterator[PinnedMessage]:
-        channel = await self._get_channel()
+        destination = await self._get_channel()
         state = self._state
         max_limit: int = 50
 
@@ -1795,7 +1795,7 @@ class Messageable:
                 break
 
             data = await self._state.http.pins_from(
-                channel_id=channel.id,
+                channel_id=destination.id,
                 limit=retrieve,
                 before=time,
             )
@@ -1816,7 +1816,7 @@ class Messageable:
 
             count = 0
             for count, m in enumerate(items, start=1):
-                message: Message = state.create_message(channel=channel, data=m['message'])
+                message: Message = state.create_message(channel=destination, data=m['message'])
                 message._pinned_at = utils.parse_time(m['pinned_at'])
                 yield message  # pyright: ignore[reportReturnType]
 
@@ -1830,7 +1830,7 @@ class Messageable:
         before: Optional[SnowflakeTime] = None,
         oldest_first: bool = False,
     ) -> _PinsIterator:
-        """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
+        """Retrieves an :term:`asynchronous iterator` of the pinned messages in the destination.
 
         You must have :attr:`~discord.Permissions.view_channel` and
         :attr:`~discord.Permissions.read_message_history` in order to use this.
@@ -1854,12 +1854,12 @@ class Messageable:
         Usage ::
 
             counter = 0
-            async for message in channel.pins(limit=250):
+            async for message in destination.pins(limit=250):
                 counter += 1
 
         Flattening into a list: ::
 
-            messages = [message async for message in channel.pins(limit=50)]
+            messages = [message async for message in destination.pins(limit=50)]
             # messages is now a list of Message...
 
         All parameters are optional.
@@ -1868,7 +1868,7 @@ class Messageable:
         -----------
         limit: Optional[int]
             The number of pinned messages to retrieve. If ``None``, it retrieves
-            every pinned message in the channel. Note, however, that this would
+            every pinned message in the destination. Note, however, that this would
             make it a slow operation.
             Defaults to ``50``.
 
@@ -1918,13 +1918,13 @@ class Messageable:
         Usage ::
 
             counter = 0
-            async for message in channel.history(limit=200):
+            async for message in destination.history(limit=200):
                 if message.author == client.user:
                     counter += 1
 
         Flattening into a list: ::
 
-            messages = [message async for message in channel.history(limit=123)]
+            messages = [message async for message in destination.history(limit=123)]
             # messages is now a list of Message...
 
         All parameters are optional.
@@ -1933,7 +1933,7 @@ class Messageable:
         -----------
         limit: Optional[:class:`int`]
             The number of messages to retrieve.
-            If ``None``, retrieves every message in the channel. Note, however,
+            If ``None``, retrieves every message in the destination. Note, however,
             that this would make it a slow operation.
         before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages before this date or message.
@@ -1956,7 +1956,7 @@ class Messageable:
         Raises
         ------
         ~discord.Forbidden
-            You do not have permissions to get channel message history.
+            You do not have permissions to get destination message history.
         ~discord.HTTPException
             The request to get message history failed.
 
@@ -1971,13 +1971,13 @@ class Messageable:
                 return [], None, 0
 
             around_id = around.id if around else None
-            data = await self._state.http.logs_from(channel.id, retrieve, around=around_id)
+            data = await self._state.http.logs_from(destination.id, retrieve, around=around_id)
 
             return data, None, 0
 
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
-            data = await self._state.http.logs_from(channel.id, retrieve, after=after_id)
+            data = await self._state.http.logs_from(destination.id, retrieve, after=after_id)
 
             if data:
                 if limit is not None:
@@ -1989,7 +1989,7 @@ class Messageable:
 
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
-            data = await self._state.http.logs_from(channel.id, retrieve, before=before_id)
+            data = await self._state.http.logs_from(destination.id, retrieve, before=before_id)
 
             if data:
                 if limit is not None:
@@ -2040,7 +2040,7 @@ class Messageable:
             if after and after != OLDEST_OBJECT:
                 predicate = lambda m: int(m['id']) > after.id
 
-        channel = await self._get_channel()
+        destination = await self._get_channel()
 
         while True:
             retrieve = 100 if limit is None else min(limit, 100)
@@ -2057,7 +2057,7 @@ class Messageable:
             count = 0
 
             for count, raw_message in enumerate(data, 1):
-                yield self._state.create_message(channel=channel, data=raw_message)
+                yield self._state.create_message(channel=destination, data=raw_message)
 
             if count < 100:
                 # There's no data left after this
