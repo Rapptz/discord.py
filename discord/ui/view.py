@@ -439,6 +439,7 @@ class BaseView:
             pass
         else:
             self._add_count(-item._total_count)
+            item._update_view(None)
 
         return self
 
@@ -448,6 +449,9 @@ class BaseView:
         This function returns the class instance to allow for fluent-style
         chaining.
         """
+        for child in self._children:
+            child._update_view(None)
+
         self._children.clear()
         self._total_children = 0
         return self
@@ -744,6 +748,8 @@ class View(BaseView):
             pass
         else:
             self.__weights.remove_item(item)
+            item._update_view(None)
+
         return self
 
     def clear_items(self) -> Self:
