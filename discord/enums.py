@@ -75,6 +75,8 @@ __all__ = (
     'EntitlementType',
     'EntitlementOwnerType',
     'PollLayoutType',
+    'InviteType',
+    'ReactionType',
     'VoiceChannelEffectAnimationType',
     'SubscriptionStatus',
     'MessageReferenceType',
@@ -276,6 +278,16 @@ class MessageType(Enum):
     purchase_notification = 44
     poll_result = 46
     emoji_added = 63
+
+    def is_deletable(self) -> bool:
+        return self not in {
+            MessageType.recipient_add,
+            MessageType.recipient_remove,
+            MessageType.call,
+            MessageType.channel_name_change,
+            MessageType.channel_icon_change,
+            MessageType.thread_starter_message,
+        }
 
 
 class SpeakingState(Enum):
@@ -681,6 +693,7 @@ class ComponentType(Enum):
     separator = 14
     container = 17
     label = 18
+    file_upload = 19
 
     def __int__(self) -> int:
         return self.value

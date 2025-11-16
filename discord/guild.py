@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import copy
 import datetime
-import unicodedata
 from typing import (
     Any,
     AsyncIterator,
@@ -3087,7 +3086,7 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        description: str,
+        description: str = MISSING,
         emoji: str,
         file: File,
         reason: Optional[str] = None,
@@ -3103,11 +3102,16 @@ class Guild(Hashable):
         Parameters
         -----------
         name: :class:`str`
-            The sticker name. Must be at least 2 characters.
+            The sticker name. Must be between 2 and 30 characters.
         description: :class:`str`
-            The sticker's description.
+            The sticker's description. Can be an empty string or a string between 2 and 100 characters.
+            Defaults to an empty string if not provided.
         emoji: :class:`str`
-            The name of a unicode emoji that represents the sticker's expression.
+            The emoji tag associated with the sticker. This corresponds to the
+            ``tags`` field in Discord's API, which is used for emoji autocomplete
+            and suggestion purposes. For correct rendering in Discord's UI, this
+            should ideally be a raw Unicode emoji or the string ID
+            of a custom emoji. Any string up to 200 characters is accepted.
         file: :class:`File`
             The file of the sticker to upload.
         reason: :class:`str`
@@ -3127,18 +3131,9 @@ class Guild(Hashable):
         """
         payload = {
             'name': name,
+            'description': description or '',
+            'tags': emoji,
         }
-
-        payload['description'] = description
-
-        try:
-            emoji = unicodedata.name(emoji)
-        except TypeError:
-            pass
-        else:
-            emoji = emoji.replace(' ', '_')
-
-        payload['tags'] = emoji
 
         data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
         if self._state.cache_guild_expressions:
@@ -3871,6 +3866,39 @@ class Guild(Hashable):
             self._roles[role.id] = role
 
         return roles
+
+    async def role_member_counts(self) -> Dict[Union[Object, Role], int]:
+        """|coro|
+
+        Retrieves a mapping of roles to the number of members that have it.
+
+        You must have :attr:`~Permissions.manage_roles` to do this.
+
+        .. versionadded:: 2.7
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to view the role member counts.
+        HTTPException
+            Retrieving the role member counts failed.
+
+        Returns
+        --------
+        Dict[Union[:class:`Object`, :class:`Role`], :class:`int`]
+            A mapping of roles to the number of members that have it.
+            If a role is not found in the cache, it will be represented as an :class:`Object`
+            instead of a :class:`Role`.
+        """
+        data = await self._state.http.get_role_member_counts(self.id)
+        result: Dict[Union[Object, Role], int] = {}
+        for role_id, member_count in data.items():
+            role_id = int(role_id)
+            role = self.get_role(role_id)
+            if role is None:
+                role = Object(id=role_id, type=Role)
+            result[role] = member_count
+        return result
 
     async def welcome_screen(self) -> WelcomeScreen:
         """|coro|

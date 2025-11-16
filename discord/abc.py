@@ -195,6 +195,9 @@ async def _purge_helper(
             count = 0
             await asyncio.sleep(1)
 
+        if not message.type.is_deletable():
+            continue
+
         if not check(message):
             continue
 

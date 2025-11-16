@@ -28,7 +28,6 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Coroutine,
     Dict,
     Generator,
     Iterator,
@@ -50,7 +49,7 @@ import sys
 import time
 import os
 
-from .item import Item, ItemCallbackType
+from .item import Item, ItemCallbackType, _ItemCallback
 from .select import Select
 from .dynamic import DynamicItem
 from ..components import (
@@ -85,7 +84,10 @@ if TYPE_CHECKING:
     from ..interactions import Interaction
     from ..message import Message
     from ..types.components import ComponentBase as ComponentBasePayload
-    from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
+    from ..types.interactions import (
+        ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload,
+        ResolvedData as ResolvedDataPayload,
+    )
     from ..state import ConnectionState
     from .modal import Modal
 
@@ -204,18 +206,6 @@ class _ViewWeights:
         self.weights = [0, 0, 0, 0, 0]
 
 
-class _ViewCallback:
-    __slots__ = ('view', 'callback', 'item')
-
-    def __init__(self, callback: ItemCallbackType[Any, Any], view: BaseView, item: Item[BaseView]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
-        self.view: BaseView = view
-        self.item: Item[BaseView] = item
-
-    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
-        return self.callback(self.view, interaction, self.item)
-
-
 class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
@@ -249,13 +239,13 @@ class BaseView:
                 item._update_view(self)
                 parent = getattr(item, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
-                    parent._view = self
+                    parent._update_view(self)
                 children.append(item)
                 parents[raw] = item
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
-                item.callback = _ViewCallback(raw, self, item)  # type: ignore
-                item._view = self
+                item.callback = _ItemCallback(raw, self, item)  # type: ignore
+                item._update_view(self)
                 if isinstance(item, Select):
                     item.options = [option.copy() for option in item.options]
                 setattr(self, raw.__name__, item)
@@ -449,6 +439,7 @@ class BaseView:
             pass
         else:
             self._add_count(-item._total_count)
+            item._update_view(None)
 
         return self
 
@@ -458,6 +449,9 @@ class BaseView:
         This function returns the class instance to allow for fluent-style
         chaining.
         """
+        for child in self._children:
+            child._update_view(None)
+
         self._children.clear()
         self._total_children = 0
         return self
@@ -754,6 +748,8 @@ class View(BaseView):
             pass
         else:
             self.__weights.remove_item(item)
+            item._update_view(None)
+
         return self
 
     def clear_items(self) -> Self:
@@ -1041,13 +1037,14 @@ class ViewStore:
         custom_id: str,
         interaction: Interaction,
         components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: ResolvedDataPayload,
     ) -> None:
         modal = self._modals.get(custom_id)
         if modal is None:
             _log.debug('Modal interaction referencing unknown custom_id %s. Discarding', custom_id)
             return
 
-        self.add_task(modal._dispatch_submit(interaction, components))
+        self.add_task(modal._dispatch_submit(interaction, components, resolved))
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:
         # This is called before re-adding the view

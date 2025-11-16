@@ -45,29 +45,18 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
-    TypedDict,
 )
 
 from ._types import _BaseCommand, BotT
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, Unpack
+    from typing_extensions import Self
     from discord.abc import Snowflake
     from discord._types import ClientT
 
     from .bot import BotBase
     from .context import Context
-    from .core import Command, _CommandDecoratorKwargs
-
-    class _CogKwargs(TypedDict, total=False):
-        name: str
-        group_name: Union[str, app_commands.locale_str]
-        description: str
-        group_description: Union[str, app_commands.locale_str]
-        group_nsfw: bool
-        group_auto_locale_strings: bool
-        group_extras: Dict[Any, Any]
-        command_attrs: _CommandDecoratorKwargs
+    from .core import Command
 
 
 __all__ = (
@@ -182,7 +171,7 @@ class CogMeta(type):
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
 
-    def __new__(cls, *args: Any, **kwargs: Unpack[_CogKwargs]) -> CogMeta:
+    def __new__(cls, *args: Any, **kwargs: Any) -> CogMeta:
         name, bases, attrs = args
         if any(issubclass(base, app_commands.Group) for base in bases):
             raise TypeError(

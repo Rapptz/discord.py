@@ -124,25 +124,25 @@ if TYPE_CHECKING:
     from .flags import MemberCacheFlags
 
     class _ClientOptions(TypedDict, total=False):
-        max_messages: int
-        proxy: str
-        proxy_auth: aiohttp.BasicAuth
-        shard_id: int
-        shard_count: int
+        max_messages: Optional[int]
+        proxy: Optional[str]
+        proxy_auth: Optional[aiohttp.BasicAuth]
+        shard_id: Optional[int]
+        shard_count: Optional[int]
         application_id: int
         member_cache_flags: MemberCacheFlags
         chunk_guilds_at_startup: bool
-        status: Status
-        activity: BaseActivity
-        allowed_mentions: AllowedMentions
+        status: Optional[Status]
+        activity: Optional[BaseActivity]
+        allowed_mentions: Optional[AllowedMentions]
         heartbeat_timeout: float
         guild_ready_timeout: float
         assume_unsync_clock: bool
         enable_debug_events: bool
         enable_raw_presences: bool
         http_trace: aiohttp.TraceConfig
-        max_ratelimit_timeout: float
-        connector: aiohttp.BaseConnector
+        max_ratelimit_timeout: Optional[float]
+        connector: Optional[aiohttp.BaseConnector]
 
 
 # fmt: off
@@ -2511,7 +2511,7 @@ class Client:
         )
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    async def delete_invite(self, invite: Union[Invite, str], /) -> Invite:
+    async def delete_invite(self, invite: Union[Invite, str], /, *, reason: Optional[str] = None) -> Invite:
         """|coro|
 
         Revokes an :class:`.Invite`, URL, or ID to an invite.
@@ -2527,6 +2527,8 @@ class Client:
         ----------
         invite: Union[:class:`.Invite`, :class:`str`]
             The invite to revoke.
+        reason: Optional[:class:`str`]
+            The reason for deleting the invite. Shows up on the audit log.
 
         Raises
         -------
@@ -2539,7 +2541,7 @@ class Client:
         """
 
         resolved = utils.resolve_invite(invite)
-        data = await self.http.delete_invite(resolved.code)
+        data = await self.http.delete_invite(resolved.code, reason=reason)
         return Invite.from_incomplete(state=self._connection, data=data)
 
     # Miscellaneous stuff

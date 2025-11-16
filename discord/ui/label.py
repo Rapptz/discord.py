@@ -50,6 +50,8 @@ V = TypeVar('V', bound='BaseView', covariant=True)
 class Label(Item[V]):
     """Represents a UI label within a modal.
 
+    This is a top-level layout component that can only be used on :class:`Modal`.
+
     .. versionadded:: 2.6
 
     Parameters
@@ -60,7 +62,7 @@ class Label(Item[V]):
     description: Optional[:class:`str`]
         The description text to display right below the label text.
         Can only be up to 100 characters.
-    component: Union[:class:`discord.ui.TextInput`, :class:`discord.ui.Select`]
+    component: :class:`Item`
         The component to display below the label.
     id: Optional[:class:`int`]
         The ID of the component. This must be unique across the view.
@@ -74,8 +76,7 @@ class Label(Item[V]):
         The description text to display right below the label text.
         Can only be up to 100 characters.
     component: :class:`Item`
-        The component to display below the label. Currently only
-        supports :class:`TextInput` and :class:`Select`.
+        The component to display below the label.
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -138,3 +139,8 @@ class Label(Item[V]):
 
     def is_dispatchable(self) -> bool:
         return False
+
+    @property
+    def _total_count(self) -> int:
+        # Count the component and ourselves
+        return 2

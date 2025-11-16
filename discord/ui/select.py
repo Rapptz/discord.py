@@ -39,10 +39,11 @@ from typing import (
     Sequence,
 )
 from contextvars import ContextVar
+import copy
 import inspect
 import os
 
-from .item import Item, ContainedItemCallbackType as ItemCallbackType
+from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
@@ -70,7 +71,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias, TypeGuard
+    from typing_extensions import TypeAlias, TypeGuard, Self
 
     from .view import BaseView
     from .action_row import ActionRow
@@ -78,6 +79,7 @@ if TYPE_CHECKING:
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
     from ..interactions import Interaction
+    from ..app_commands.namespace import ResolveKey
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
@@ -268,6 +270,14 @@ class BaseSelect(Item[V]):
         self.row = row
         self._values: List[PossibleValue] = []
 
+    def copy(self) -> Self:
+        new = copy.copy(self)
+        if isinstance(new.callback, _ItemCallback):
+            new.callback.item = new
+        new._parent = self._parent
+        new._update_view(self.view)
+        return new
+
     @property
     def id(self) -> Optional[int]:
         """Optional[:class:`int`]: The ID of this select."""
@@ -356,7 +366,24 @@ class BaseSelect(Item[V]):
     def _refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def _refresh_state(self, interaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
+    def _handle_submit(
+        self, interaction: Interaction, data: SelectMessageComponentInteractionData, resolved: Dict[ResolveKey, Any]
+    ) -> None:
+        payload: List[PossibleValue]
+        values = selected_values.get({})
+        string_values = data.get('values', [])
+        payload = [v for k, v in resolved.items() if k.id in string_values]
+        if not payload:
+            payload = list(string_values)
+
+        self._values = values[self.custom_id] = payload
+        selected_values.set(values)
+
+    def _refresh_state(
+        self,
+        interaction: Interaction,
+        data: SelectMessageComponentInteractionData,
+    ) -> None:
         values = selected_values.get({})
         payload: List[PossibleValue]
         try:
@@ -366,7 +393,7 @@ class BaseSelect(Item[V]):
             )
             payload = list(resolved.values())
         except KeyError:
-            payload = data.get('values', [])  # type: ignore
+            payload = list(data.get('values', []))
 
         self._values = values[self.custom_id] = payload
         selected_values.set(values)
@@ -580,6 +607,10 @@ class UserSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -611,6 +642,7 @@ class UserSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -622,6 +654,7 @@ class UserSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -682,6 +715,10 @@ class RoleSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the roles that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -713,6 +750,7 @@ class RoleSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -724,6 +762,7 @@ class RoleSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -779,6 +818,10 @@ class MentionableSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users/roles that should be selected by default.
         if :class:`.Object` is passed, then the type must be specified in the constructor.
@@ -811,6 +854,7 @@ class MentionableSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -822,6 +866,7 @@ class MentionableSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
             id=id,
@@ -884,6 +929,10 @@ class ChannelSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the channels that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -919,6 +968,7 @@ class ChannelSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = False,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -930,6 +980,7 @@ class ChannelSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             channel_types=channel_types,
             default_values=_handle_select_defaults(default_values, self.type),

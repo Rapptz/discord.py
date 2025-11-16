@@ -11,6 +11,26 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p6p4:
+
+v2.6.4
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix :class:`InviteType` and :class:`ReactionType` not being exported (:issue:`10310`)
+- Fix :class:`ui.Modal` submits not working for components without a ``custom_id`` (:issue:`10307`)
+- Fix ``required`` keyword argument missing in most :class:`ui.Select` classes (:issue:`10307`)
+- Fix incorrect handling of :class:`ui.Modal` submit data when using selects (:issue:`10307`)
+- Fix potential exception when assigning :attr:`ui.Container.children`
+- Fix :attr:`ui.Section.accessory` setter not updating internal state leading to an exception
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Use ``compression.zstd`` from the standard library if available on Python 3.14 (:issue:`10323`)
+
 .. _vp2p6p3:
 
 v2.6.3
