@@ -598,7 +598,7 @@ class AppCommandChannel(Hashable):
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
         Bots and users with :attr:`~discord.Permissions.manage_channels` or
-        :attr:`~discord.Permissions.manage_messages` bypass slowmode.
+        :attr:`~discord.Permissions.bypass_slowmode` bypass slowmode.
 
         .. versionadded:: 2.6
     nsfw: :class:`bool`
@@ -780,7 +780,7 @@ class AppCommandThread(Hashable):
         The number of seconds a member must wait between sending messages
         in this thread. A value of ``0`` denotes that it is disabled.
         Bots and users with :attr:`~discord.Permissions.manage_channels` or
-        :attr:`~discord.Permissions.manage_messages` bypass slowmode.
+        :attr:`~discord.Permissions.bypass_slowmode` bypass slowmode.
 
         .. versionadded:: 2.6
     message_count: :class:`int`
