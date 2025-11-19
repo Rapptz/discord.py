@@ -1674,12 +1674,21 @@ class Messageable:
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
-        if suppress_embeds or silent:
+        voice = False
+        if file is not None and file.voice:
+            if content is not None:
+                raise TypeError('Cannot send content with a voice message')
+            if embed is not None or embeds is not None:
+                raise TypeError('Cannot send embeds with a voice message')
+            voice = True
+
+        if suppress_embeds or silent or voice:
             from .message import MessageFlags  # circular import
 
             flags = MessageFlags._from_value(0)
             flags.suppress_embeds = suppress_embeds
             flags.suppress_notifications = silent
+            flags.voice = voice
         else:
             flags = MISSING
 
