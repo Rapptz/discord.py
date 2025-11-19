@@ -56,6 +56,8 @@ from typing import (
     TYPE_CHECKING,
 )
 import unicodedata
+import collections.abc
+from itertools import islice
 from base64 import b64encode, b64decode
 from bisect import bisect_left
 import datetime
@@ -434,7 +436,7 @@ def time_snowflake(dt: datetime.datetime, /, *, high: bool = False) -> int:
 
 
 def _find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]:
-    return next((element for element in iterable if predicate(element)), None)
+    return next(filter(predicate, iterable), None)
 
 
 async def _afind(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -> Optional[T]:
@@ -1037,17 +1039,18 @@ def escape_mentions(text: str) -> str:
 
 
 def _chunk(iterator: Iterable[T], max_size: int) -> Iterator[List[T]]:
-    ret = []
-    n = 0
-    for item in iterator:
-        ret.append(item)
-        n += 1
-        if n == max_size:
-            yield ret
-            ret = []
-            n = 0
-    if ret:
-        yield ret
+    # Specialise iterators that can be sliced as it is much faster
+    if isinstance(iterator, collections.abc.Sequence):
+        for i in range(0, len(iterator), max_size):
+            yield list(iterator[i : i + max_size])
+    else:
+        # Fallback to slower path
+        iterator = iter(iterator)
+        while True:
+            batch = list(islice(iterator, max_size))
+            if not batch:
+                break
+            yield batch
 
 
 async def _achunk(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[List[T]]:
