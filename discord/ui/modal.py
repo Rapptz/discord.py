@@ -271,3 +271,8 @@ class Modal(BaseView):
         if len(self._children) >= 5:
             raise ValueError('maximum number of children exceeded (5)')
         return super().add_item(item)
+
+    def insert_item_at(self, position: int, item: Item[Any]) -> Self:
+        if len(self._children) >= 5:
+            raise ValueError('maximum number of children exceeded (5)')
+        return super().insert_item_at(position, item)
