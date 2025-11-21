@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Tuple
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Type, Tuple
 from .utils import _get_as_snowflake, parse_time, MISSING
 from .user import User
 from .enums import try_enum, ExpireBehaviour
@@ -98,6 +98,10 @@ class Integration:
         The account linked to this integration.
     user: :class:`User`
         The user that added this integration.
+    scopes: List[:class:`str`]
+        The OAuth2 scopes the application has been authorized for.
+
+        .. versionadded:: 2.7
     """
 
     __slots__ = (
@@ -109,6 +113,7 @@ class Integration:
         'account',
         'user',
         'enabled',
+        'scopes',
     )
 
     def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
@@ -128,6 +133,7 @@ class Integration:
         user = data.get('user')
         self.user: Optional[User] = User(state=self._state, data=user) if user else None
         self.enabled: bool = data['enabled']
+        self.scopes: List[str] = data.get('scopes', [])
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
@@ -184,6 +190,10 @@ class StreamIntegration(Integration):
         The integration account information.
     synced_at: :class:`datetime.datetime`
         An aware UTC datetime representing when the integration was last synced.
+    scopes: List[:class:`str`]
+        The OAuth2 scopes the application has been authorized for.
+
+        .. versionadded:: 2.7
     """
 
     __slots__ = (
@@ -352,6 +362,10 @@ class BotIntegration(Integration):
         The integration account information.
     application: :class:`IntegrationApplication`
         The application tied to this integration.
+    scopes: List[:class:`str`]
+        The OAuth2 scopes the application has been authorized for.
+
+        .. versionadded:: 2.7
     """
 
     __slots__ = ('application',)
