@@ -3053,3 +3053,30 @@ class Message(PartialMessage, Hashable):
             The newly edited message.
         """
         return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
+
+    def is_forwardable(self) -> bool:
+        """:class:`bool`: Whether the message can be forwarded using :meth:`Message.forward`.
+
+        A message is forwardable only if it is a basic message type and does not
+        contain a poll, call, or activity, and is not a system message.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (
+            MessageType.default,
+            MessageType.reply,
+            MessageType.chat_input_command,
+            MessageType.context_menu_command,
+        ):
+            return False
+
+        if self.poll is not None:
+            return False
+
+        if self.call is not None:
+            return False
+
+        if self.activity is not None:
+            return False
+
+        return True
