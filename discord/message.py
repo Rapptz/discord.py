@@ -3070,13 +3070,13 @@ class Message(PartialMessage, Hashable):
         ):
             return False
 
-        if self.poll is not None:
+        if getattr(self, "poll", None) is not None:
             return False
 
-        if self.call is not None:
+        if getattr(self, "call", None) is not None:
             return False
 
-        if self.activity is not None:
+        if getattr(self, "activity", None) is not None:
             return False
 
         return True
