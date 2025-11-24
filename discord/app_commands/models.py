@@ -714,7 +714,9 @@ class AppCommandChannel(Hashable):
         self._flags: int = data.get('flags', 0)
         # Only a Text/Forum Channel have a 'default_auto_archive_duration', anything else we return None to avoid implying they have a 'default_auto_archive_duration' field
         self.default_auto_archive_duration: Optional[ThreadArchiveDuration] = (
-            data.get('default_auto_archive_duration', 1440) if self.type in (ChannelType.text, ChannelType.forum) else None
+            data.get('default_auto_archive_duration', 1440)
+            if self.type in (ChannelType.text, ChannelType.forum, ChannelType.news, ChannelType.media)
+            else None
         )
 
         # This takes advantage of the fact that dicts are ordered since Python 3.7
@@ -722,7 +724,9 @@ class AppCommandChannel(Hashable):
         self._available_tags: Dict[int, ForumTag] = {tag.id: tag for tag in tags}
 
         self.default_thread_slowmode_delay: Optional[int] = (
-            data.get('default_thread_rate_limit_per_user', 0) if self.type in (ChannelType.text, ChannelType.forum) else None
+            data.get('default_thread_rate_limit_per_user', 0)
+            if self.type in (ChannelType.text, ChannelType.forum, ChannelType.news, ChannelType.media)
+            else None
         )
         self.default_layout: Optional[ForumLayoutType] = (
             try_enum(ForumLayoutType, data.get('default_forum_layout', 0)) if self.type is ChannelType.forum else None
