@@ -574,7 +574,6 @@ class UserFlags(Enum):
     discord_certified_moderator = 262144
     bot_http_interactions = 524288
     spammer = 1048576
-    active_developer = 4194304
 
 
 class ActivityType(Enum):

@@ -22483,10 +22483,6 @@ msgstr "ユーザーがHTTPインタラクションのみを使用するボッ�
 msgid "Returns ``True`` if the user is flagged as a spammer by Discord."
 msgstr "ユーザーがDiscordによりスパマーとフラグ付けされている場合 ``True`` を返します。"
 
-#: ../../docstring of discord.PublicUserFlags.active_developer:1
-msgid "Returns ``True`` if the user is an active developer."
-msgstr "ユーザーがアクティブな開発者の場合に ``True`` を返します。"
-
 #: ../../../discord/flags.py:docstring of discord.flags.PublicUserFlags.all:1
 msgid "List[:class:`UserFlags`]: Returns all public flags the user has."
 msgstr "List[:class:`UserFlags`]: ユーザーが持つすべての公開フラグを返します。"
