@@ -300,7 +300,7 @@ class FFmpegPCMAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
-    env: Optional[:class:`Mapping[:class:`str`, :class:`str`]`]
+    env: Optional[Mapping[:class:`str`, :class:`str`]]
         A :class:`Mapping` that defines the environment variables for the Popen constructor.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
@@ -413,7 +413,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
-    env: Optional[:class:`Mapping[:class:`str`, :class:`str`]`]
+    env: Optional[Mapping[:class:`str`, :class:`str`]]
         A :class:`Mapping` that defines the environment variables for the Popen constructor.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
