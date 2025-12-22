@@ -4154,6 +4154,44 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
+.. class:: DisplayNameFontType
+
+    Represents the available font types for display name styles.
+
+    .. versionadded:: 2.7
+
+    .. attribute:: gg_sans
+
+        The font type is gg_sans.
+
+    .. attribute:: tempo
+
+        The font type is tempo.
+
+    .. attribute:: sakura
+
+        The font type is sakura.
+
+    .. attribute:: jellybean
+
+        The font type is jellybean.
+
+    .. attribute:: modern
+
+        The font type is modern.
+
+    .. attribute:: medieval
+
+        The font type is medieval.
+
+    .. attribute:: eight_bit
+
+        The font type is 8bit.
+
+    .. attribute:: vampyre
+
+        The font type is vampyre.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -5848,6 +5886,14 @@ PrimaryGuild
 .. attributetable:: PrimaryGuild
 
 .. autoclass:: PrimaryGuild()
+    :members:
+
+DisplayNameStyles
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: DisplayNameStyles
+
+.. autoclass:: DisplayNameStyles()
     :members:
 
 Collectible
