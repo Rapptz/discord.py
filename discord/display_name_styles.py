@@ -50,7 +50,7 @@ class DisplayNameStyles:
         The type of the display name font.
     effect_type: :class:`~discord.DisplayNameEffectType`
         The type of the display name effect.
-    colors: List[:class:`~discord.Color`]
+    colors: List[:class:`Colour`]
         A list of the colors that the display name style is consisted of. It may be either a singular color or multiple colors.
     """
 
