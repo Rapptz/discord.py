@@ -88,7 +88,7 @@ __all__ = (
     'CollectibleType',
     'NameplatePalette',
     'DisplayNameFontType',
-    'DisplayNameEffectType'
+    'DisplayNameEffectType',
 )
 
 

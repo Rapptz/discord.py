@@ -52,7 +52,7 @@ if TYPE_CHECKING:
         AvatarDecorationData,
         PrimaryGuild as PrimaryGuildPayload,
         UserCollectibles as UserCollectiblesPayload,
-        DisplayNameStyles as DisplayNameStylesPayload
+        DisplayNameStyles as DisplayNameStylesPayload,
     )
 
 
@@ -345,7 +345,7 @@ class BaseUser(_UserTag):
         if self._collectibles is None:
             return []
         return [Collectible(state=self._state, type=key, data=value) for key, value in self._collectibles.items() if value]  # type: ignore
-    
+
     @property
     def display_name_styles(self) -> Optional[DisplayNameStyles]:
         """:class:`DisplayNameStyles`: Returns the user's display name style, if available.
