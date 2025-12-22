@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .snowflake import Snowflake
-from typing import Literal, Optional, TypedDict
+from typing import Literal, Optional, TypedDict, List
 from typing_extensions import NotRequired
 
 
@@ -59,6 +59,12 @@ class UserCollectibles(TypedDict):
     nameplate: NameplateCollectible
 
 
+class DisplayNameStyles(TypedDict):
+    font_id: int
+    effect_id: int
+    colors: List[int]
+
+
 class PartialUser(TypedDict):
     id: Snowflake
     username: str
@@ -68,6 +74,7 @@ class PartialUser(TypedDict):
     avatar_decoration_data: NotRequired[AvatarDecorationData]
     primary_guild: NotRequired[PrimaryGuild]
     collectibles: NotRequired[UserCollectibles]
+    display_name_styles: NotRequired[DisplayNameStyles]
 
 
 class User(PartialUser, total=False):
