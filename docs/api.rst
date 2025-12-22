@@ -4156,41 +4156,67 @@ of :class:`enum.Enum`.
 
 .. class:: DisplayNameFontType
 
-    Represents the available font types for display name styles.
+    Represents the available fonts for display name styles.
 
     .. versionadded:: 2.7
 
     .. attribute:: gg_sans
 
-        The font type is gg_sans.
+        The font is gg_sans.
 
     .. attribute:: tempo
 
-        The font type is tempo.
+        The font is tempo.
 
     .. attribute:: sakura
 
-        The font type is sakura.
+        The font is sakura.
 
     .. attribute:: jellybean
 
-        The font type is jellybean.
+        The font is jellybean.
 
     .. attribute:: modern
 
-        The font type is modern.
+        The font is modern.
 
     .. attribute:: medieval
 
-        The font type is medieval.
+        The font is medieval.
 
     .. attribute:: eight_bit
 
-        The font type is 8bit.
+        The font is 8bit.
 
     .. attribute:: vampyre
 
-        The font type is vampyre.
+        The font is vampyre.
+
+.. class:: DisplayNameEffectType
+
+    Represents the available effects for display name styles.
+
+    .. versionadded:: 2.7
+
+    .. attribute:: solid
+
+        The effect is solid.
+
+    .. attribute:: gradient
+
+        The effect is gradient.
+
+    .. attribute:: neon
+
+        The effect is neon.
+
+    .. attribute:: toon
+
+        The effect is toon.
+
+    .. attribute:: pop
+
+        The effect is pop.
 
 .. _discord-api-audit-logs:
 

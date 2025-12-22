@@ -46,11 +46,11 @@ class DisplayNameStyles:
 
     Attributes
     -----------
-    font_type: :class:`DisplayNameFontType`
+    font_type: :class:`~discord.DisplayNameFontType`
         The type of the display name font.
-    effect_type: :class:`DisplayNameEffectType`
+    effect_type: :class:`~discord.DisplayNameEffectType`
         The type of the display name effect.
-    colors: List[:class:`Color`]
+    colors: List[:class:`~discord.Color`]
         A list of the colors that the display name style is consisted of. It may be either a singular color or multiple colors.
     """
 
