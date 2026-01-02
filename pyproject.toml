@@ -86,12 +86,11 @@ packages = [
 ]
 include-package-data = true
 
-[tool.black]
-line-length = 125
-skip-string-normalization = true
-
 [tool.ruff]
 line-length = 125
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
 
 [tool.ruff.format]
 line-ending = "lf"
@@ -109,12 +108,6 @@ exclude_lines = [
     "pragma: no cover",
     "@overload",
 ]
-
-[tool.isort]
-profile = "black"
-combine_as_imports = true
-combine_star = true
-line_length = 125
 
 [tool.pyright]
 include = [
