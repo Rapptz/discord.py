@@ -589,3 +589,60 @@ class VoiceClient(VoiceProtocol):
             _log.debug('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
+
+    async def send_binary_message(self, opcode: int, payload: bytes) -> None:
+        """|coro|
+
+        Sends a binary WebSocket message to the voice gateway.
+
+        This is used for DAVE protocol opcodes (21-31) for E2EE voice.
+
+        Parameters
+        ----------
+        opcode: :class:`int`
+            The opcode for the binary message (21-31 for DAVE).
+        payload: :class:`bytes`
+            The binary payload to send.
+
+        Raises
+        ------
+        ClientException
+            You are not connected to voice.
+
+        .. versionadded:: 2.7
+        """
+        if not self._connection or not self._connection.ws:
+            raise ClientException('Not connected to voice.')
+
+        await self._connection.ws.send_binary(opcode, payload)
+
+    def add_binary_message_handler(self, handler: Callable[[int, bytes], Coroutine[Any, Any, None]]) -> None:
+        """Adds a handler for binary WebSocket messages.
+
+        The handler should be an async function that takes two parameters:
+
+        - opcode (:class:`int`): The opcode of the binary message
+        - payload (:class:`bytes`): The binary payload
+
+        This is useful for implementing DAVE protocol handlers.
+
+        Parameters
+        ----------
+        handler: Callable[[int, bytes], Coroutine[Any, Any, None]]
+            The async function to handle binary messages.
+
+        Example
+        --------
+
+        .. code-block:: python3
+
+            async def handle_dave_message(opcode: int, payload: bytes):
+                if opcode == 25:  # MLS_COMMIT_WELCOME
+                    # Handle DAVE message
+                    pass
+
+            voice_client.add_binary_message_handler(handle_dave_message)
+
+        .. versionadded:: 2.7
+        """
+        self._connection.binary_message_handler = handler

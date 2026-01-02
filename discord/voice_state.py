@@ -189,7 +189,21 @@ class VoiceConnectionState:
 
     def __init__(self, voice_client: VoiceClient, *, hook: Optional[WebsocketHook] = None) -> None:
         self.voice_client = voice_client
-        self.hook = hook
+        self._user_hook = hook
+
+        # Wrap user hook to add binary message handler support
+        async def _default_hook(ws: DiscordVoiceWebSocket, msg: Dict[str, Any]) -> None:
+            # Handle binary messages through the binary_message_handler
+            if msg.get('_binary') and self.binary_message_handler:
+                opcode = msg['op']
+                payload = msg['d']
+                await self.binary_message_handler(opcode, payload)
+            
+            # Call user-provided hook if any
+            if self._user_hook:
+                await self._user_hook(ws, msg)
+        
+        self.hook = _default_hook
 
         self.timeout: float = 30.0
         self.reconnect: bool = True
@@ -208,6 +222,9 @@ class VoiceConnectionState:
         self.mode: SupportedModes = MISSING
         self.socket: socket.socket = MISSING
         self.ws: DiscordVoiceWebSocket = MISSING
+
+        # Binary message handler for DAVE protocol
+        self.binary_message_handler: Optional[Callable[[int, bytes], Coroutine[Any, Any, None]]] = None
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
         self._expecting_disconnect: bool = False

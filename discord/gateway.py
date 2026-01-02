@@ -824,6 +824,18 @@ class DiscordVoiceWebSocket:
     RESUMED             = 9
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
+    # DAVE Protocol opcodes (E2EE)
+    PREPARE_TRANSITION       = 21
+    EXECUTE_TRANSITION       = 22
+    PREPARE_EPOCH            = 23
+    MLS_PROPOSALS            = 24
+    MLS_COMMIT_WELCOME       = 25
+    MLS_ANNOUNCE_COMMIT_TRANSITION = 26
+    MLS_WELCOME              = 27
+    MLS_INVALID_COMMIT_WELCOME = 28
+    MLS_EXTERNAL_SENDER      = 29
+    DAVE_MLS_EXTERNAL_SENDER = 30
+    DAVE_MLS_KEY_PACKAGE     = 31
     # fmt: on
 
     def __init__(
@@ -840,6 +852,8 @@ class DiscordVoiceWebSocket:
         self.secret_key: Optional[List[int]] = None
         # defaulting to -1
         self.seq_ack: int = -1
+        # Binary message sequence number for DAVE
+        self._binary_seq: int = 0
         if hook:
             self._hook = hook  # type: ignore
 
@@ -851,6 +865,33 @@ class DiscordVoiceWebSocket:
         await self.ws.send_str(utils._to_json(data))
 
     send_heartbeat = send_as_json
+
+    async def send_binary(self, opcode: int, payload: bytes) -> None:
+        """Send a binary message with opcode and sequence number.
+        
+        Binary message format:
+        [0:2]  - Sequence number (uint16, big endian)
+        [2]    - Opcode (uint8)
+        [3:]   - Payload
+        
+        Used for DAVE protocol opcodes 21-31.
+        
+        Parameters
+        -----------
+        opcode: :class:`int`
+            The opcode for this binary message (21-31 for DAVE).
+        payload: :class:`bytes`
+            The binary payload to send.
+        """
+        # Pack sequence (uint16 BE), opcode (uint8), then payload
+        header = struct.pack('>HB', self._binary_seq, opcode)
+        message = header + payload
+        
+        _log.debug('Sending voice binary frame: opcode=%s, seq=%s, payload_len=%s', opcode, self._binary_seq, len(payload))
+        await self.ws.send_bytes(message)
+        
+        # Increment sequence number with wrapping at 65536
+        self._binary_seq = (self._binary_seq + 1) % 65536
 
     async def resume(self) -> None:
         state = self._connection
@@ -966,6 +1007,47 @@ class DiscordVoiceWebSocket:
 
         await self._hook(self, msg)
 
+    async def received_binary_message(self, data: bytes) -> None:
+        """Handle received binary messages.
+        
+        Binary message format:
+        [0:2]  - Sequence number (uint16, big endian)
+        [2]    - Opcode (uint8)
+        [3:]   - Payload
+        
+        DAVE protocol uses opcodes 21-31 as binary messages.
+        
+        Parameters
+        -----------
+        data: :class:`bytes`
+            The raw binary message data.
+        """
+        if len(data) < 3:
+            _log.warning('Received malformed binary message: too short (%d bytes)', len(data))
+            return
+        
+        # Unpack header: sequence (uint16 BE) and opcode (uint8)
+        seq, opcode = struct.unpack('>HB', data[:3])
+        payload = data[3:]
+        
+        _log.debug('Voice binary frame received: opcode=%s, seq=%s, payload_len=%s', opcode, seq, len(payload))
+        
+        # Update sequence acknowledgment for DAVE messages
+        if 21 <= opcode <= 31:
+            self.seq_ack = seq
+        
+        # Create a message dict that matches the JSON message format
+        # This allows hooks to handle binary messages consistently
+        msg = {
+            'op': opcode,
+            'd': payload,
+            'seq': seq,
+            '_binary': True  # Flag to indicate this was a binary message
+        }
+        
+        # Call hook for binary message handling (e.g., DAVE integration)
+        await self._hook(self, msg)
+
     async def initial_connection(self, data: Dict[str, Any]) -> None:
         state = self._connection
         state.ssrc = data['ssrc']
@@ -1045,6 +1127,8 @@ class DiscordVoiceWebSocket:
         msg = await asyncio.wait_for(self.ws.receive(), timeout=30.0)
         if msg.type is aiohttp.WSMsgType.TEXT:
             await self.received_message(utils._from_json(msg.data))
+        elif msg.type is aiohttp.WSMsgType.BINARY:
+            await self.received_binary_message(msg.data)
         elif msg.type is aiohttp.WSMsgType.ERROR:
             _log.debug('Received voice %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None) from msg.data
