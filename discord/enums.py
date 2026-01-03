@@ -87,8 +87,8 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
-    'DisplayNameFontType',
-    'DisplayNameEffectType',
+    'DisplayNameFont',
+    'DisplayNameEffect',
 )
 
 
@@ -1004,7 +1004,7 @@ class NameplatePalette(Enum):
     white = 'white'
 
 
-class DisplayNameFontType(Enum):
+class DisplayNameFont(Enum):
     gg_sans = 11
     tempo = 12
     sakura = 3
@@ -1015,7 +1015,7 @@ class DisplayNameFontType(Enum):
     vampyre = 10
 
 
-class DisplayNameEffectType(Enum):
+class DisplayNameEffect(Enum):
     solid = 1
     gradient = 2
     neon = 3

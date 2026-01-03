@@ -24,10 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from .colour import Colour
-from .enums import DisplayNameFontType, DisplayNameEffectType
+from .enums import DisplayNameFont, DisplayNameEffect, try_enum
 
 if TYPE_CHECKING:
     from .types.user import DisplayNameStyles as DisplayNameStylesPayload
@@ -54,15 +54,15 @@ class DisplayNameStyles:
         A list of the colors that the display name style is consisted of. It may be either a singular color or multiple colors.
     """
 
-    __slots__ = ('font_type', 'effect_type', 'colors')
+    __slots__ = ('font', 'effect', 'colors')
 
     def __init__(self, *, data: DisplayNameStylesPayload) -> None:
         self._update(data)
 
     def _update(self, data: DisplayNameStylesPayload):
-        self.font_type = DisplayNameFontType(data['font_id'])
-        self.effect_type = DisplayNameEffectType(data['effect_id'])
-        self.colors = [Colour(c) for c in data['colors']]
+        self.font: DisplayNameFont = try_enum(DisplayNameFont, data['font_id'])
+        self.effect: DisplayNameEffect = try_enum(DisplayNameEffect, data['effect_id'])
+        self.colors: List[Colour] = [Colour(c) for c in data.get('colors', [])]
 
     def __repr__(self) -> str:
-        return f'<DisplayNameStyle font_type={self.font_type} effect_type={self.effect_type} colors={self.colors}>'
+        return f'<DisplayNameStyle font={self.font} effect={self.effect} colors={self.colors}>'
