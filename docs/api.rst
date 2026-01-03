@@ -4154,7 +4154,7 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
-.. class:: DisplayNameFontType
+.. class:: DisplayNameFont
 
     Represents the available fonts for display name styles.
 
@@ -4192,7 +4192,7 @@ of :class:`enum.Enum`.
 
         The font is vampyre.
 
-.. class:: DisplayNameEffectType
+.. class:: DisplayNameEffect
 
     Represents the available effects for display name styles.
 
