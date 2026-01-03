@@ -290,6 +290,8 @@ class VoiceClient(VoiceProtocol):
 
         A new privacy code is created and cached each time a new transition is executed.
         This can be None if there is no active DAVE session happening.
+
+        .. versionadded:: 2.7
         """
         return self._connection.dave_session.voice_privacy_code if self._connection.dave_session else None
 
