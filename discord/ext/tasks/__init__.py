@@ -245,6 +245,7 @@ class Loop(Generic[LF]):
                 try:
                     await self.coro(*args, **kwargs)
                     self._last_iteration_failed = False
+                    backoff = ExponentialBackoff()
                 except self._valid_exception:
                     self._last_iteration_failed = True
                     if not self.reconnect:
