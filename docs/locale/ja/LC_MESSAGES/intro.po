@@ -30,8 +30,8 @@ msgid "Prerequisites"
 msgstr "前提"
 
 #: ../../intro.rst:16
-msgid "discord.py works with Python 3.8 or higher. Support for earlier versions of Python is not provided. Python 2.7 or lower is not supported. Python 3.7 or lower is not supported."
-msgstr "discord.py は Python 3.8 以降で動作します。それ以前のPython に対するサポートは提供されていません。 Python 2.7 以下はサポートされていません。Python 3.7 以下はサポートされていません。"
+msgid "discord.py works with Python 3.10 or higher. Support for earlier versions of Python is not provided. Python 2.7 or lower is not supported. Python 3.9 or lower is not supported."
+msgstr "discord.py は Python 3.10 以降で動作します。それ以前のPython に対するサポートは提供されていません。 Python 2.7 以下はサポートされていません。Python 3.9 以下はサポートされていません。"
 
 #: ../../intro.rst:23
 msgid "Installing"
@@ -124,4 +124,3 @@ msgstr "discord.pyは :ref:`イベント <discord-api-events>` の概念を中�
 #: ../../intro.rst:103
 msgid "A quick example to showcase how events work:"
 msgstr "以下はイベントの仕組みを紹介する簡単な例です。"
-

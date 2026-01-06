@@ -1,13 +1,14 @@
 from sphinx.builders.html import StandaloneHTMLBuilder
-from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, timestamp, ltz, should_write, GettextRenderer
+from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, timestamp, should_write, GettextRenderer
 from sphinx.locale import __
-from sphinx.util import status_iterator
+from sphinx.util.display import status_iterator
 from sphinx.util.osutil import ensuredir
 from sphinx.environment.adapters.indexentries import IndexEntries
 from sphinx.writers.html5 import HTML5Translator
 import datetime
 import os
 import re
+import time
 
 
 class DPYHTML5Translator(HTML5Translator):
@@ -63,13 +64,15 @@ class DPYMessageCatalogBuilder(MessageCatalogBuilder):
 
         # This is mostly copy pasted from Sphinx
         # However, this allows
+        local_tz = datetime.datetime.now().astimezone().tzinfo
+        timestamp_seconds = time.mktime(timestamp) if not isinstance(timestamp, (int, float)) else timestamp
         context = {
             'version': self.config.version,
             'copyright': self.config.copyright,
             'project': self.config.project,
             'last_translator': self.config.gettext_last_translator,
             'language_team': self.config.gettext_language_team,
-            'ctime': datetime.datetime.fromtimestamp(timestamp, ltz).strftime('%Y-%m-%d %H:%M%z'),
+            'ctime': datetime.datetime.fromtimestamp(timestamp_seconds, local_tz).strftime('%Y-%m-%d %H:%M%z'),
             'display_location': self.config.gettext_location,
             'display_uuid': self.config.gettext_uuid,
         }

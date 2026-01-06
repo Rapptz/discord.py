@@ -1394,7 +1394,7 @@ Bug Fixes
 Miscellaneous
 ~~~~~~~~~~~~~~~
 
-- The library now fully supports Python 3.8 without warnings.
+- The library now fully supports Python 3.10 without warnings.
 - Bump the dependency of ``websockets`` to 8.0 for those who can use it. (:issue:`2453`)
 - Due to Discord providing :class:`Member` data in mentions, users will now be upgraded to :class:`Member` more often if mentioned.
 - :func:`utils.escape_markdown` now properly escapes new quote markdown.

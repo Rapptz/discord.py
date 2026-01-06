@@ -2276,8 +2276,8 @@ msgid "|commands| :meth:`Context.send_help <.ext.commands.Context.send_help>` no
 msgstr "|commands| :meth:`Context.send_help <.ext.commands.Context.send_help>` が :meth:`HelpCommand.on_help_command_error <.ext.commands.HelpCommand.on_help_command_error>` ハンドラに正しく伝播するようになりました。"
 
 #: ../../whats_new.rst:898
-msgid "The library now fully supports Python 3.8 without warnings."
-msgstr "ライブラリは警告なしに Python 3.8 を完全にサポートするようになりました。"
+msgid "The library now fully supports Python 3.10 without warnings."
+msgstr "ライブラリは警告なしに Python 3.10 を完全にサポートするようになりました。"
 
 #: ../../whats_new.rst:899
 msgid "Bump the dependency of ``websockets`` to 8.0 for those who can use it. (:issue:`2453`)"
