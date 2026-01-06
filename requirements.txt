@@ -1,2 +1,2 @@
-aiohttp>=3.13.3
+aiohttp>=3.10.11
 audioop-lts; python_version>='3.13'
