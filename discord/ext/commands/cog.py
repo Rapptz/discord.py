@@ -646,7 +646,9 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
+    async def cog_app_command_error(
+        self, interaction: discord.Interaction[ClientT], error: app_commands.AppCommandError
+    ) -> None:
         """|coro|
 
         A special method that is called whenever an error within
