@@ -65,6 +65,8 @@ if TYPE_CHECKING:
         ApplicationCommandInteractionData,
         InteractionCallback as InteractionCallbackPayload,
         InteractionCallbackActivity as InteractionCallbackActivityPayload,
+        MessageComponentInteractionData,
+        ModalSubmitInteractionData,
     )
     from .types.webhook import (
         Webhook as WebhookPayload,
@@ -191,6 +193,8 @@ class Interaction(Generic[ClientT]):
         'channel',
         '_cs_namespace',
         '_cs_command',
+        '_cs_command_id',
+        '_cs_custom_id',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
@@ -376,6 +380,21 @@ class Interaction(Generic[ClientT]):
         else:
             return tree._get_context_menu(data)
 
+    @utils.cached_slot_property('_cs_command_id')
+    def command_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of the command that triggered this interaction.
+
+        Only applicable if :attr:`type` is one of, :attr:`InteractionType.application_command` or
+        :attr:`InteractionType.autocomplete`.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+            return None
+
+        data: ApplicationCommandInteractionData = self.data  # type: ignore
+        return int(data.get('id', 0))
+
     @utils.cached_slot_property('_cs_response')
     def response(self) -> InteractionResponse[ClientT]:
         """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction.
@@ -404,6 +423,21 @@ class Interaction(Generic[ClientT]):
     def expires_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction expires."""
         return self.created_at + datetime.timedelta(minutes=15)
+
+    @utils.cached_slot_property('_cs_custom_id')
+    def custom_id(self) -> Optional[str]:
+        """Optional[:class:`str`]: The custom ID of the component that triggered this interaction.
+
+        Only applicable if :attr:`type` is one of, :attr:`InteractionType.component` or
+        :attr:`InteractionType.modal_submit`.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (InteractionType.component, InteractionType.modal_submit):
+            return None
+
+        data: Union[MessageComponentInteractionData, ModalSubmitInteractionData] = self.data  # type: ignore
+        return data.get('custom_id')
 
     def is_expired(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is expired."""
