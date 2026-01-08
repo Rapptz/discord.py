@@ -76,6 +76,7 @@ if TYPE_CHECKING:
     )
     from .primary_guild import PrimaryGuild
     from .collectible import Collectible
+    from .display_name_styles import DisplayNameStyles
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
@@ -313,6 +314,7 @@ class Member(discord.abc.Messageable, _UserTag):
         avatar_decoration_sku_id: Optional[int]
         primary_guild: PrimaryGuild
         collectibles: List[Collectible]
+        display_name_styles: List[DisplayNameStyles]
 
     def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
