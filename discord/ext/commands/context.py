@@ -259,6 +259,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
         bot: BotT = interaction.client
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
+        type_ = data.get('type', 1)
         if interaction.message is None:
             synthetic_payload = {
                 'id': interaction.id,
@@ -268,7 +269,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 'tts': False,
                 'pinned': False,
                 'edited_timestamp': None,
-                'type': MessageType.chat_input_command if data.get('type', 1) == 1 else MessageType.context_menu_command,
+                'type': MessageType.chat_input_command.value if type_ == 1 else MessageType.context_menu_command.value,
                 'flags': 64,
                 'content': '',
                 'mentions': [],
@@ -288,7 +289,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         else:
             message = interaction.message
 
-        prefix = '/' if data.get('type', 1) == 1 else '\u200b'  # Mock the prefix
+        prefix = '/' if type_ == 1 else '\u200b'  # Mock the prefix
         ctx = cls(
             message=message,
             bot=bot,
