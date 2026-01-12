@@ -163,10 +163,11 @@ class KeepAliveHandler(threading.Thread):
 
                 try:
                     f.result()
-                except Exception:
-                    _log.exception('An error occurred while stopping the gateway. Ignoring.')
                 except BaseException as exc:
-                    _log.debug('A BaseException was raised while stopping the gateway', exc_info=exc)
+                    if isinstance(exc, Exception):
+                        _log.exception('An error occurred while stopping the gateway. Ignoring.')
+                    else:
+                        _log.debug('A BaseException was raised while stopping the gateway', exc_info=exc)
                 finally:
                     self.stop()
                 return
