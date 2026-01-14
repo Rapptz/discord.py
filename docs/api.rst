@@ -4154,6 +4154,28 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
+.. class:: InviteTargetUsersJobErrorStatus
+
+    Represents the error status of an invite target users job.
+
+    .. versionadded:: 2.7
+
+    .. attribute:: unspecified
+
+        The default value.
+
+    .. attribute:: processing
+
+        The job is still being processed.
+
+    .. attribute:: completed
+
+        The job has been completed successfully.
+
+    .. attribute:: failed
+
+        The job has failed, see `error_message` field for more details.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data

@@ -1837,6 +1837,24 @@ class HTTPClient:
 
     # Invite management
 
+    def _generate_invite_multipart(
+        self,
+        *,
+        payload: dict[str, Any],
+        user_ids: List[Snowflake],
+    ) -> MultipartParameters:
+        users ="Users\n" + "\n".join(str(user_id) for user_id in user_ids)
+        form = [
+            {'name': 'payload_json', 'value': utils._to_json(payload)},
+            {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'}
+        ]
+
+        return MultipartParameters(
+            multipart=form,
+            payload={},
+            files=None,
+        )
+
     def create_invite(
         self,
         channel_id: Snowflake,
@@ -1850,6 +1868,8 @@ class HTTPClient:
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
         flags: Optional[int] = None,
+        role_ids: Optional[List[Snowflake]] = None,
+        user_ids: Optional[List[Snowflake]] = None,
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -1870,6 +1890,17 @@ class HTTPClient:
 
         if flags:
             payload['flags'] = flags
+
+        if role_ids:
+            payload["role_ids"] = list(map(str, role_ids))
+
+        if user_ids:
+            multipart_params = self._generate_invite_multipart(payload=payload, user_ids=user_ids)
+            return self.request(
+                r,
+                form=multipart_params.multipart,
+                reason=reason,
+            )
 
         return self.request(r, reason=reason, json=payload)
 
@@ -1897,6 +1928,40 @@ class HTTPClient:
 
     def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[invite.Invite]:
         return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
+
+    def get_invite_target_users(
+        self,
+        invite_id: str,
+    ) -> Response[str]:
+        return self.request(
+            Route('GET', '/invites/{invite_id}/target-users', invite_id=invite_id)
+        )
+
+    def edit_invite_target_users(
+        self,
+        invite_id: str,
+        user_ids: List[Snowflake],
+    ) -> Response[None]:
+        multipart_params = self._generate_invite_multipart(
+            payload={},
+            user_ids=user_ids,
+        )
+        return self.request(
+            Route('PUT', '/invites/{invite_id}/target-users', invite_id=invite_id),
+            form=multipart_params.multipart,
+        )
+
+    def get_invite_target_users_job_status(
+        self,
+        invite_id: str,
+    ) -> Response[invite.InviteTargetUsersJobStatus]:
+        return self.request(
+            Route(
+                "GET",
+                '/invites/{invite_id}/target-users/job-status',
+                invite_id=invite_id,
+            )
+        )
 
     # Role management
 

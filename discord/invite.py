@@ -26,13 +26,22 @@ from __future__ import annotations
 
 from typing import List, Optional, Union, TYPE_CHECKING
 from .asset import Asset
-from .utils import parse_time, snowflake_time, _get_as_snowflake
+from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING
 from .object import Object
 from .mixins import Hashable
-from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, InviteType, try_enum
+from .enums import (
+    ChannelType,
+    NSFWLevel,
+    VerificationLevel,
+    InviteTarget,
+    InviteType,
+    InviteTargetUsersJobErrorStatus,
+    try_enum,
+)
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
 from .flags import InviteFlags
+from .role import Role
 
 __all__ = (
     'PartialInviteChannel',
@@ -47,6 +56,7 @@ if TYPE_CHECKING:
         Invite as InvitePayload,
         InviteGuild as InviteGuildPayload,
         GatewayInvite as GatewayInvitePayload,
+        InviteTargetUsersJobStatus as InviteTargetUsersJobStatusPayload,
     )
     from .types.guild import GuildFeature
     from .types.channel import (
@@ -62,6 +72,47 @@ if TYPE_CHECKING:
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object]
 
     import datetime
+
+
+class InviteTargetUsersJobStatus:
+    """Represents the status of an invite's target users job.
+
+    .. versionadded:: 2.7
+
+    Attributes
+    -----------
+    invite: :class:`Invite`
+        The invite this job status is for.
+    status: :class:`InviteTargetUsersJobStatus`
+        The status of the job.
+    total_users: :class:`int`
+        The total number of users in the job.
+    processed_users: :class:`int`
+        The number of users that have been processed so far.
+    created_at: :class:`datetime.datetime`
+        The time the job was created.
+    error_message: :class:`str`
+        The error message.
+    completed_at: Optional[:class:`datetime.datetime`]
+        The time the job was completed, if applicable.
+    """
+
+    def __init__(self, *, invite: Invite, data: InviteTargetUsersJobStatusPayload) -> None:
+        self.invite: Invite = invite
+        self.status: InviteTargetUsersJobErrorStatus = try_enum(InviteTargetUsersJobErrorStatus, data['status'])
+        self.total_users: int = data['total_users']
+        self.processed_users: int = data['processed_users']
+        self.created_at: datetime.datetime = parse_time(data['created_at'])
+        self.error_message: str = data['error_message']
+        self.completed_at: Optional[datetime.datetime] = (
+            parse_time(data['completed_at']) if data.get('completed_at') else None
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f'<InviteTargetUsersJobStatus invite={self.invite.code!r} status={self.status} '
+            f'total_users={self.total_users} processed_users={self.processed_users}>'
+        )
 
 
 class PartialInviteChannel:
@@ -358,6 +409,9 @@ class Invite(Hashable):
         The ID of the scheduled event associated with this invite, if any.
 
         .. versionadded:: 2.0
+    roles: List[:class:`Role`]
+        A list of roles the invite grants access to. Only available if the
+        invite's guild is cached.
     """
 
     __slots__ = (
@@ -382,6 +436,7 @@ class Invite(Hashable):
         'scheduled_event_id',
         'type',
         '_flags',
+        'roles',
     )
 
     BASE = 'https://discord.gg'
@@ -436,6 +491,13 @@ class Invite(Hashable):
         )
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
         self._flags: int = data.get('flags', 0)
+
+        if self.guild is not None and not isinstance(self.guild, (PartialInviteGuild, Object)):
+            self.roles: List[Role] = [
+                Role(state=self._state, guild=self.guild, data=role_data) for role_data in data.get('roles', [])
+            ]
+        else:
+            self.roles: List[Role] = []
 
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
@@ -582,3 +644,83 @@ class Invite(Hashable):
 
         data = await self._state.http.delete_invite(self.code, reason=reason)
         return self.from_incomplete(state=self._state, data=data)
+
+    async def fetch_target_users(self) -> list[int]:
+        """|coro|
+
+        Fetches the target users CSV file for this invite.
+
+        Requires the :attr:`~Permissions.manage_guild` permission.
+
+        Returns
+        --------
+        List[:class:`int`]
+            A list of user IDs representing the target users.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to fetch target users.
+        NotFound
+            The invite is invalid or expired or the invite does not have target users.
+        HTTPException
+            Fetching the target users failed.
+        """
+
+        string = await self._state.http.get_invite_target_users(self.code)
+        users = string.lstrip('Users\n').split('\n')
+        return [int(user_id) for user_id in users if user_id]
+
+    async def fetch_target_users_job_status(self) -> InviteTargetUsersJobStatus:
+        """|coro|
+
+        Fetches the status of the target users job for this invite.
+
+        Requires the :attr:`~Permissions.manage_guild` permission.
+
+        Returns
+        --------
+        :class:`InviteTargetUsersJobStatus`
+            A dictionary containing the status of the target users job.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to fetch target users job status.
+        NotFound
+            The invite is invalid or expired or there is no ongoing target users job.
+        HTTPException
+            Fetching the target users job status failed.
+        """
+
+        data = await self._state.http.get_invite_target_users_job_status(self.code)
+        return InviteTargetUsersJobStatus(invite=self, data=data)
+
+    async def edit(
+        self,
+        *,
+        users: List[Snowflake] = MISSING,
+    ) -> None:
+        """|coro|
+
+        Edits the invite.
+
+        Requires the :attr:`~Permissions.manage_guild` permission.
+
+        Parameters
+        -----------
+        users: List[:class:`~discord.abc.Snowflake`]
+            A list of users that should be able to use this invite.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit invites.
+        NotFound
+            The invite is invalid or expired.
+        HTTPException
+            Editing the invite failed.
+        """
+
+        if users is not MISSING:
+            await self._state.http.edit_invite_target_users(self.code, user_ids=[user.id for user in users])

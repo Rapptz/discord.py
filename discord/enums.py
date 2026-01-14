@@ -87,6 +87,7 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
+    'InviteTargetUsersJobErrorStatus'
 )
 
 
@@ -1000,6 +1001,13 @@ class NameplatePalette(Enum):
     clover = 'clover'
     lemon = 'lemon'
     white = 'white'
+
+
+class InviteTargetUsersJobErrorStatus(Enum):
+    unspecified = 0
+    pending = 1
+    completed = 2
+    failed = 3
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

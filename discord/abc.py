@@ -1283,6 +1283,8 @@ class GuildChannel:
         target_user: Optional[User] = None,
         target_application_id: Optional[int] = None,
         guest: bool = False,
+        roles: Optional[List[Snowflake]] = None,
+        users: Optional[List[Snowflake]] = None,
     ) -> Invite:
         """|coro|
 
@@ -1325,6 +1327,18 @@ class GuildChannel:
             Whether the invite is a guest invite.
 
             .. versionadded:: 2.6
+        roles: Optional[List[:class:`~discord.abc.Snowflake`]]
+            A list of roles that should be granted to the users joining via this invite.
+
+            Requires :attr:`~discord.Permissions.manage_guild` permission.
+
+            .. versionadded:: 2.7
+        users: Optional[List[:class:`~discord.abc.Snowflake`]]
+            A list of user IDs that should be able to access this invite.
+
+            Requires :attr:`~discord.Permissions.manage_guild` permission.
+
+            .. versionadded:: 2.7
 
         Raises
         -------
@@ -1358,6 +1372,8 @@ class GuildChannel:
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
             flags=flags.value if flags else None,
+            role_ids=[role.id for role in roles or []],
+            user_ids=[user.id for user in users or []],
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
