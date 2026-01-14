@@ -35,7 +35,7 @@ from .enums import (
     VerificationLevel,
     InviteTarget,
     InviteType,
-    InviteTargetUsersJobErrorStatus,
+    InviteJobStatus,
     try_enum,
 )
 from .appinfo import PartialAppInfo
@@ -99,7 +99,7 @@ class InviteTargetUsersJobStatus:
 
     def __init__(self, *, invite: Invite, data: InviteTargetUsersJobStatusPayload) -> None:
         self.invite: Invite = invite
-        self.status: InviteTargetUsersJobErrorStatus = try_enum(InviteTargetUsersJobErrorStatus, data['status'])
+        self.status: InviteJobStatus = try_enum(InviteJobStatus, data['status'])
         self.total_users: int = data['total_users']
         self.processed_users: int = data['processed_users']
         self.created_at: datetime.datetime = parse_time(data['created_at'])
@@ -681,7 +681,7 @@ class Invite(Hashable):
 
         Returns
         --------
-        :class:`InviteTargetUsersJobErrorStatus`
+        :class:`InviteJobStatus`
             The status of the target users job.
 
         Raises
