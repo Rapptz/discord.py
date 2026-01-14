@@ -408,8 +408,11 @@ class Invite(Hashable):
 
         .. versionadded:: 2.0
     roles: List[:class:`Role`]
-        A list of roles the invite grants access to. Only available if the
-        invite's guild is cached.
+        A list of roles that are granted to users joining via this invite.
+
+        This is only filled if the bot is in the guild where the invite belongs.
+
+        .. versionadded:: 2.7
     """
 
     __slots__ = (
@@ -646,14 +649,14 @@ class Invite(Hashable):
     async def fetch_target_users(self) -> list[int]:
         """|coro|
 
-        Fetches the target users CSV file for this invite.
+        Fetches the users that are allowed to join via this invite.
 
         Requires the :attr:`~Permissions.manage_guild` permission.
 
         Returns
         --------
         List[:class:`int`]
-            A list of user IDs representing the target users.
+            A list of user IDs.
 
         Raises
         -------
@@ -678,8 +681,8 @@ class Invite(Hashable):
 
         Returns
         --------
-        :class:`InviteTargetUsersJobStatus`
-            A dictionary containing the status of the target users job.
+        :class:`InviteTargetUsersJobErrorStatus`
+            The status of the target users job.
 
         Raises
         -------

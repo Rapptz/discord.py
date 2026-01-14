@@ -1330,11 +1330,12 @@ class GuildChannel:
         roles: Optional[List[:class:`~discord.abc.Snowflake`]]
             A list of roles that should be granted to the users joining via this invite.
 
-            Requires :attr:`~discord.Permissions.manage_guild` permission.
+            Requires :attr:`~discord.Permissions.manage_guild` permission and cannot
+            assign roles with higher permissions than the bot.
 
             .. versionadded:: 2.7
         users: Optional[List[:class:`~discord.abc.Snowflake`]]
-            A list of user IDs that should be able to access this invite.
+            A list of users that are allowed to join via this invite.
 
             Requires :attr:`~discord.Permissions.manage_guild` permission.
 
