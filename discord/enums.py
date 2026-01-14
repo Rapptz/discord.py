@@ -87,7 +87,7 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
-    'InviteTargetUsersJobErrorStatus'
+    'InviteTargetUsersJobErrorStatus',
 )
 
 

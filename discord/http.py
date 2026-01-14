@@ -1843,10 +1843,10 @@ class HTTPClient:
         payload: dict[str, Any],
         user_ids: List[Snowflake],
     ) -> MultipartParameters:
-        users ="Users\n" + "\n".join(str(user_id) for user_id in user_ids)
+        users = 'Users\n' + '\n'.join(str(user_id) for user_id in user_ids)
         form = [
             {'name': 'payload_json', 'value': utils._to_json(payload)},
-            {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'}
+            {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'},
         ]
 
         return MultipartParameters(
@@ -1892,7 +1892,7 @@ class HTTPClient:
             payload['flags'] = flags
 
         if role_ids:
-            payload["role_ids"] = list(map(str, role_ids))
+            payload['role_ids'] = list(map(str, role_ids))
 
         if user_ids:
             multipart_params = self._generate_invite_multipart(payload=payload, user_ids=user_ids)
@@ -1933,9 +1933,7 @@ class HTTPClient:
         self,
         invite_id: str,
     ) -> Response[str]:
-        return self.request(
-            Route('GET', '/invites/{invite_id}/target-users', invite_id=invite_id)
-        )
+        return self.request(Route('GET', '/invites/{invite_id}/target-users', invite_id=invite_id))
 
     def edit_invite_target_users(
         self,
@@ -1957,7 +1955,7 @@ class HTTPClient:
     ) -> Response[invite.InviteTargetUsersJobStatus]:
         return self.request(
             Route(
-                "GET",
+                'GET',
                 '/invites/{invite_id}/target-users/job-status',
                 invite_id=invite_id,
             )
