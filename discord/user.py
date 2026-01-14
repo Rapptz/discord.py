@@ -313,9 +313,7 @@ class BaseUser(_UserTag):
     def display_name(self) -> str:
         """:class:`str`: Returns the user's display name.
 
-        For regular users this is just their global name or their username,
-        but if they have a guild specific nickname then that
-        is returned instead.
+        This is the user's global name or username
         """
         if self.global_name:
             return self.global_name
