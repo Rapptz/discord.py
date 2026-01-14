@@ -104,9 +104,7 @@ class InviteTargetUsersJobStatus:
         self.processed_users: int = data['processed_users']
         self.created_at: datetime.datetime = parse_time(data['created_at'])
         self.error_message: str = data['error_message']
-        self.completed_at: Optional[datetime.datetime] = (
-            parse_time(data['completed_at']) if data.get('completed_at') else None
-        )
+        self.completed_at: Optional[datetime.datetime] = parse_time(data.get('completed_at'))
 
     def __repr__(self) -> str:
         return (
