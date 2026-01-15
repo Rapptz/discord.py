@@ -724,4 +724,4 @@ class Invite(Hashable):
         """
 
         if users is not MISSING:
-            await self._state.http.edit_invite_target_users(self.code, user_ids=[user.id for user in users])
+            await self._state.http.edit_invite_target_users(self.code, user_ids=[str(user.id) for user in users])
