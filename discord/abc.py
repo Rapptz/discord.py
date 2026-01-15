@@ -1373,8 +1373,8 @@ class GuildChannel:
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
             flags=flags.value if flags else None,
-            role_ids=[str(role.id) for role in roles or []],
-            user_ids=[str(user.id) for user in users or []],
+            role_ids=[role.id for role in roles or []],
+            user_ids=[user.id for user in users or []],
         )
         return Invite.from_incomplete(data=data, state=self._state)
 

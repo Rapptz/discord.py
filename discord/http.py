@@ -1841,9 +1841,9 @@ class HTTPClient:
         self,
         *,
         payload: dict[str, Any],
-        user_ids: List[str],
+        user_ids: List[Snowflake],
     ) -> MultipartParameters:
-        users = "Users\n" + "\n".join(user_ids)
+        users = "Users\n" + "\n".join(map(str, user_ids))
         form = [
             {'name': 'payload_json', 'value': utils._to_json(payload)},
             {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'},
@@ -1938,7 +1938,7 @@ class HTTPClient:
     def edit_invite_target_users(
         self,
         invite_id: str,
-        user_ids: List[str],
+        user_ids: List[Snowflake],
     ) -> Response[None]:
         multipart_params = self._generate_invite_multipart(
             payload={},
