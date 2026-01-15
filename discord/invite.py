@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, Union, TYPE_CHECKING
+from typing import List, Optional, Sequence, Union, TYPE_CHECKING
 from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING
 from .object import Object
@@ -700,7 +700,7 @@ class Invite(Hashable):
     async def edit(
         self,
         *,
-        users: List[Snowflake] = MISSING,
+        users: Sequence[Snowflake] = MISSING,
     ) -> None:
         """|coro|
 
