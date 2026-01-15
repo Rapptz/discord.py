@@ -4154,7 +4154,7 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
-.. class:: InviteJobStatus
+.. class:: InviteUsersJobStatus
 
     Represents the error status of an invite target users job.
 

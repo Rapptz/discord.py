@@ -35,7 +35,7 @@ from .enums import (
     VerificationLevel,
     InviteTarget,
     InviteType,
-    InviteJobStatus,
+    InviteUsersJobStatus,
     try_enum,
 )
 from .appinfo import PartialAppInfo
@@ -99,7 +99,7 @@ class InviteUsersJob:
 
     def __init__(self, *, invite: Invite, data: InviteTargetUsersJobStatusPayload) -> None:
         self.invite: Invite = invite
-        self.status: InviteJobStatus = try_enum(InviteJobStatus, data['status'])
+        self.status: InviteUsersJobStatus = try_enum(InviteUsersJobStatus, data['status'])
         self.total_users: int = data['total_users']
         self.processed_users: int = data['processed_users']
         self.created_at: datetime.datetime = parse_time(data['created_at'])

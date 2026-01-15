@@ -87,7 +87,7 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
-    'InviteJobStatus',
+    'InviteUsersJobStatus',
 )
 
 
@@ -1003,7 +1003,7 @@ class NameplatePalette(Enum):
     white = 'white'
 
 
-class InviteJobStatus(Enum):
+class InviteUsersJobStatus(Enum):
     unspecified = 0
     pending = 1
     completed = 2
