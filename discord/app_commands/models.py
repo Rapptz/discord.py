@@ -39,12 +39,14 @@ from ..enums import (
 )
 import array
 from ..mixins import Hashable
-from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
+from ..utils import _get_as_snowflake, parse_time, snowflake_time, SequenceProxy, MISSING
 from ..object import Object
 from ..role import Role
 from ..member import Member
+from ..channel import ForumLayoutType, ForumTag, ForumOrderType
+from ..emoji import PartialEmoji
 
-from typing import Any, Dict, Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, TYPE_CHECKING, Optional, TypeVar, Union, Sequence
 
 __all__ = (
     'AppCommand',
@@ -85,7 +87,7 @@ if TYPE_CHECKING:
     from ..abc import Snowflake
     from ..state import ConnectionState
     from ..guild import GuildChannel, Guild
-    from ..channel import TextChannel, ForumChannel, ForumTag
+    from ..channel import TextChannel, ForumChannel
     from ..threads import Thread
     from ..user import User
 
@@ -594,17 +596,69 @@ class AppCommandChannel(Hashable):
         *not* point to an existing or valid message.
 
         .. versionadded:: 2.6
-    slowmode_delay: :class:`int`
+    slowmode_delay: Optional[:class:`int`]
         The number of seconds a member must wait between sending messages
-        in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~discord.Permissions.manage_channels` or
+        in this channel. A value of ``0`` denotes that it is disabled. While a value
+        of ``None`` denotes that the channel does not have a slowmode feature
+        (i.e. :class:`~discord.CategoryChannel`). Bots and users with
+        :attr:`~discord.Permissions.manage_channels` or
         :attr:`~discord.Permissions.manage_messages` bypass slowmode.
 
         .. versionadded:: 2.6
+
+        .. versionchanged:: 2.7
+            This can now return ``None`` if it does not have a slowmode feature.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work" or "age restricted".
 
         .. versionadded:: 2.6
+    default_auto_archive_duration: Optional[:class:`int`]
+        The default auto archive duration in minutes for threads created in a
+        :class:`~discord.TextChannel` or :class:`~discord.ForumChannel`. If not set
+        or not one of the channels mentioned earlier, ``None`` is returned.
+
+        .. versionadded:: 2.7
+    default_thread_slowmode_delay: Optional[:class:`int`]
+        The default slowmode delay in seconds for threads created in a
+        :class:`~discord.TextChannel` or :class:`~discord.ForumChannel`. If not set
+        or not one of the channels mentioned earlier, ``None`` is returned.
+
+        .. versionadded:: 2.7
+    default_reaction_emoji: Optional[:class:`~discord.PartialEmoji`]
+        The default reaction emoji for threads created in a
+        :class:`~discord.ForumChannel` to show in thread reaction button. If not set
+        or not a :class:`~discord.ForumChannel`, ``None`` is returned.
+
+        .. versionadded:: 2.7
+    default_layout: Optional[:class:`~discord.ForumLayoutType`]
+        The default layout for posts in a :class:`~discord.ForumChannel`.
+        Defaults to :attr:`~discord.ForumLayoutType.not_set`, ``None`` if
+        not a forum channel.
+
+        .. versionadded:: 2.7
+    default_sort_order: Optional[:class:`~discord.ForumOrderType`]
+        The default sort order for posts in a forum channel. If not set or not a
+        :class:`~discord.ForumChannel`, ``None`` is returned.
+
+        .. versionadded:: 2.7
+    bitrate: Optional[:class:`int`]
+        The channel's preferred audio bitrate in bits per second. If not a
+        :class:`~discord.VoiceChannel` or :class:`~discord.StageChannel`, ``None`` is
+        returned.
+
+        .. versionadded:: 2.7
+    user_limit: Optional[:class:`int`]
+        The channel's limit for number of members that can be in a voice or stage channel.
+        If not a :class:`~discord.VoiceChannel` or :class:`~discord.StageChannel`, ``None`` is
+        returned.
+
+        .. versionadded:: 2.7
+    rtc_region: Optional[:class:`str`]
+        The region for the voice or stage channel's voice communication.
+        A value of ``None`` indicates automatic voice region detection or it is not a
+        :class:`~discord.VoiceChannel` or :class:`~discord.StageChannel`.
+
+        .. versionadded:: 2.7
     """
 
     __slots__ = (
@@ -622,6 +676,15 @@ class AppCommandChannel(Hashable):
         '_last_pin',
         '_flags',
         '_state',
+        'default_thread_slowmode_delay',
+        'default_layout',
+        '_available_tags',
+        'default_reaction_emoji',
+        'default_sort_order',
+        'default_auto_archive_duration',
+        'rtc_region',
+        'bitrate',
+        'user_limit',
     )
 
     def __init__(
@@ -641,16 +704,63 @@ class AppCommandChannel(Hashable):
         self.position: int = data.get('position') or 0
         self.nsfw: bool = data.get('nsfw') or False
         self.category_id: Optional[int] = _get_as_snowflake(data, 'parent_id')
-        self.slowmode_delay: int = data.get('rate_limit_per_user') or 0
+
+        # Category channel does not have a slowmode_delay, so we return None (instead of 0) to avoid implying CategoryChannel has a slowmode
+        self.slowmode_delay: Optional[int] = (
+            data.get('rate_limit_per_user', 0) if not self.type is ChannelType.category else None
+        )
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
         self._last_pin: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
         self._flags: int = data.get('flags', 0)
+        # Only a Text/Forum Channel have a 'default_auto_archive_duration', anything else we return None to avoid implying they have a 'default_auto_archive_duration' field
+        self.default_auto_archive_duration: Optional[ThreadArchiveDuration] = (
+            data.get('default_auto_archive_duration', 1440)
+            if self.type in (ChannelType.text, ChannelType.forum, ChannelType.news, ChannelType.media)
+            else None
+        )
+
+        # This takes advantage of the fact that dicts are ordered since Python 3.7
+        tags = [ForumTag.from_data(state=self._state, data=tag) for tag in data.get('available_tags', [])]
+        self._available_tags: Dict[int, ForumTag] = {tag.id: tag for tag in tags}
+
+        self.default_thread_slowmode_delay: Optional[int] = (
+            data.get('default_thread_rate_limit_per_user', 0)
+            if self.type in (ChannelType.text, ChannelType.forum, ChannelType.news, ChannelType.media)
+            else None
+        )
+        self.default_layout: Optional[ForumLayoutType] = (
+            try_enum(ForumLayoutType, data.get('default_forum_layout', 0)) if self.type is ChannelType.forum else None
+        )
+        self.default_reaction_emoji: Optional[PartialEmoji] = None
+        default_reaction_emoji = data.get('default_reaction_emoji')
+        if default_reaction_emoji:
+            self.default_reaction_emoji = PartialEmoji.with_state(
+                state=self._state,
+                id=_get_as_snowflake(default_reaction_emoji, 'emoji_id') or None,  # Coerce 0 -> None
+                name=default_reaction_emoji.get('emoji_name') or '',
+            )
+        self.default_sort_order: Optional[ForumOrderType] = None
+        default_sort_order = data.get('default_sort_order')
+        if default_sort_order is not None:
+            self.default_sort_order = try_enum(ForumOrderType, default_sort_order)
+
+        self.rtc_region: Optional[str] = data.get('rtc_region')
+        self.bitrate: Optional[int] = data.get('bitrate')
+        self.user_limit: Optional[int] = data.get('user_limit')
 
     def __str__(self) -> str:
         return self.name
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r}>'
+
+    @property
+    def available_tags(self) -> Sequence[ForumTag]:
+        """Sequence[:class:`~discord.ForumTag`]: Returns all the available tags in a :class:`~discord.ForumChannel`.
+
+        .. versionadded:: 2.7
+        """
+        return SequenceProxy(self._available_tags.values())
 
     @property
     def guild(self) -> Optional[Guild]:
