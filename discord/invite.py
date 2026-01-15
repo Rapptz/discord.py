@@ -91,7 +91,7 @@ class InviteUsersJob:
         The number of users that have been processed so far.
     created_at: :class:`datetime.datetime`
         The time the job was created.
-    error_message: :class:`str`
+    error_message: Optional[:class:`str`]
         The error message.
     completed_at: Optional[:class:`datetime.datetime`]
         The time the job was completed, if applicable.
@@ -102,13 +102,13 @@ class InviteUsersJob:
         self.status: InviteUsersJobStatus = try_enum(InviteUsersJobStatus, data['status'])
         self.total_users: int = data['total_users']
         self.processed_users: int = data['processed_users']
-        self.created_at: datetime.datetime = parse_time(data['created_at'])
-        self.error_message: str = data['error_message']
+        self.error_message: Optional[str] = data.get('error_message')
+        self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
         self.completed_at: Optional[datetime.datetime] = parse_time(data.get('completed_at'))
 
     def __repr__(self) -> str:
         return (
-            f'<InviteTargetUsersJob invite={self.invite.code!r} status={self.status} '
+            f'<{self.__class__.__name__} invite={self.invite.code!r} status={self.status} '
             f'total_users={self.total_users} processed_users={self.processed_users}>'
         )
 

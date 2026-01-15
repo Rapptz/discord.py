@@ -103,6 +103,6 @@ class InviteTargetUsersJobStatus(TypedDict):
     status: int
     total_users: int
     processed_users: int
-    created_at: str
-    error_message: str
-    completed_at: Optional[str]
+    created_at: NotRequired[Optional[str]]
+    error_message: NotRequired[Optional[str]]
+    completed_at: NotRequired[Optional[str]]

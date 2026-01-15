@@ -4156,7 +4156,7 @@ of :class:`enum.Enum`.
 
 .. class:: InviteUsersJobStatus
 
-    Represents the error status of an invite target users job.
+    Represents the status of an invite target users job.
 
     .. versionadded:: 2.7
 
