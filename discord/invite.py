@@ -74,7 +74,7 @@ if TYPE_CHECKING:
     import datetime
 
 
-class InviteTargetUsersJobStatus:
+class InviteUsersJob:
     """Represents the status of an invite's target users job.
 
     .. versionadded:: 2.7
@@ -83,7 +83,7 @@ class InviteTargetUsersJobStatus:
     -----------
     invite: :class:`Invite`
         The invite this job status is for.
-    status: :class:`InviteTargetUsersJobStatus`
+    status: :class:`InviteTargetUsersJob`
         The status of the job.
     total_users: :class:`int`
         The total number of users in the job.
@@ -108,7 +108,7 @@ class InviteTargetUsersJobStatus:
 
     def __repr__(self) -> str:
         return (
-            f'<InviteTargetUsersJobStatus invite={self.invite.code!r} status={self.status} '
+            f'<InviteTargetUsersJob invite={self.invite.code!r} status={self.status} '
             f'total_users={self.total_users} processed_users={self.processed_users}>'
         )
 
@@ -672,7 +672,7 @@ class Invite(Hashable):
         users = string.lstrip('Users\n').split('\n')
         return [int(user_id) for user_id in users if user_id]
 
-    async def fetch_target_users_job_status(self) -> InviteTargetUsersJobStatus:
+    async def fetch_target_users_job_status(self) -> InviteUsersJob:
         """|coro|
 
         Fetches the status of the target users job for this invite.
@@ -695,7 +695,7 @@ class Invite(Hashable):
         """
 
         data = await self._state.http.get_invite_target_users_job_status(self.code)
-        return InviteTargetUsersJobStatus(invite=self, data=data)
+        return InviteUsersJob(invite=self, data=data)
 
     async def edit(
         self,
