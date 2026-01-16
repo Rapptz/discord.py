@@ -1837,23 +1837,17 @@ class HTTPClient:
 
     # Invite management
 
-    def _generate_invite_multipart(
+    def _generate_invite_form(
         self,
         *,
         payload: dict[str, Any],
         user_ids: List[Snowflake],
-    ) -> MultipartParameters:
+    ) -> list[dict[str, Any]]:
         users = 'Users\n' + '\n'.join(map(str, user_ids))
-        form = [
+        return [
             {'name': 'payload_json', 'value': utils._to_json(payload)},
             {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'},
         ]
-
-        return MultipartParameters(
-            multipart=form,
-            payload={},
-            files=None,
-        )
 
     def create_invite(
         self,
@@ -1895,10 +1889,10 @@ class HTTPClient:
             payload['role_ids'] = list(map(str, role_ids))
 
         if user_ids:
-            multipart_params = self._generate_invite_multipart(payload=payload, user_ids=user_ids)
+            form = self._generate_invite_form(payload=payload, user_ids=user_ids)
             return self.request(
                 r,
-                form=multipart_params.multipart,
+                form=form,
                 reason=reason,
             )
 
@@ -1940,14 +1934,11 @@ class HTTPClient:
         invite_id: str,
         user_ids: List[Snowflake],
     ) -> Response[None]:
-        multipart_params = self._generate_invite_multipart(
+        form = self._generate_invite_form(
             payload={},
             user_ids=user_ids,
         )
-        return self.request(
-            Route('PUT', '/invites/{invite_id}/target-users', invite_id=invite_id),
-            form=multipart_params.multipart,
-        )
+        return self.request(Route('PUT', '/invites/{invite_id}/target-users', invite_id=invite_id), form=form)
 
     def get_invite_target_users_job_status(
         self,
