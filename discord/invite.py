@@ -407,10 +407,11 @@ class Invite(Hashable):
         The ID of the scheduled event associated with this invite, if any.
 
         .. versionadded:: 2.0
-    roles: List[:class:`Role`]
+    roles: List[Union[:class:`Role`, :class:`Object`]]
         A list of roles that are granted to users joining via this invite.
 
         This is only filled if the bot is in the guild where the invite belongs.
+        This may contain :class:`Object` instances if the role is not cached.
 
         .. versionadded:: 2.7
     """
@@ -493,12 +494,14 @@ class Invite(Hashable):
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
         self._flags: int = data.get('flags', 0)
 
-        if self.guild is not None and not isinstance(self.guild, (PartialInviteGuild, Object)):
-            self.roles: List[Role] = [
-                Role(state=self._state, guild=self.guild, data=role_data) for role_data in data.get('roles', [])
+        roles = data.get('roles', [])
+        self.roles: List[Union[Role, Object]]
+        if roles and self.guild is not None and not isinstance(self.guild, (PartialInviteGuild, Object)):
+            self.roles = [
+                Role(state=self._state, guild=self.guild, data=role_data) for role_data in roles
             ]
         else:
-            self.roles: List[Role] = []
+            self.roles = []
 
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
@@ -535,7 +538,14 @@ class Invite(Hashable):
             guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
             channel = Object(id=channel_id)
 
-        return cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore
+        res = cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore
+
+        # gateway events do not include role objects, only IDs
+        role_ids: list[Union[int, str]] = data.pop('role_ids', []) # type: ignore # .pop returns T | object
+        if role_ids and guild is not None and not isinstance(guild, (PartialInviteGuild, Object)):
+            res.roles = [guild.get_role(int(role_id)) or Object(role_id) for role_id in role_ids]
+
+        return res
 
     def _resolve_guild(
         self,

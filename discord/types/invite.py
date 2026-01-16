@@ -88,6 +88,7 @@ class GatewayInviteCreate(TypedDict):
     target_user: NotRequired[PartialUser]
     target_application: NotRequired[PartialAppInfo]
     flags: NotRequired[int]
+    role_ids: NotRequired[list[Snowflake]]
 
 
 class GatewayInviteDelete(TypedDict):
