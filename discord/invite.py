@@ -497,9 +497,7 @@ class Invite(Hashable):
         roles = data.get('roles', [])
         self.roles: List[Union[Role, Object]]
         if roles and self.guild is not None and not isinstance(self.guild, (PartialInviteGuild, Object)):
-            self.roles = [
-                Role(state=self._state, guild=self.guild, data=role_data) for role_data in roles
-            ]
+            self.roles = [Role(state=self._state, guild=self.guild, data=role_data) for role_data in roles]
         else:
             self.roles = []
 
@@ -541,7 +539,7 @@ class Invite(Hashable):
         res = cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore
 
         # gateway events do not include role objects, only IDs
-        role_ids: list[Union[int, str]] = data.pop('role_ids', []) # type: ignore # .pop returns T | object
+        role_ids: list[Union[int, str]] = data.pop('role_ids', [])  # type: ignore # .pop returns T | object
         if role_ids and guild is not None and not isinstance(guild, (PartialInviteGuild, Object)):
             res.roles = [guild.get_role(int(role_id)) or Object(role_id) for role_id in role_ids]
 
