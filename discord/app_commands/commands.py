@@ -1802,7 +1802,7 @@ class Group:
                 yield from command.walk_commands()
 
     @mark_overrideable
-    async def on_error(self, interaction: Interaction, error: AppCommandError, /) -> None:
+    async def on_error(self, interaction: Interaction[ClientT], error: AppCommandError, /) -> None:
         """|coro|
 
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
@@ -1850,7 +1850,7 @@ class Group:
         self.on_error = coro  # type: ignore
         return coro
 
-    async def interaction_check(self, interaction: Interaction, /) -> bool:
+    async def interaction_check(self, interaction: Interaction[ClientT], /) -> bool:
         """|coro|
 
         A callback that is called when an interaction happens within the group
