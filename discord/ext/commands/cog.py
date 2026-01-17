@@ -47,7 +47,7 @@ from typing import (
     Union,
 )
 
-from ._types import _BaseCommand, BotT
+from ._types import _BaseCommand, BotT, MaybeCoro
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -583,7 +583,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    def bot_check_once(self, ctx: Context[BotT]) -> bool:
+    def bot_check_once(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
 
@@ -593,7 +593,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def bot_check(self, ctx: Context[BotT]) -> bool:
+    def bot_check(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :meth:`.Bot.check`
         check.
 
@@ -603,7 +603,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_check(self, ctx: Context[BotT]) -> bool:
+    def cog_check(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :func:`~discord.ext.commands.check`
         for every command and subcommand in this cog.
 
@@ -613,7 +613,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def interaction_check(self, interaction: discord.Interaction[ClientT], /) -> bool:
+    def interaction_check(self, interaction: discord.Interaction[ClientT], /) -> MaybeCoro[bool]:
         """A special method that registers as a :func:`discord.app_commands.check`
         for every app command and subcommand in this cog.
 
