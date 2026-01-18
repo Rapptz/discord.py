@@ -202,6 +202,7 @@ class FFmpegAudio(AudioSource):
         self._stderr: Optional[IO[bytes]] = None
         self._pipe_writer_thread: Optional[threading.Thread] = None
         self._pipe_reader_thread: Optional[threading.Thread] = None
+        self._current_error: Optional[Exception] = None
 
         if piping_stdin:
             n = f'popen-stdin-writer:pid-{self._process.pid}'
@@ -229,7 +230,7 @@ class FFmpegAudio(AudioSource):
             return process
 
     def _check_process_returncode(self) -> None:
-        """Set _current_error if FFmpeg exited with a non-zero code and call after(error) if set."""
+        """Set _current_error if FFmpeg exited with a non-zero code."""
         proc = getattr(self, "_process", None)
         if proc is None or not hasattr(proc, "poll") or type(proc).__name__ == '_MissingSentinel':
             return
@@ -241,7 +242,8 @@ class FFmpegAudio(AudioSource):
         if getattr(self, "_stopped", False):
             return  # intentionally stopped
 
-        if ret != 0:
+        if ret != 0 and self._current_error is None:
+            # Only set error once, on first detection
             # read stderr if available
             stderr_text = None
             if self._stderr:
@@ -254,13 +256,6 @@ class FFmpegAudio(AudioSource):
             self._current_error = FFmpegError(
                 f"FFmpeg exited with code {ret}. Stderr: {stderr_text if stderr_text else '<no stderr>'}"
             )
-            # Call after(error) callback if set
-            after_cb = getattr(self, 'after', None)
-            if after_cb and callable(after_cb):
-                try:
-                    after_cb(self._current_error)
-                except Exception:
-                    pass
 
     def _kill_process(self) -> None:
         # check if FFmpeg process failed
@@ -407,6 +402,8 @@ class FFmpegPCMAudio(FFmpegAudio):
         # Check for FFmpeg process failure before reading
         self._check_process_returncode()
         ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
+        # Check again after reading in case the process exited during the read
+        self._check_process_returncode()
         if len(ret) != OpusEncoder.FRAME_SIZE:
             return b''
         return ret
@@ -706,7 +703,12 @@ class FFmpegOpusAudio(FFmpegAudio):
         return codec, bitrate
 
     def read(self) -> bytes:
-        return next(self._packet_iter, b'')
+        # Check for FFmpeg process failure before reading
+        self._check_process_returncode()
+        data = next(self._packet_iter, b'')
+        # Check again after reading in case the process exited during the read
+        self._check_process_returncode()
+        return data
 
     def is_opus(self) -> bool:
         return True
@@ -805,6 +807,11 @@ class AudioPlayer(threading.Thread):
             data = self.source.read()
 
             if not data:
+                # Check if the source has an error (e.g., from FFmpegAudio process failure)
+                if self._current_error is None:
+                    source_error = getattr(self.source, '_current_error', None)
+                    if source_error:
+                        self._current_error = source_error
                 self.stop()
                 break
 
