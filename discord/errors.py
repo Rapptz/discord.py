@@ -48,6 +48,7 @@ __all__ = (
     'PrivilegedIntentsRequired',
     'InteractionResponded',
     'MissingApplicationID',
+    'FFmpegError',
 )
 
 APP_ID_NOT_FOUND = (
@@ -71,6 +72,10 @@ class ClientException(DiscordException):
     These are usually for exceptions that happened due to user input.
     """
 
+    pass
+
+class FFmpegError(ClientException):
+    """Exception that's raised when an FFmpeg process fails."""
     pass
 
 
