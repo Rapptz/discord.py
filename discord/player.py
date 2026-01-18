@@ -258,8 +258,8 @@ class FFmpegAudio(AudioSource):
                     stderr_text = "<failed to read stderr>"
 
             self._current_error = FFmpegError(
-                f"FFmpeg exited with code {ret}. Stderr: "
-                f"{stderr_text if stderr_text else '<no stderr>'}"
+                f'FFmpeg exited with code {ret}. Stderr: '
+                f'{stderr_text if stderr_text else \'<no stderr>\'}'
             )
 
     def _kill_process(self) -> None:
