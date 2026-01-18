@@ -75,8 +75,10 @@ class ClientException(DiscordException):
 
     pass
 
+
 class FFmpegError(ClientException):
     """Exception that's raised when an FFmpeg process fails."""
+
     pass
 
 

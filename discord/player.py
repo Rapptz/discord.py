@@ -64,7 +64,7 @@ if TYPE_CHECKING:
     from .voice_client import VoiceClient
 
 
-_ = discord # keep linter happy
+_ = discord  # keep linter happy
 
 
 AT = TypeVar('AT', bound='AudioSource')
@@ -231,19 +231,15 @@ class FFmpegAudio(AudioSource):
 
     def _check_process_returncode(self) -> None:
         """Set _current_error if FFmpeg exited with a non-zero code."""
-        proc = getattr(self, "_process", None)
-        if (
-            proc is None
-            or not hasattr(proc, "poll")
-            or type(proc).__name__ == "_MissingSentinel"
-        ):
+        proc = getattr(self, '_process', None)
+        if proc is None or not hasattr(proc, 'poll') or type(proc).__name__ == '_MissingSentinel':
             return
 
         ret = proc.poll()
         if ret is None:
             return  # still running
 
-        if getattr(self, "_stopped", False):
+        if getattr(self, '_stopped', False):
             return  # intentionally stopped
 
         if ret != 0 and self._current_error is None:
@@ -253,14 +249,12 @@ class FFmpegAudio(AudioSource):
             if self._stderr:
                 try:
                     self._stderr.seek(0)
-                    stderr_text = self._stderr.read().decode(errors="ignore")
+                    stderr_text = self._stderr.read().decode(errors='ignore')
                 except Exception:
-                    stderr_text = "<failed to read stderr>"
+                    stderr_text = '<failed to read stderr>'
 
             stderr_info = stderr_text if stderr_text else '<no stderr>'
-            self._current_error = FFmpegError(
-                f'FFmpeg exited with code {ret}. Stderr: {stderr_info}'
-            )
+            self._current_error = FFmpegError(f'FFmpeg exited with code {ret}. Stderr: {stderr_info}')
 
     def _kill_process(self) -> None:
         # check if FFmpeg process failed
@@ -269,7 +263,7 @@ class FFmpegAudio(AudioSource):
         # this function gets called in __del__ so instance attributes might not even exist
         proc = getattr(self, '_process', MISSING)
         # Only proceed if proc is a subprocess.Popen instance
-        if proc is MISSING or not hasattr(proc, "kill"):
+        if proc is MISSING or not hasattr(proc, 'kill'):
             return
 
         pid = getattr(proc, 'pid', 'unknown')
@@ -280,15 +274,23 @@ class FFmpegAudio(AudioSource):
         except Exception:
             _log.exception('Ignoring error attempting to kill ffmpeg process %s', pid)
 
-        if hasattr(proc, "poll") and proc.poll() is None:
+        if hasattr(proc, 'poll') and proc.poll() is None:
             _log.info('ffmpeg process %s has not terminated. Waiting to terminate...', pid)
             try:
                 proc.communicate()
             except Exception:
                 pass
-            _log.info('ffmpeg process %s should have terminated with a return code of %s.', pid, getattr(proc, 'returncode', 'unknown'))
+            _log.info(
+                'ffmpeg process %s should have terminated with a return code of %s.',
+                pid,
+                getattr(proc, 'returncode', 'unknown'),
+            )
         else:
-            _log.info('ffmpeg process %s successfully terminated with return code of %s.', pid, getattr(proc, 'returncode', 'unknown'))
+            _log.info(
+                'ffmpeg process %s successfully terminated with return code of %s.',
+                pid,
+                getattr(proc, 'returncode', 'unknown'),
+            )
 
     def _pipe_writer(self, source: io.BufferedIOBase) -> None:
         while self._process:
