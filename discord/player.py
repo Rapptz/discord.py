@@ -232,7 +232,11 @@ class FFmpegAudio(AudioSource):
     def _check_process_returncode(self) -> None:
         """Set _current_error if FFmpeg exited with a non-zero code."""
         proc = getattr(self, "_process", None)
-        if proc is None or not hasattr(proc, "poll") or type(proc).__name__ == '_MissingSentinel':
+        if (
+            proc is None
+            or not hasattr(proc, "poll")
+            or type(proc).__name__ == "_MissingSentinel"
+        ):
             return
 
         ret = proc.poll()
@@ -254,7 +258,8 @@ class FFmpegAudio(AudioSource):
                     stderr_text = "<failed to read stderr>"
 
             self._current_error = FFmpegError(
-                f"FFmpeg exited with code {ret}. Stderr: {stderr_text if stderr_text else '<no stderr>'}"
+                f"FFmpeg exited with code {ret}. Stderr: "
+                f"{stderr_text if stderr_text else '<no stderr>'}"
             )
 
     def _kill_process(self) -> None:
