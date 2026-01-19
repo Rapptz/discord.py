@@ -79,6 +79,7 @@ __all__ = (
     'SoundboardSoundNotFound',
     'PartialEmojiConversionFailure',
     'BadBoolArgument',
+    'BadDatetimeArgument',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
@@ -600,6 +601,24 @@ class BadBoolArgument(BadArgument):
     def __init__(self, argument: str) -> None:
         self.argument: str = argument
         super().__init__(f'{argument} is not a recognised boolean option')
+
+
+class BadDatetimeArgument(BadArgument):
+    """Exception raised when a datetime argument was not convertable.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.7
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The datetime/timestamp argument supplied by the caller that is not in the predefined list
+    """
+
+    def __init__(self, argument: str) -> None:
+        self.argument: str = argument
+        super().__init__(f'{argument} is not a recognised datetime or timestamp option')
 
 
 class RangeError(BadArgument):

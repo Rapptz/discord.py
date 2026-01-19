@@ -23,7 +23,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+import datetime
 import inspect
+import re
 
 from dataclasses import dataclass
 from enum import Enum
@@ -681,6 +683,21 @@ class UnionChannelTransformer(BaseChannelTransformer[ClientT]):
         return resolved
 
 
+_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(\d+)(?::[tTdDfFsSR])?>')
+
+
+class DatetimeTransformer(Transformer[ClientT]):
+    @property
+    def type(self) -> AppCommandOptionType:
+        return AppCommandOptionType.string
+
+    async def transform(self, interaction: Interaction[ClientT], value: Any, /):
+        match = _TIMESTAMP_PATTERN.match(value)
+        if not match:
+            raise TransformerError(value, AppCommandOptionType.string, self)
+        return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
+
+
 CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     AppCommandChannel: [
         ChannelType.stage_voice,
@@ -714,6 +731,7 @@ BUILT_IN_TRANSFORMERS: Dict[Any, Transformer] = {
     int: IdentityTransformer(AppCommandOptionType.integer),
     float: IdentityTransformer(AppCommandOptionType.number),
     bool: IdentityTransformer(AppCommandOptionType.boolean),
+    datetime.datetime: DatetimeTransformer(),
     User: IdentityTransformer(AppCommandOptionType.user),
     Member: MemberTransformer(),
     Role: IdentityTransformer(AppCommandOptionType.role),

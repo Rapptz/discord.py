@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import datetime
 import inspect
 import re
 from typing import (
@@ -1273,6 +1274,16 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
+_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(\d+)(?::[tTdDfFsSR])?>')
+
+
+def _convert_from_timestamp(argument: str) -> datetime.datetime:
+    match = _TIMESTAMP_PATTERN.match(argument)
+    if not match:
+        raise BadDatetimeArgument(argument)
+    return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
+
+
 _GenericAlias = type(List[T])  # type: ignore
 
 
@@ -1309,6 +1320,9 @@ CONVERTER_MAPPING: Dict[type, Any] = {
 async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, param: inspect.Parameter):
     if converter is bool:
         return _convert_to_bool(argument)
+
+    if converter is datetime.datetime:
+        return _convert_from_timestamp(argument)
 
     try:
         module = converter.__module__
