@@ -27,7 +27,6 @@ from __future__ import annotations
 import threading
 import subprocess
 import warnings
-import discord
 import audioop
 import asyncio
 import logging
@@ -37,18 +36,6 @@ import json
 import sys
 import re
 import io
-
-
-# Standard library imports
-import io
-import subprocess
-import threading
-import logging
-import shlex
-import audioop
-import sys
-import time
-import warnings
 
 from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
@@ -62,9 +49,6 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .voice_client import VoiceClient
-
-
-_ = discord  # keep linter happy
 
 
 AT = TypeVar('AT', bound='AudioSource')
@@ -248,7 +232,6 @@ class FFmpegAudio(AudioSource):
             stderr_text = None
             if self._stderr:
                 try:
-                    self._stderr.seek(0)
                     stderr_text = self._stderr.read().decode(errors='ignore')
                 except Exception:
                     stderr_text = '<failed to read stderr>'
@@ -406,12 +389,10 @@ class FFmpegPCMAudio(FFmpegAudio):
         super().__init__(source, executable=executable, args=args, **subprocess_kwargs)
 
     def read(self) -> bytes:
-        # Check for FFmpeg process failure before reading
-        self._check_process_returncode()
         ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
-        # Check again after reading in case the process exited during the read
-        self._check_process_returncode()
         if len(ret) != OpusEncoder.FRAME_SIZE:
+            # Check for FFmpeg process failure when read returns incomplete data
+            self._check_process_returncode()
             return b''
         return ret
 
@@ -710,11 +691,10 @@ class FFmpegOpusAudio(FFmpegAudio):
         return codec, bitrate
 
     def read(self) -> bytes:
-        # Check for FFmpeg process failure before reading
-        self._check_process_returncode()
         data = next(self._packet_iter, b'')
-        # Check again after reading in case the process exited during the read
-        self._check_process_returncode()
+        if not data:
+            # Check for FFmpeg process failure when read returns empty
+            self._check_process_returncode()
         return data
 
     def is_opus(self) -> bool:
