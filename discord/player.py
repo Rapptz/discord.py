@@ -232,7 +232,7 @@ class FFmpegAudio(AudioSource):
             stderr_text = None
             if self._stderr:
                 try:
-                    stderr_text = self._stderr.read(4096).decode(errors='ignore')
+                    stderr_text = self._stderr.read(8192).decode(errors='ignore')
                 except Exception:
                     stderr_text = '<failed to read stderr>'
 
