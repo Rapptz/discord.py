@@ -52,9 +52,8 @@ __all__ = (
 )
 
 APP_ID_NOT_FOUND = (
-    'Client does not have an application_id set. Either the function '
-    'was called before on_ready was called or application_id was not '
-    'passed to the Client constructor.'
+    'Client does not have an application_id set. Either the function was called before on_ready '
+    'was called or application_id was not passed to the Client constructor.'
 )
 
 
