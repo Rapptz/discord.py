@@ -256,7 +256,13 @@ class FFmpegAudio(AudioSource):
         except Exception:
             _log.exception('Ignoring error attempting to kill ffmpeg process %s', pid)
 
-        if hasattr(proc, 'poll') and proc.poll() is None:
+        try:
+            still_running = proc.poll() is None
+        except Exception:
+            _log.exception('Error checking poll() on ffmpeg process %s', pid)
+            still_running = False
+
+        if still_running:
             _log.info('ffmpeg process %s has not terminated. Waiting to terminate...', pid)
             try:
                 proc.communicate()
