@@ -215,11 +215,10 @@ class FFmpegAudio(AudioSource):
 
     def _check_process_returncode(self) -> None:
         """Set _current_error if FFmpeg exited with a non-zero code."""
-        proc = getattr(self, '_process', None)
-        if proc is None or not hasattr(proc, 'poll') or type(proc).__name__ == '_MissingSentinel':
+        if self._process is MISSING:
             return
 
-        ret = proc.poll()
+        ret = self._process.poll()
         if ret is None:
             return  # still running
 
@@ -246,7 +245,7 @@ class FFmpegAudio(AudioSource):
         # this function gets called in __del__ so instance attributes might not even exist
         proc = getattr(self, '_process', MISSING)
         # Only proceed if proc is a subprocess.Popen instance
-        if proc is MISSING or not hasattr(proc, 'kill'):
+        if proc is MISSING:
             return
 
         pid = getattr(proc, 'pid', 'unknown')
