@@ -5526,6 +5526,14 @@ Invite
 .. autoclass:: Invite()
     :members:
 
+InviteUsersJob
+~~~~~~~~~~~~~~
+
+.. attributetable:: InviteUsersJob
+
+.. autoclass:: InviteUsersJob()
+    :members:
+
 Template
 ~~~~~~~~~
 

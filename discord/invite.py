@@ -47,6 +47,7 @@ __all__ = (
     'PartialInviteChannel',
     'PartialInviteGuild',
     'Invite',
+    'InviteUsersJob',
 )
 
 if TYPE_CHECKING:
@@ -83,7 +84,7 @@ class InviteUsersJob:
     -----------
     invite: :class:`Invite`
         The invite this job status is for.
-    status: :class:`InviteTargetUsersJob`
+    status: :class:`InviteUsersJobStatus`
         The status of the job.
     total_users: :class:`int`
         The total number of users in the job.
@@ -688,7 +689,7 @@ class Invite(Hashable):
 
         Returns
         --------
-        :class:`InviteUsersJob`
+        :class:`discord.InviteUsersJob`
             The status of the target users job.
 
         Raises
