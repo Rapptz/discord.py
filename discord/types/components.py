@@ -43,6 +43,13 @@ class ComponentBase(TypedDict):
     type: int
 
 
+class OptionBase(TypedDict):
+    label: str
+    value: str
+    default: NotRequired[bool]
+    description: NotRequired[str]
+
+
 class ActionRow(ComponentBase):
     type: Literal[1]
     components: List[ActionRowChildComponent]
@@ -59,11 +66,7 @@ class ButtonComponent(ComponentBase):
     sku_id: NotRequired[str]
 
 
-class SelectOption(TypedDict):
-    label: str
-    value: str
-    default: bool
-    description: NotRequired[str]
+class SelectOption(OptionBase):
     emoji: NotRequired[PartialEmoji]
 
 
@@ -192,7 +195,9 @@ class LabelComponent(ComponentBase):
     type: Literal[18]
     label: str
     description: NotRequired[str]
-    component: Union[SelectMenu, TextInput, FileUploadComponent]
+    component: Union[
+        ActionRowChildComponent, FileUploadComponent, RadioGroupComponent, CheckboxGroupComponent, CheckboxComponent
+    ]
 
 
 class FileUploadComponent(ComponentBase):
@@ -201,6 +206,34 @@ class FileUploadComponent(ComponentBase):
     max_values: NotRequired[int]
     min_values: NotRequired[int]
     required: NotRequired[bool]
+
+
+class RadioGroupComponent(ComponentBase):
+    type: Literal[21]
+    custom_id: str
+    options: NotRequired[List[RadioGroupOption]]
+    required: NotRequired[bool]
+
+
+RadioGroupOption = OptionBase
+
+
+class CheckboxGroupComponent(ComponentBase):
+    type: Literal[22]
+    custom_id: str
+    options: NotRequired[List[CheckboxGroupOption]]
+    max_values: NotRequired[int]
+    min_values: NotRequired[int]
+    required: NotRequired[bool]
+
+
+CheckboxGroupOption = OptionBase
+
+
+class CheckboxComponent(ComponentBase):
+    type: Literal[23]
+    custom_id: str
+    default: NotRequired[bool]
 
 
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
@@ -215,4 +248,12 @@ ContainerChildComponent = Union[
     SeparatorComponent,
     ThumbnailComponent,
 ]
-Component = Union[ActionRowChildComponent, LabelComponent, FileUploadComponent, ContainerChildComponent]
+Component = Union[
+    ActionRowChildComponent,
+    LabelComponent,
+    FileUploadComponent,
+    RadioGroupComponent,
+    CheckboxGroupComponent,
+    CheckboxComponent,
+    ContainerChildComponent,
+]

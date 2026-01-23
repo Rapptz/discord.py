@@ -223,8 +223,34 @@ class ModalSubmitFileUploadInteractionData(ComponentBase):
     values: List[str]
 
 
+class ModalSubmitRadioGroupInteractionData(ComponentBase):
+    type: Literal[21]
+    custom_id: str
+    id: int
+    value: str
+
+
+class ModalSubmitCheckboxGroupInteractionData(ComponentBase):
+    type: Literal[22]
+    custom_id: str
+    id: int
+    values: List[str]
+
+
+class ModalSubmitCheckboxInteractionData(ComponentBase):
+    type: Literal[23]
+    custom_id: str
+    id: int
+    value: bool
+
+
 ModalSubmitComponentItemInteractionData = Union[
-    ModalSubmitSelectInteractionData, ModalSubmitTextInputInteractionData, ModalSubmitFileUploadInteractionData
+    ModalSubmitSelectInteractionData,
+    ModalSubmitTextInputInteractionData,
+    ModalSubmitFileUploadInteractionData,
+    ModalSubmitRadioGroupInteractionData,
+    ModalSubmitCheckboxGroupInteractionData,
+    ModalSubmitCheckboxInteractionData,
 ]
 
 
