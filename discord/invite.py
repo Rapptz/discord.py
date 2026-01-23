@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence, Union, TYPE_CHECKING
 from .asset import Asset
-from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING
+from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING, _get_target_ids_from_csv
 from .object import Object
 from .mixins import Hashable
 from .enums import (
@@ -89,7 +89,7 @@ class InviteUsersJob:
         The total number of users in the job.
     processed_users: :class:`int`
         The number of users that have been processed so far.
-    created_at: :class:`datetime.datetime`
+    created_at: Optional[:class:`datetime.datetime`]
         The time the job was created.
     error_message: Optional[:class:`str`]
         The error message.
@@ -654,7 +654,7 @@ class Invite(Hashable):
         data = await self._state.http.delete_invite(self.code, reason=reason)
         return self.from_incomplete(state=self._state, data=data)
 
-    async def fetch_target_users(self) -> list[int]:
+    async def target_users(self) -> list[int]:
         """|coro|
 
         Fetches the users that are allowed to join via this invite.
@@ -676,11 +676,10 @@ class Invite(Hashable):
             Fetching the target users failed.
         """
 
-        string = await self._state.http.get_invite_target_users(self.code)
-        users = string.lstrip('Users\n').split('\n')
-        return [int(user_id) for user_id in users if user_id]
+        res = await self._state.http.get_invite_target_users(self.code)
+        return _get_target_ids_from_csv(res)
 
-    async def fetch_target_users_job_status(self) -> InviteUsersJob:
+    async def target_users_job_status(self) -> InviteUsersJob:
         """|coro|
 
         Fetches the status of the target users job for this invite.
@@ -689,7 +688,7 @@ class Invite(Hashable):
 
         Returns
         --------
-        :class:`InviteJobStatus`
+        :class:`InviteUsersJob`
             The status of the target users job.
 
         Raises
@@ -708,18 +707,23 @@ class Invite(Hashable):
     async def edit(
         self,
         *,
-        users: Sequence[Snowflake] = MISSING,
+        target_users: Sequence[Snowflake] = MISSING,
     ) -> None:
         """|coro|
 
         Edits the invite.
 
-        Requires the :attr:`~Permissions.manage_guild` permission.
-
         Parameters
         -----------
         users: List[:class:`~discord.abc.Snowflake`]
             A list of users that should be able to use this invite.
+
+            Requires the :attr:`~Permissions.manage_guild` permission.
+
+            .. note::
+                You cannot clear the list of target users once set.
+
+                There must be at least one user in the list.
 
         Raises
         -------
@@ -731,5 +735,5 @@ class Invite(Hashable):
             Editing the invite failed.
         """
 
-        if users is not MISSING:
-            await self._state.http.edit_invite_target_users(self.code, user_ids=[user.id for user in users])
+        if target_users:
+            await self._state.http.edit_invite_target_users(self.code, user_ids=[user.id for user in target_users])

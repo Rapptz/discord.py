@@ -1284,7 +1284,7 @@ class GuildChannel:
         target_application_id: Optional[int] = None,
         guest: bool = False,
         roles: Optional[Sequence[Snowflake]] = None,
-        users: Optional[Sequence[Snowflake]] = None,
+        target_users: Optional[Sequence[Snowflake]] = None,
     ) -> Invite:
         """|coro|
 
@@ -1334,7 +1334,7 @@ class GuildChannel:
             assign roles with higher permissions than the bot.
 
             .. versionadded:: 2.7
-        users: Optional[Sequence[:class:`~discord.abc.Snowflake`]]
+        target_users: Optional[Sequence[:class:`~discord.abc.Snowflake`]]
             A list of users that are allowed to join via this invite.
 
             Requires the :attr:`~discord.Permissions.manage_guild` permission.
@@ -1374,7 +1374,7 @@ class GuildChannel:
             target_application_id=target_application_id,
             flags=flags.value if flags else None,
             role_ids=[role.id for role in roles or []],
-            user_ids=[user.id for user in users or []],
+            user_ids=[user.id for user in target_users or []],
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
