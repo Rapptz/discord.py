@@ -291,9 +291,6 @@ class Checkbox(Item[V]):
         The ID of the component. This must be unique across the view.
     custom_id: Optional[:class:`str`]
         The custom ID of the component.
-    required: :class:`bool`
-        Whether this component is required to be filled before submitting the modal.
-        Defaults to ``True``.
     default: :class:`bool`
         Whether this checkbox is selected by default.
     """
@@ -301,8 +298,6 @@ class Checkbox(Item[V]):
     __item_repr_attributes__: Tuple[str, ...] = (
         'id',
         'custom_id',
-        'options',
-        'required',
         'default',
     )
 
