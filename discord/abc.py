@@ -1337,8 +1337,6 @@ class GuildChannel:
         target_users: Optional[Sequence[:class:`~discord.abc.Snowflake`]]
             A list of users that are allowed to join via this invite.
 
-            Requires the :attr:`~discord.Permissions.manage_guild` permission.
-
             .. versionadded:: 2.7
 
         Raises

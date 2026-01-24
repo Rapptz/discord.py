@@ -660,7 +660,9 @@ class Invite(Hashable):
 
         Fetches the users that are allowed to join via this invite.
 
-        Requires the :attr:`~Permissions.manage_guild` permission.
+        Requires the bot to have created the invite or one of
+        the following permissions: :attr:`~Permissions.manage_guild`,
+        :attr:`~Permissions.view_audit_log`.
 
         Returns
         --------
@@ -685,7 +687,10 @@ class Invite(Hashable):
 
         Fetches the status of the target users job for this invite.
 
-        Requires the :attr:`~Permissions.manage_guild` permission.
+        Requires the bot to have created the invite or one of
+        the following permissions: :attr:`~Permissions.manage_guild`,
+        :attr:`~Permissions.view_audit_log`.
+
 
         Returns
         --------
@@ -719,7 +724,8 @@ class Invite(Hashable):
         users: List[:class:`~discord.abc.Snowflake`]
             A list of users that should be able to use this invite.
 
-            Requires the :attr:`~Permissions.manage_guild` permission.
+            Requires the bot to have created the invite or the
+            :attr:`~Permissions.manage_guild` permission.
 
             .. note::
                 You cannot clear the list of target users once set.
