@@ -1859,7 +1859,11 @@ class Webhook(BaseWebhook):
             if not hasattr(view, '__discord_ui_view__'):
                 raise TypeError(f'expected view parameter to be of type View not {view.__class__.__name__}')
 
-            if isinstance(self._state, _WebhookState) and view.is_dispatchable():
+            if (
+                isinstance(self._state, _WebhookState)
+                and (not application_webhook or not view.is_finished())
+                and view.is_dispatchable()
+            ):
                 raise ValueError(
                     'Webhook views with any component other than URL buttons require an associated state with the webhook'
                 )
