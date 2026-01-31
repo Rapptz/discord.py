@@ -195,6 +195,9 @@ async def _purge_helper(
             count = 0
             await asyncio.sleep(1)
 
+        if not message.type.is_deletable():
+            continue
+
         if not check(message):
             continue
 
@@ -818,7 +821,7 @@ class GuildChannel:
             if obj.is_default():
                 return base
 
-            overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
+            overwrite = utils.find(lambda ow: ow.type == _Overwrites.ROLE and ow.id == obj.id, self._overwrites)
             if overwrite is not None:
                 base.handle_overwrite(overwrite.allow, overwrite.deny)
 
