@@ -195,9 +195,6 @@ async def _purge_helper(
             count = 0
             await asyncio.sleep(1)
 
-        if not message.type.is_deletable():
-            continue
-
         if not check(message):
             continue
 
@@ -821,7 +818,7 @@ class GuildChannel:
             if obj.is_default():
                 return base
 
-            overwrite = utils.find(lambda ow: ow.type == _Overwrites.ROLE and ow.id == obj.id, self._overwrites)
+            overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
             if overwrite is not None:
                 base.handle_overwrite(overwrite.allow, overwrite.deny)
 
@@ -1283,6 +1280,7 @@ class GuildChannel:
         target_user: Optional[User] = None,
         target_application_id: Optional[int] = None,
         guest: bool = False,
+        role_ids: Optional[list[int]] = None,
     ) -> Invite:
         """|coro|
 
@@ -1325,6 +1323,12 @@ class GuildChannel:
             Whether the invite is a guest invite.
 
             .. versionadded:: 2.6
+        
+        role_ids: Optional[List[:class:`int`]]
+            The role ID(s) in the guild granted to members who accept this invite.
+            Requires the **MANAGE_ROLES** permission to modify, and cannot assign roles with higher permissions than the sender.
+            
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1358,6 +1362,7 @@ class GuildChannel:
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
             flags=flags.value if flags else None,
+            role_ids=role_ids,
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
