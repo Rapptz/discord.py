@@ -724,7 +724,11 @@ class Client:
                 self.ws = await asyncio.wait_for(coro, timeout=60.0)
                 ws_params['initial'] = False
                 while True:
-                    await self.ws.poll_event()
+                    try:
+                        await self.ws.poll_event()
+                    except asyncio.CancelledError:
+                        _log.debug("WebSocket poll_event cancelled (likely disconnect).")
+                        return
             except ReconnectWebSocket as e:
                 _log.debug('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
