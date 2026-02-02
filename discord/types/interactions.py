@@ -227,7 +227,7 @@ class ModalSubmitRadioGroupInteractionData(ComponentBase):
     type: Literal[21]
     custom_id: str
     id: int
-    value: str
+    value: Optional[str]
 
 
 class ModalSubmitCheckboxGroupInteractionData(ComponentBase):
