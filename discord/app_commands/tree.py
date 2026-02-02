@@ -1289,7 +1289,12 @@ class CommandTree(Generic[ClientT]):
                 await command._invoke_autocomplete(interaction, focused, namespace)
             except Exception:
                 # Suppress exception since it can't be handled anyway.
-                _log.exception('Ignoring exception in autocomplete for %r', command.qualified_name)
+                _log.exception(
+                    'Ignoring exception in autocomplete for %r (Guild: %s, User: %s)',
+                    command.qualified_name,
+                    interaction.guild_id,
+                    interaction.user.id,
+                )
 
             return
 
