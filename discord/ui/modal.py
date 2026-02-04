@@ -223,7 +223,7 @@ class Modal(BaseView):
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
-            return item._rendered_row or 0
+            return item._rendered_row or item.row or 0
 
         children = sorted(self._children, key=key)
         components: List[Dict[str, Any]] = []
