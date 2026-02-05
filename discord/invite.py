@@ -82,8 +82,6 @@ class InviteUsersJob:
 
     Attributes
     -----------
-    invite: :class:`Invite`
-        The invite this job status is for.
     status: :class:`InviteUsersJobStatus`
         The status of the job.
     total_users: :class:`int`
@@ -98,8 +96,7 @@ class InviteUsersJob:
         The time the job was completed, if applicable.
     """
 
-    def __init__(self, *, invite: Invite, data: InviteTargetUsersJobStatusPayload) -> None:
-        self.invite: Invite = invite
+    def __init__(self, data: InviteTargetUsersJobStatusPayload) -> None:
         self.status: InviteUsersJobStatus = try_enum(InviteUsersJobStatus, data['status'])
         self.total_users: int = data['total_users']
         self.processed_users: int = data['processed_users']
@@ -109,7 +106,7 @@ class InviteUsersJob:
 
     def __repr__(self) -> str:
         return (
-            f'<{self.__class__.__name__} invite={self.invite.code!r} status={self.status} '
+            f'<{self.__class__.__name__} status={self.status} '
             f'total_users={self.total_users} processed_users={self.processed_users}>'
         )
 
@@ -708,7 +705,7 @@ class Invite(Hashable):
         """
 
         data = await self._state.http.get_invite_target_users_job_status(self.code)
-        return InviteUsersJob(invite=self, data=data)
+        return InviteUsersJob(data)
 
     async def edit(
         self,
