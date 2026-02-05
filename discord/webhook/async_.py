@@ -2101,7 +2101,7 @@ class Webhook(BaseWebhook):
             if not hasattr(view, '__discord_ui_view__'):
                 raise TypeError(f'expected view parameter to be of type View or LayoutView, not {view.__class__.__name__}')
 
-            if view is not None and isinstance(self._state, _WebhookState) and view.is_dispatchable():
+            if isinstance(self._state, _WebhookState) and view.is_dispatchable():
                 raise ValueError(
                     'Webhook views with interactable components require an associated state with the webhook'
                 )
