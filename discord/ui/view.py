@@ -622,7 +622,7 @@ class BaseView:
     def is_finished(self) -> bool:
         """:class:`bool`: Whether the view has finished interacting."""
         if self.__stopped is None:
-            return True
+            return False
 
         return self.__stopped.done()
 
