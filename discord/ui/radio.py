@@ -66,7 +66,7 @@ class RadioGroup(Item[V]):
         The custom ID of the component.
     options: List[:class:`discord.RadioGroupOption`]
         A list of options that can be selected in this radio group.
-        Can only contain up to 10 items.
+        Can contain between 2 and 10 items.
     required: :class:`bool`
         Whether this component is required to be filled before submitting the modal.
         Defaults to ``True``.
