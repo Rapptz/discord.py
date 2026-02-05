@@ -1274,7 +1274,7 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(\d+)(?::[tTdDfFsSR])?>')
+_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(-?\d+)(?::[tTdDfFsSR])?>')
 
 
 def _convert_from_timestamp(argument: str) -> datetime.datetime:

@@ -683,7 +683,7 @@ class UnionChannelTransformer(BaseChannelTransformer[ClientT]):
         return resolved
 
 
-_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(\d+)(?::[tTdDfFsSR])?>')
+_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(-?\d+)(?::[tTdDfFsSR])?>')
 
 
 class DatetimeTransformer(Transformer[ClientT]):
