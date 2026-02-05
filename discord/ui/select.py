@@ -506,10 +506,8 @@ class Select(BaseSelect[V]):
 
     @options.setter
     def options(self, value: List[SelectOption]) -> None:
-        if not isinstance(value, list):
+        if not isinstance(value, list) or not all(isinstance(obj, SelectOption) for obj in value):
             raise TypeError('options must be a list of SelectOption')
-        if not all(isinstance(obj, SelectOption) for obj in value):
-            raise TypeError('all list items must subclass SelectOption')
 
         self._underlying.options = value
 
