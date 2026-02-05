@@ -576,7 +576,7 @@ class Select(BaseSelect[V]):
         """
 
         if len(self._underlying.options) >= 25:
-            raise ValueError('maximum number of options already provided')
+            raise ValueError('maximum number of options already provided (25)')
 
         self._underlying.options.append(option)
 

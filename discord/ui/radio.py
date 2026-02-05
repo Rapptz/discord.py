@@ -204,7 +204,7 @@ class RadioGroup(Item[V]):
         """
 
         if len(self._underlying.options) >= 10:
-            raise ValueError('maximum number of options already provided')
+            raise ValueError('maximum number of options already provided (10)')
 
         self._underlying.options.append(option)
 
