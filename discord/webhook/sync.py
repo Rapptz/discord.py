@@ -1299,9 +1299,7 @@ class SyncWebhook(BaseWebhook):
                 raise TypeError(f'expected view parameter to be of type View or LayoutView, not {view.__class__.__name__}')
 
             if view.is_dispatchable():
-                raise ValueError(
-                    'SyncWebhooks can not send interactable components'
-                )
+                raise ValueError('SyncWebhooks can not send interactable components')
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         with handle_message_parameters(

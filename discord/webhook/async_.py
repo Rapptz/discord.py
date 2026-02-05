@@ -1871,9 +1871,7 @@ class Webhook(BaseWebhook):
                 raise TypeError(f'expected view parameter to be of type View or LayoutView, not {view.__class__.__name__}')
 
             if isinstance(self._state, _WebhookState) and view.is_dispatchable():
-                raise ValueError(
-                    'Webhook views with interactable components require an associated state with the webhook'
-                )
+                raise ValueError('Webhook views with interactable components require an associated state with the webhook')
 
             if ephemeral is True and view.timeout is None and view.is_dispatchable():
                 view.timeout = 15 * 60.0
@@ -2102,9 +2100,7 @@ class Webhook(BaseWebhook):
                 raise TypeError(f'expected view parameter to be of type View or LayoutView, not {view.__class__.__name__}')
 
             if isinstance(self._state, _WebhookState) and view.is_dispatchable():
-                raise ValueError(
-                    'Webhook views with interactable components require an associated state with the webhook'
-                )
+                raise ValueError('Webhook views with interactable components require an associated state with the webhook')
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         with handle_message_parameters(
