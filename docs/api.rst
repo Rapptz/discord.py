@@ -5518,6 +5518,14 @@ PartialInviteChannel
 .. autoclass:: PartialInviteChannel()
     :members:
 
+PartialInviteRole
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialInviteRole
+
+.. autoclass:: PartialInviteRole()
+    :members:
+
 Invite
 ~~~~~~~
 

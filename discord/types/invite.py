@@ -33,7 +33,7 @@ from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
 from .user import PartialUser
 from .appinfo import PartialAppInfo
-from .role import Role
+from .role import InviteRole
 
 InviteTargetType = Literal[1, 2]
 InviteType = Literal[0, 1, 2]
@@ -67,7 +67,7 @@ class Invite(IncompleteInvite, total=False):
     type: InviteType
     flags: NotRequired[int]
     expires_at: Optional[str]
-    roles: NotRequired[list[Role]]
+    roles: NotRequired[list[InviteRole]]
 
 
 class InviteWithCounts(Invite, _GuildPreviewUnique): ...

@@ -41,13 +41,15 @@ from .enums import (
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
 from .flags import InviteFlags
-from .role import Role
+from .permissions import Permissions
+from .colour import Colour
 
 __all__ = (
     'PartialInviteChannel',
     'PartialInviteGuild',
     'Invite',
     'InviteUsersJob',
+    'PartialInviteRole',
 )
 
 if TYPE_CHECKING:
@@ -58,6 +60,7 @@ if TYPE_CHECKING:
         InviteGuild as InviteGuildPayload,
         GatewayInvite as GatewayInvitePayload,
         InviteTargetUsersJobStatus as InviteTargetUsersJobStatusPayload,
+        InviteRole as InviteRolePayload,
     )
     from .types.guild import GuildFeature
     from .types.channel import (
@@ -68,6 +71,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel
     from .user import User
     from .abc import Snowflake
+    from .role import Role
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object]
@@ -109,6 +113,116 @@ class InviteUsersJob:
             f'<{self.__class__.__name__} status={self.status} '
             f'total_users={self.total_users} processed_users={self.processed_users}>'
         )
+
+
+class PartialInviteRole:
+    """Represents a "partial" invite role.
+
+    This model will be given when the bot is not part of the
+    guild the :class:`Invite` resolves to, or when the role
+    is not in cache.
+
+    .. versionadded:: 2.7
+    """
+
+    __slots__ = (
+        'id',
+        'name',
+        'position',
+        'unicode_emoji',
+        '_colour',
+        '_secondary_colour',
+        '_tertiary_colour',
+        '_icon',
+        '_permissions',
+        '_state',
+    )
+
+    def __init__(self, state: ConnectionState, data: InviteRolePayload) -> None:
+        self._state: ConnectionState = state
+
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.position: int = data.get('position', 0)
+
+        colors = data.get('colors', {})
+        self._colour: int = colors.get('primary_color', 0)
+        self._secondary_colour = colors.get('secondary_color', None)
+        self._tertiary_colour = colors.get('tertiary_color', None)
+
+        self.unicode_emoji: Optional[str] = data.get('unicode_emoji')
+        self._icon: Optional[str] = data.get('icon')
+        self._permissions: int = int(data.get('permissions', 0))
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<Role id={self.id} name={self.name!r}>'
+
+    @property
+    def secondary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's secondary colour."""
+        return Colour(self._secondary_colour) if self._secondary_colour is not None else None
+
+    @property
+    def secondary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Alias for :attr:`secondary_colour`."""
+        return self.secondary_colour
+
+    @property
+    def tertiary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's tertiary colour."""
+        return Colour(self._tertiary_colour) if self._tertiary_colour is not None else None
+
+    @property
+    def tertiary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Alias for :attr:`tertiary_colour`."""
+        return self.tertiary_colour
+
+    @property
+    def permissions(self) -> Permissions:
+        """:class:`Permissions`: Returns the role's permissions."""
+        return Permissions(self._permissions)
+
+    @property
+    def colour(self) -> Colour:
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``color``."""
+        return Colour(self._colour)
+
+    @property
+    def color(self) -> Colour:
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``colour``."""
+        return self.colour
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Returns the role's icon asset, if available.
+
+        .. note::
+            If this is ``None``, the role might instead have unicode emoji as its icon
+            if :attr:`unicode_emoji` is not ``None``.
+
+            If you want the icon that a role has displayed, consider using :attr:`display_icon`.
+        """
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='role')
+
+    @property
+    def display_icon(self) -> Optional[Union[Asset, str]]:
+        """Optional[Union[:class:`.Asset`, :class:`str`]]: Returns the role's display icon, if available."""
+        return self.icon or self.unicode_emoji
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the role's creation time in UTC."""
+        return snowflake_time(self.id)
+
+    @property
+    def mention(self) -> str:
+        """:class:`str`: Returns a string that allows you to mention a role."""
+        return f'<@&{self.id}>'
 
 
 class PartialInviteChannel:
@@ -405,11 +519,14 @@ class Invite(Hashable):
         The ID of the scheduled event associated with this invite, if any.
 
         .. versionadded:: 2.0
-    roles: List[Union[:class:`Role`, :class:`Object`]]
+    roles: List[Union[:class:`PartialInviteRole`, :class:`Role`, :class:`Object`]]
         A list of roles that are granted to users joining via this invite.
 
-        This is only filled if the bot is in the guild where the invite belongs.
-        This may contain :class:`Object` instances if the role is not cached.
+        Objects in this list may be...
+        - :class:`Role` if the bot is part of the guild this invite resolves to and the role is in cache.
+        - :class:`PartialInviteRole` if the invite is fetched through :meth:`Client.fetch_invite` and
+        the bot is not in the guild the invite resolves to, or if the role is not in cache.
+        - :class:`Object` if the invite is received through a gateway event or the role is not in cache.
 
         .. versionadded:: 2.7
     """
@@ -492,12 +609,9 @@ class Invite(Hashable):
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
         self._flags: int = data.get('flags', 0)
 
-        roles = data.get('roles', [])
-        self.roles: List[Union[Role, Object]]
-        if roles and self.guild is not None and not isinstance(self.guild, (PartialInviteGuild, Object)):
-            self.roles = [Role(state=self._state, guild=self.guild, data=role_data) for role_data in roles]
-        else:
-            self.roles = []
+        self.roles: List[Union[PartialInviteRole, Role, Object]] = self._resolve_roles(
+            data.get('roles', []) or data.get('role_ids', [])
+        )
 
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
@@ -521,7 +635,12 @@ class Invite(Hashable):
             # Upgrade the partial data if applicable
             channel = guild.get_channel(channel.id) or channel
 
-        return cls(state=state, data=data, guild=guild, channel=channel)
+        return cls(
+            state=state,
+            data=data,
+            guild=guild,
+            channel=channel,
+        )
 
     @classmethod
     def from_gateway(cls, *, state: ConnectionState, data: GatewayInvitePayload) -> Self:
@@ -534,14 +653,7 @@ class Invite(Hashable):
             guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
             channel = Object(id=channel_id)
 
-        res = cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore
-
-        # gateway events do not include role objects, only IDs
-        role_ids: list[Union[int, str]] = data.pop('role_ids', [])  # type: ignore # .pop returns T | object
-        if role_ids and guild is not None and not isinstance(guild, (PartialInviteGuild, Object)):
-            res.roles = [guild.get_role(int(role_id)) or Object(role_id) for role_id in role_ids]
-
-        return res
+        return cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore
 
     def _resolve_guild(
         self,
@@ -569,6 +681,32 @@ class Invite(Hashable):
             return None
 
         return PartialInviteChannel(data)
+
+    def _resolve_roles(
+        self,
+        data: Optional[Sequence[Union[InviteRolePayload, int, str]]],
+    ) -> list[Union[PartialInviteRole, Role, Object]]:
+        if not data:
+            return []
+
+        guild = self.guild
+        res: List[Union[PartialInviteRole, Role, Object]] = []
+
+        for role in data:
+            if isinstance(role, (int, str)):
+                role_id = int(role)
+                if guild is not None and not isinstance(guild, (PartialInviteGuild, Object)):
+                    res.append(guild.get_role(role_id) or Object(role_id))
+                else:
+                    res.append(Object(role_id))
+            else:
+                role_id = int(role['id'])
+                if guild is not None and not isinstance(guild, (PartialInviteGuild, Object)):
+                    res.append(guild.get_role(role_id) or PartialInviteRole(self._state, role))
+                else:
+                    res.append(PartialInviteRole(self._state, role))
+
+        return res
 
     def __str__(self) -> str:
         return self.url
