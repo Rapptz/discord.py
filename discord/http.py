@@ -1843,7 +1843,7 @@ class HTTPClient:
         payload: dict[str, Any],
         user_ids: List[Snowflake],
     ) -> list[dict[str, Any]]:
-        users = 'Users\n' + '\n'.join(map(str, user_ids))
+        users = 'user_id\n' + '\n'.join(map(str, user_ids))
         return [
             {'name': 'payload_json', 'value': utils._to_json(payload)},
             {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'},

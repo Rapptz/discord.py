@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import array
 import asyncio
-import csv
 from textwrap import TextWrapper
 from typing import (
     Any,
@@ -1534,12 +1533,6 @@ def _format_call_duration(duration: datetime.timedelta) -> str:
             formatted = f'{years} years'
 
     return formatted
-
-
-def _get_target_ids_from_csv(res: str) -> List[int]:
-    reader = csv.reader(res.splitlines())
-    first_column = [row[0] for row in reader]
-    return [int(i) for i in first_column[1:]]
 
 
 class _RawReprMixin:
