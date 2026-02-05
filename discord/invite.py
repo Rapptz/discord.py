@@ -41,7 +41,6 @@ from .enums import (
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
 from .flags import InviteFlags
-from .permissions import Permissions
 from .colour import Colour
 
 __all__ = (
@@ -123,6 +122,17 @@ class PartialInviteRole:
     is not in cache.
 
     .. versionadded:: 2.7
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The role's ID.
+    name: :class:`str`
+        The role's name.
+    position: :class:`int`
+        The role's position.
+    unicode_emoji: Optional[:class:`str`]
+        The role's unicode emoji, if it has one.
     """
 
     __slots__ = (
@@ -134,7 +144,6 @@ class PartialInviteRole:
         '_secondary_colour',
         '_tertiary_colour',
         '_icon',
-        '_permissions',
         '_state',
     )
 
@@ -152,7 +161,6 @@ class PartialInviteRole:
 
         self.unicode_emoji: Optional[str] = data.get('unicode_emoji')
         self._icon: Optional[str] = data.get('icon')
-        self._permissions: int = int(data.get('permissions', 0))
 
     def __str__(self) -> str:
         return self.name
@@ -179,11 +187,6 @@ class PartialInviteRole:
     def tertiary_color(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: Alias for :attr:`tertiary_colour`."""
         return self.tertiary_colour
-
-    @property
-    def permissions(self) -> Permissions:
-        """:class:`Permissions`: Returns the role's permissions."""
-        return Permissions(self._permissions)
 
     @property
     def colour(self) -> Colour:

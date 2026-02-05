@@ -69,4 +69,3 @@ class InviteRole(TypedDict):
     colors: RoleColours
     icon: NotRequired[Optional[str]]
     unicode_emoji: NotRequired[Optional[str]]
-    permissions: NotRequired[str]
