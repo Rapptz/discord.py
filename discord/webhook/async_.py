@@ -364,6 +364,7 @@ class AsyncWebhookAdapter:
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
+        with_components: bool = False,
     ) -> Response[MessagePayload]:
         route = Route(
             'PATCH',
@@ -372,7 +373,12 @@ class AsyncWebhookAdapter:
             webhook_token=token,
             message_id=message_id,
         )
-        params = None if thread_id is None else {'thread_id': thread_id}
+        params: Dict[str, Any] = {}
+        if thread_id is not None:
+            params['thread_id'] = thread_id
+        if with_components:
+            params['with_components'] = int(with_components)
+        params = params or None  # type: ignore
         return self.request(
             route,
             session=session,
@@ -2117,6 +2123,7 @@ class Webhook(BaseWebhook):
                 multipart=params.multipart,
                 files=params.files,
                 thread_id=thread_id,
+                with_components=view is not MISSING,
             )
 
         message = self._create_message(data, thread=thread)

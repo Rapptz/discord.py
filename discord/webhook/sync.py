@@ -329,6 +329,7 @@ class WebhookAdapter:
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
+        with_components: bool = False,
     ) -> MessagePayload:
         route = Route(
             'PATCH',
@@ -337,8 +338,12 @@ class WebhookAdapter:
             webhook_token=token,
             message_id=message_id,
         )
-        params = None if thread_id is None else {'thread_id': thread_id}
-        return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params)
+        params: Dict[str, Any] = {}
+        if thread_id is not None:
+            params['thread_id'] = thread_id
+        if with_components:
+            params['with_components'] = int(with_components)
+        return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params or None)
 
     def delete_webhook_message(
         self,
@@ -1293,6 +1298,7 @@ class SyncWebhook(BaseWebhook):
                 multipart=params.multipart,
                 files=params.files,
                 thread_id=thread_id,
+                with_components=view is not MISSING,
             )
             return self._create_message(data, thread=thread)
 
