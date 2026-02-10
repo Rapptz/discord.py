@@ -912,14 +912,14 @@ class ViewStore:
         if message_id is not None and not is_fully_dynamic:
             self._synced_message_views[message_id] = view
 
-    def remove_view(self, view: View) -> None:
+    def remove_view(self, view: Union[View, LayoutView]) -> None:
         if view.__discord_ui_modal__:
             self._modals.pop(view.custom_id, None)  # type: ignore
             return
 
         dispatch_info = self._views.get(view._cache_key)
         if dispatch_info:
-            for item in view._children:
+            for item in view.walk_children():
                 if isinstance(item, DynamicItem):
                     pattern = item.__discord_ui_compiled_template__
                     self._dynamic_items.pop(pattern, None)
