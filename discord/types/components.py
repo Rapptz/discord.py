@@ -30,7 +30,7 @@ from typing_extensions import NotRequired
 from .emoji import PartialEmoji
 from .channel import ChannelType
 
-ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19]
+ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 21, 22, 23]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
 DefaultValueType = Literal['user', 'role', 'channel']
@@ -195,9 +195,7 @@ class LabelComponent(ComponentBase):
     type: Literal[18]
     label: str
     description: NotRequired[str]
-    component: Union[
-        ActionRowChildComponent, FileUploadComponent, RadioGroupComponent, CheckboxGroupComponent, CheckboxComponent
-    ]
+    component: LabelChildComponent
 
 
 class FileUploadComponent(ComponentBase):
@@ -244,16 +242,21 @@ ContainerChildComponent = Union[
     FileComponent,
     SectionComponent,
     SectionComponent,
-    ContainerComponent,
     SeparatorComponent,
     ThumbnailComponent,
 ]
-Component = Union[
-    ActionRowChildComponent,
-    LabelComponent,
+LabelChildComponent = Union[
+    TextInput,
+    SelectMenu,
     FileUploadComponent,
     RadioGroupComponent,
     CheckboxGroupComponent,
     CheckboxComponent,
+]
+Component = Union[
+    ActionRowChildComponent,
+    LabelComponent,
+    LabelChildComponent,
     ContainerChildComponent,
+    ContainerComponent,
 ]
