@@ -652,7 +652,7 @@ class Interaction(Generic[ClientT]):
             data = self.command or self.message
 
         context = TranslationContext(location=TranslationContextLocation.other, data=data)
-        return await translator.translate(string, locale=locale, context=context)
+        return await translator.translate(string, locale, context)
 
 
 class InteractionCallbackActivityInstance:
