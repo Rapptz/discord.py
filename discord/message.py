@@ -2221,6 +2221,7 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
+        self.call: Optional[CallMessage] = None
         # Set by Messageable.pins
         self._pinned_at: Optional[datetime.datetime] = None
 
@@ -2513,11 +2514,8 @@ class Message(PartialMessage, Hashable):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
     def _handle_call(self, data: CallMessagePayload):
-        self.call: Optional[CallMessage]
         if data is not None:
             self.call = CallMessage(state=self._state, message=self, data=data)
-        else:
-            self.call = None
 
     def _rebind_cached_references(
         self,
