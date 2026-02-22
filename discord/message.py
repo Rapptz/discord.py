@@ -1453,7 +1453,7 @@ class PartialMessage(Hashable):
 
         Pins the message.
 
-        You must have :attr:`~Permissions.manage_messages` to do
+        You must have :attr:`~Permissions.pin_messages` to do
         this in a non-private channel context.
 
         Parameters
@@ -1471,7 +1471,7 @@ class PartialMessage(Hashable):
             The message or channel was not found or deleted.
         HTTPException
             Pinning the message failed, probably due to the channel
-            having more than 50 pinned messages.
+            having more than 250 pinned messages.
         """
 
         await self._state.http.pin_message(self.channel.id, self.id, reason=reason)
@@ -1483,7 +1483,7 @@ class PartialMessage(Hashable):
 
         Unpins the message.
 
-        You must have :attr:`~Permissions.manage_messages` to do
+        You must have :attr:`~Permissions.pin_messages` to do
         this in a non-private channel context.
 
         Parameters
