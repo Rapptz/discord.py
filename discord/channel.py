@@ -322,8 +322,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work" or "age restricted".
     default_auto_archive_duration: :class:`int`
@@ -1516,8 +1515,7 @@ class VoiceChannel(VocalGuildChannel):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
 
         .. versionadded:: 2.2
     """
@@ -1744,8 +1742,7 @@ class StageChannel(VocalGuildChannel):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
 
         .. versionadded:: 2.2
     """
@@ -2409,8 +2406,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between creating threads
         in this forum. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
     nsfw: :class:`bool`
         If the forum is marked as "not safe for work" or "age restricted".
     default_auto_archive_duration: :class:`int`

@@ -5475,6 +5475,7 @@ CategoryChannel
 .. autoclass:: CategoryChannel()
     :members:
     :inherited-members:
+    :exclude-members: category
 
 DMChannel
 ~~~~~~~~~

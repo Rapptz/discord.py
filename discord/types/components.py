@@ -30,7 +30,7 @@ from typing_extensions import NotRequired
 from .emoji import PartialEmoji
 from .channel import ChannelType
 
-ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19]
+ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 21, 22, 23]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
 DefaultValueType = Literal['user', 'role', 'channel']
@@ -41,6 +41,13 @@ MediaItemLoadingState = Literal[0, 1, 2, 3]
 class ComponentBase(TypedDict):
     id: NotRequired[int]
     type: int
+
+
+class OptionBase(TypedDict):
+    label: str
+    value: str
+    default: NotRequired[bool]
+    description: NotRequired[str]
 
 
 class ActionRow(ComponentBase):
@@ -59,11 +66,7 @@ class ButtonComponent(ComponentBase):
     sku_id: NotRequired[str]
 
 
-class SelectOption(TypedDict):
-    label: str
-    value: str
-    default: bool
-    description: NotRequired[str]
+class SelectOption(OptionBase):
     emoji: NotRequired[PartialEmoji]
 
 
@@ -192,7 +195,7 @@ class LabelComponent(ComponentBase):
     type: Literal[18]
     label: str
     description: NotRequired[str]
-    component: Union[SelectMenu, TextInput, FileUploadComponent]
+    component: LabelChildComponent
 
 
 class FileUploadComponent(ComponentBase):
@@ -203,6 +206,34 @@ class FileUploadComponent(ComponentBase):
     required: NotRequired[bool]
 
 
+class RadioGroupComponent(ComponentBase):
+    type: Literal[21]
+    custom_id: str
+    options: NotRequired[List[RadioGroupOption]]
+    required: NotRequired[bool]
+
+
+RadioGroupOption = OptionBase
+
+
+class CheckboxGroupComponent(ComponentBase):
+    type: Literal[22]
+    custom_id: str
+    options: NotRequired[List[CheckboxGroupOption]]
+    max_values: NotRequired[int]
+    min_values: NotRequired[int]
+    required: NotRequired[bool]
+
+
+CheckboxGroupOption = OptionBase
+
+
+class CheckboxComponent(ComponentBase):
+    type: Literal[23]
+    custom_id: str
+    default: NotRequired[bool]
+
+
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
 ContainerChildComponent = Union[
     ActionRow,
@@ -211,8 +242,21 @@ ContainerChildComponent = Union[
     FileComponent,
     SectionComponent,
     SectionComponent,
-    ContainerComponent,
     SeparatorComponent,
     ThumbnailComponent,
 ]
-Component = Union[ActionRowChildComponent, LabelComponent, FileUploadComponent, ContainerChildComponent]
+LabelChildComponent = Union[
+    TextInput,
+    SelectMenu,
+    FileUploadComponent,
+    RadioGroupComponent,
+    CheckboxGroupComponent,
+    CheckboxComponent,
+]
+Component = Union[
+    ActionRowChildComponent,
+    LabelComponent,
+    LabelChildComponent,
+    ContainerChildComponent,
+    ContainerComponent,
+]
