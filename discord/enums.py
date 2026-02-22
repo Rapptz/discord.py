@@ -694,6 +694,10 @@ class ComponentType(Enum):
     container = 17
     label = 18
     file_upload = 19
+    # checkpoint = 20
+    radio_group = 21
+    checkbox_group = 22
+    checkbox = 23
 
     def __int__(self) -> int:
         return self.value

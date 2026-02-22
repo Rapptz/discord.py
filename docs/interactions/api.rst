@@ -202,6 +202,33 @@ FileUploadComponent
     :members:
     :inherited-members:
 
+RadioGroupComponent
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RadioGroupComponent
+
+.. autoclass:: RadioGroupComponent()
+    :members:
+    :inherited-members:
+
+CheckboxComponent
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: CheckboxComponent
+
+.. autoclass:: CheckboxComponent()
+    :members:
+    :inherited-members:
+
+CheckboxGroupComponent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: CheckboxGroupComponent
+
+.. autoclass:: CheckboxGroupComponent()
+    :members:
+    :inherited-members:
+
 
 AppCommand
 ~~~~~~~~~~~
@@ -330,6 +357,21 @@ MediaGalleryItem
 .. autoclass:: MediaGalleryItem
     :members:
 
+RadioGroupOption
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: RadioGroupOption
+
+.. autoclass:: RadioGroupOption()
+    :members:
+
+CheckboxGroupOption
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: CheckboxGroupOption
+
+.. autoclass:: CheckboxGroupOption()
+    :members:
 
 Enumerations
 -------------
@@ -494,6 +536,24 @@ Enumerations
        Represents a file upload component, usually in a modal.
 
          .. versionadded:: 2.7
+    
+    .. attribute:: radio_group
+
+        Represents a radio group component.
+
+        .. versionadded:: 2.7
+
+    .. attribute:: checkbox_group
+
+        Represents a checkbox group component.
+
+        .. versionadded:: 2.7
+
+    .. attribute:: checkbox
+
+        Represents a checkbox component.
+
+        .. versionadded:: 2.7
 
 .. class:: ButtonStyle
 
@@ -881,6 +941,39 @@ FileUpload
     :members:
     :inherited-members:
     :exclude-members: callback, interaction_check
+
+RadioGroup
+~~~~~~~~~~~
+
+.. attributetable:: discord.ui.RadioGroup
+
+.. autoclass:: discord.ui.RadioGroup
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+Checkbox
+~~~~~~~~~
+
+.. attributetable:: discord.ui.Checkbox
+
+.. autoclass:: discord.ui.Checkbox
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
+
+CheckboxGroup
+~~~~~~~~~~~~~~
+
+.. attributetable:: discord.ui.CheckboxGroup
+
+.. autoclass:: discord.ui.CheckboxGroup
+    :members:
+    :inherited-members:
+    :exclude-members: callback, interaction_check
+
 
 .. _discord_app_commands:
 

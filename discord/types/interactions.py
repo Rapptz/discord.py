@@ -27,7 +27,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union, Optional
 from typing_extensions import NotRequired
 
-from .channel import ChannelTypeWithoutThread, GuildChannel, InteractionDMChannel, GroupDMChannel
+from .channel import (
+    ChannelTypeWithoutThread,
+    GuildChannel,
+    InteractionDMChannel,
+    GroupDMChannel,
+)
 from .sku import Entitlement
 from .threads import ThreadType, ThreadMetadata
 from .member import Member
@@ -223,14 +228,40 @@ class ModalSubmitFileUploadInteractionData(ComponentBase):
     values: List[str]
 
 
-ModalSubmitComponentItemInteractionData = Union[
-    ModalSubmitSelectInteractionData, ModalSubmitTextInputInteractionData, ModalSubmitFileUploadInteractionData
+class ModalSubmitRadioGroupInteractionData(ComponentBase):
+    type: Literal[21]
+    custom_id: str
+    id: int
+    value: Optional[str]
+
+
+class ModalSubmitCheckboxGroupInteractionData(ComponentBase):
+    type: Literal[22]
+    custom_id: str
+    id: int
+    values: List[str]
+
+
+class ModalSubmitCheckboxInteractionData(ComponentBase):
+    type: Literal[23]
+    custom_id: str
+    id: int
+    value: bool
+
+
+ModalSubmitLabelComponentItemInteractionData = Union[
+    ModalSubmitSelectInteractionData,
+    ModalSubmitTextInputInteractionData,
+    ModalSubmitFileUploadInteractionData,
+    ModalSubmitRadioGroupInteractionData,
+    ModalSubmitCheckboxGroupInteractionData,
+    ModalSubmitCheckboxInteractionData,
 ]
 
 
 class ModalSubmitActionRowInteractionData(TypedDict):
     type: Literal[1]
-    components: List[ModalSubmitComponentItemInteractionData]
+    components: List[ModalSubmitTextInputInteractionData]
 
 
 class ModalSubmitTextDisplayInteractionData(ComponentBase):
@@ -240,7 +271,7 @@ class ModalSubmitTextDisplayInteractionData(ComponentBase):
 
 class ModalSubmitLabelInteractionData(ComponentBase):
     type: Literal[18]
-    component: ModalSubmitComponentItemInteractionData
+    component: ModalSubmitLabelComponentItemInteractionData
 
 
 ModalSubmitComponentInteractionData = Union[
@@ -301,7 +332,12 @@ class ModalSubmitInteraction(_BaseInteraction):
     data: ModalSubmitInteractionData
 
 
-Interaction = Union[PingInteraction, ApplicationCommandInteraction, MessageComponentInteraction, ModalSubmitInteraction]
+Interaction = Union[
+    PingInteraction,
+    ApplicationCommandInteraction,
+    MessageComponentInteraction,
+    ModalSubmitInteraction,
+]
 
 
 class MessageInteraction(TypedDict):
@@ -349,7 +385,8 @@ class MessageComponentMessageInteractionMetadata(_MessageInteractionMetadata):
 class ModalSubmitMessageInteractionMetadata(_MessageInteractionMetadata):
     type: Literal[5]
     triggering_interaction_metadata: Union[
-        ApplicationCommandMessageInteractionMetadata, MessageComponentMessageInteractionMetadata
+        ApplicationCommandMessageInteractionMetadata,
+        MessageComponentMessageInteractionMetadata,
     ]
 
 

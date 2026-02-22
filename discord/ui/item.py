@@ -87,6 +87,9 @@ class Item(Generic[V]):
     - :class:`discord.ui.TextDisplay`
     - :class:`discord.ui.Thumbnail`
     - :class:`discord.ui.Label`
+    - :class:`discord.ui.RadioGroup`
+    - :class:`discord.ui.CheckboxGroup`
+    - :class:`discord.ui.Checkbox`
 
     .. versionadded:: 2.0
     """
