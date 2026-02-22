@@ -247,14 +247,6 @@ Unlike the other basic converters, the :class:`bool` converter is treated slight
     elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
         return False
 
-datetime.datetime
-^^^^^^^^^^^^^^^^^^^
-
-Additionally, the :class:`datetime.datetime` converter is also handled differently due to it's support around Discord's ``@time`` timestamp input.
-This converter expects input in the format of a :ddocs:`Discord style timestamp <reference#message-formatting>`.
-
-.. warning:: Due to a Discord limitation, this datetime will not have the timezone information, as such the UTC timezone has been supplanted for ease of conversion.
-
 .. _ext_commands_adv_converters:
 
 Advanced Converters

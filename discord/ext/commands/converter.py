@@ -87,6 +87,7 @@ __all__ = (
     'clean_content',
     'Greedy',
     'Range',
+    'Timestamp',
     'run_converters',
 )
 
@@ -894,6 +895,28 @@ class GuildStickerConverter(IDConverter[discord.GuildSticker]):
         return result
 
 
+if TYPE_CHECKING:
+    Timestamp = datetime.datetime
+else:
+
+    class Timestamp(Converter[str]):
+        """Converts to a :class:`datetime.datetime`.
+
+        Conversion is attempted based on the :ddocs:`Discord style timestamp <reference#message-formatting>` input format.
+
+        .. versionadded:: 2.7
+
+        .. warning::
+            Due to a Discord limitation, no timezone is provided with the input. The UTC timezone has been supplanted instead.
+        """
+
+        async def convert(self, ctx: Context[BotT], argument: str) -> datetime.datetime:
+            match = discord.utils.TIMESTAMP_PATTERN.match(argument)
+            if not match:
+                raise BadTimestampArgument(argument)
+            return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
+
+
 class ScheduledEventConverter(IDConverter[discord.ScheduledEvent]):
     """Converts to a :class:`~discord.ScheduledEvent`.
 
@@ -1274,13 +1297,6 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-def _convert_from_timestamp(argument: str) -> datetime.datetime:
-    match = discord.utils.TIMESTAMP_PATTERN.match(argument)
-    if not match:
-        raise BadDatetimeArgument(argument)
-    return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
-
-
 _GenericAlias = type(List[T])  # type: ignore
 
 
@@ -1317,9 +1333,6 @@ CONVERTER_MAPPING: Dict[type, Any] = {
 async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, param: inspect.Parameter):
     if converter is bool:
         return _convert_to_bool(argument)
-
-    if converter is datetime.datetime:
-        return _convert_from_timestamp(argument)
 
     try:
         module = converter.__module__

@@ -63,6 +63,7 @@ from .._types import ClientT
 __all__ = (
     'Transformer',
     'Transform',
+    'Timestamp',
     'Range',
 )
 
@@ -682,16 +683,39 @@ class UnionChannelTransformer(BaseChannelTransformer[ClientT]):
         return resolved
 
 
-class DatetimeTransformer(Transformer[ClientT]):
-    @property
-    def type(self) -> AppCommandOptionType:
-        return AppCommandOptionType.string
+if TYPE_CHECKING:
+    Timestamp = datetime.datetime
+else:
 
-    async def transform(self, interaction: Interaction[ClientT], value: Any, /):
-        match = TIMESTAMP_PATTERN.match(value)
-        if not match:
-            raise TransformerError(value, AppCommandOptionType.string, self)
-        return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
+    class Timestamp(Transformer[ClientT]):
+        """A type annotation that can be applied to a parameter for transforming a :ddocs:`Discord style timestamp <reference#message-formatting>` input to a
+        :class:`datetime.datetime`.
+
+
+        .. versionadded:: 2.7
+
+        .. warning::
+            Due to a Discord limitation, no timezone is provided with the input. The UTC timezone has been supplanted instead.
+
+        Examples
+        ---------
+
+        .. code-block:: python3
+
+            @app_commands.command()
+            async def datetime(interaction: discord.Interaction, value: app_commands.Timestamp):
+                await interaction.response.send_message(value.isoformat())
+        """
+
+        @property
+        def type(self) -> AppCommandOptionType:
+            return AppCommandOptionType.string
+
+        async def transform(self, interaction: Interaction[ClientT], value: Any, /):
+            match = TIMESTAMP_PATTERN.match(value)
+            if not match:
+                raise TransformerError(value, AppCommandOptionType.string, self)
+            return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
 
 
 CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
@@ -727,7 +751,6 @@ BUILT_IN_TRANSFORMERS: Dict[Any, Transformer] = {
     int: IdentityTransformer(AppCommandOptionType.integer),
     float: IdentityTransformer(AppCommandOptionType.number),
     bool: IdentityTransformer(AppCommandOptionType.boolean),
-    datetime.datetime: DatetimeTransformer(),
     User: IdentityTransformer(AppCommandOptionType.user),
     Member: MemberTransformer(),
     Role: IdentityTransformer(AppCommandOptionType.role),
