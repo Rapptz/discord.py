@@ -219,7 +219,14 @@ class BaseView:
         self.__cancel_callback: Optional[Callable[[BaseView], None]] = None
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
-        self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self.__stopped: Optional[asyncio.Future[bool]] = None
+        else:
+            self.__stopped: Optional[asyncio.Future[bool]] = loop.create_future()
+
         self._total_children: int = len(tuple(self.walk_children()))
 
     def _is_layout(self) -> bool:
@@ -557,7 +564,7 @@ class BaseView:
             self.__timeout_task = asyncio.create_task(self.__timeout_task_impl())
 
     def _dispatch_timeout(self):
-        if self.__stopped.done():
+        if self.__stopped is None or self.__stopped.done():
             return
 
         if self.__cancel_callback:
@@ -568,8 +575,8 @@ class BaseView:
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
     def _dispatch_item(self, item: Item, interaction: Interaction) -> Optional[asyncio.Task[None]]:
-        if self.__stopped.done():
-            return
+        if self.__stopped is None or self.__stopped.done():
+            return None
 
         return asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
 
@@ -600,7 +607,7 @@ class BaseView:
 
         This operation cannot be undone.
         """
-        if not self.__stopped.done():
+        if self.__stopped is not None and not self.__stopped.done():
             self.__stopped.set_result(False)
 
         self.__timeout_expiry = None
@@ -614,6 +621,9 @@ class BaseView:
 
     def is_finished(self) -> bool:
         """:class:`bool`: Whether the view has finished interacting."""
+        if self.__stopped is None:
+            return False
+
         return self.__stopped.done()
 
     def is_dispatching(self) -> bool:
@@ -642,6 +652,9 @@ class BaseView:
             If ``True``, then the view timed out. If ``False`` then
             the view finished normally.
         """
+        if self.__stopped is None:
+            self.__stopped = asyncio.get_running_loop().create_future()
+
         return await self.__stopped
 
     def walk_children(self) -> Generator[Item[Any], None, None]:
@@ -1027,8 +1040,11 @@ class ViewStore:
         if item is None:
             return
 
-        # Note, at this point the View is *not* None
-        task = item.view._dispatch_item(item, interaction)  # type: ignore
+        if item.view is None:
+            _log.warning('View interaction referencing unknown view for item %s. Discarding', item)
+            return
+
+        task = item.view._dispatch_item(item, interaction)
         if task is not None:
             self.add_task(task)
 

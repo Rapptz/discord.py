@@ -284,6 +284,17 @@ class VoiceClient(VoiceProtocol):
     def timeout(self) -> float:
         return self._connection.timeout
 
+    @property
+    def voice_privacy_code(self) -> Optional[str]:
+        """:class:`str`: Get the voice privacy code of this E2EE session's group.
+
+        A new privacy code is created and cached each time a new transition is executed.
+        This can be None if there is no active DAVE session happening.
+
+        .. versionadded:: 2.7
+        """
+        return self._connection.dave_session.voice_privacy_code if self._connection.dave_session else None
+
     def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
         if val + value > limit:
@@ -368,7 +379,12 @@ class VoiceClient(VoiceProtocol):
 
     # audio related
 
-    def _get_voice_packet(self, data):
+    def _get_voice_packet(self, data: bytes):
+        packet = (
+            self._connection.dave_session.encrypt_opus(data)
+            if self._connection.dave_session and self._connection.can_encrypt
+            else data
+        )
         header = bytearray(12)
 
         # Formulate rtp header
@@ -379,7 +395,7 @@ class VoiceClient(VoiceProtocol):
         struct.pack_into('>I', header, 8, self.ssrc)
 
         encrypt_packet = getattr(self, '_encrypt_' + self.mode)
-        return encrypt_packet(header, data)
+        return encrypt_packet(header, packet)
 
     def _encrypt_aead_xchacha20_poly1305_rtpsize(self, header: bytes, data) -> bytes:
         # Esentially the same as _lite

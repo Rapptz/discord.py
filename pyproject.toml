@@ -36,7 +36,10 @@ Documentation = "https://discordpy.readthedocs.io/en/latest/"
 dependencies = { file = "requirements.txt" }
 
 [project.optional-dependencies]
-voice = ["PyNaCl>=1.5.0,<1.6"]
+voice = [
+    "PyNaCl>=1.5.0,<1.6",
+    "davey==0.1.0"
+]
 docs = [
     "sphinx==4.4.0",
     "sphinxcontrib_trio==1.1.2",

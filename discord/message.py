@@ -1453,7 +1453,7 @@ class PartialMessage(Hashable):
 
         Pins the message.
 
-        You must have :attr:`~Permissions.manage_messages` to do
+        You must have :attr:`~Permissions.pin_messages` to do
         this in a non-private channel context.
 
         Parameters
@@ -1471,7 +1471,7 @@ class PartialMessage(Hashable):
             The message or channel was not found or deleted.
         HTTPException
             Pinning the message failed, probably due to the channel
-            having more than 50 pinned messages.
+            having more than 250 pinned messages.
         """
 
         await self._state.http.pin_message(self.channel.id, self.id, reason=reason)
@@ -1483,7 +1483,7 @@ class PartialMessage(Hashable):
 
         Unpins the message.
 
-        You must have :attr:`~Permissions.manage_messages` to do
+        You must have :attr:`~Permissions.pin_messages` to do
         this in a non-private channel context.
 
         Parameters
@@ -2221,6 +2221,7 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
+        self.call: Optional[CallMessage] = None
         # Set by Messageable.pins
         self._pinned_at: Optional[datetime.datetime] = None
 
@@ -2513,11 +2514,8 @@ class Message(PartialMessage, Hashable):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
     def _handle_call(self, data: CallMessagePayload):
-        self.call: Optional[CallMessage]
         if data is not None:
             self.call = CallMessage(state=self._state, message=self, data=data)
-        else:
-            self.call = None
 
     def _rebind_cached_references(
         self,
