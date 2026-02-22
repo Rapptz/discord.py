@@ -1274,11 +1274,8 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(-?\d+)(?::[tTdDfFsSR])?>')
-
-
 def _convert_from_timestamp(argument: str) -> datetime.datetime:
-    match = _TIMESTAMP_PATTERN.match(argument)
+    match = discord.utils.TIMESTAMP_PATTERN.match(argument)
     if not match:
         raise BadDatetimeArgument(argument)
     return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)

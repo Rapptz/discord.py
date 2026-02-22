@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 import datetime
 import inspect
-import re
 
 from dataclasses import dataclass
 from enum import Enum
@@ -54,7 +53,7 @@ from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, 
 from ..abc import GuildChannel
 from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
-from ..utils import MISSING, maybe_coroutine, _human_join
+from ..utils import MISSING, maybe_coroutine, _human_join, TIMESTAMP_PATTERN
 from ..user import User
 from ..role import Role
 from ..member import Member
@@ -683,16 +682,13 @@ class UnionChannelTransformer(BaseChannelTransformer[ClientT]):
         return resolved
 
 
-_TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(-?\d+)(?::[tTdDfFsSR])?>')
-
-
 class DatetimeTransformer(Transformer[ClientT]):
     @property
     def type(self) -> AppCommandOptionType:
         return AppCommandOptionType.string
 
     async def transform(self, interaction: Interaction[ClientT], value: Any, /):
-        match = _TIMESTAMP_PATTERN.match(value)
+        match = TIMESTAMP_PATTERN.match(value)
         if not match:
             raise TransformerError(value, AppCommandOptionType.string, self)
         return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
