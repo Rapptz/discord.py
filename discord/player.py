@@ -187,6 +187,7 @@ class FFmpegAudio(AudioSource):
         self._pipe_writer_thread: Optional[threading.Thread] = None
         self._pipe_reader_thread: Optional[threading.Thread] = None
         self._current_error: Optional[Exception] = None
+        self._stopped: bool = False
 
         if piping_stdin:
             n = f'popen-stdin-writer:pid-{self._process.pid}'
@@ -222,7 +223,7 @@ class FFmpegAudio(AudioSource):
         if ret is None:
             return  # still running
 
-        if getattr(self, '_stopped', False):
+        if self._stopped:
             return  # intentionally stopped
 
         if ret != 0 and self._current_error is None:
@@ -315,6 +316,7 @@ class FFmpegAudio(AudioSource):
                 return
 
     def cleanup(self) -> None:
+        self._stopped = True
         self._kill_process()
         self._process = self._stdout = self._stdin = self._stderr = MISSING
 
