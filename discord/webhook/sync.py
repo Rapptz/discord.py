@@ -329,6 +329,7 @@ class WebhookAdapter:
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
+        with_components: bool = False,
     ) -> MessagePayload:
         route = Route(
             'PATCH',
@@ -337,7 +338,9 @@ class WebhookAdapter:
             webhook_token=token,
             message_id=message_id,
         )
-        params = None if thread_id is None else {'thread_id': thread_id}
+        params = {'with_components': int(with_components)}
+        if thread_id:
+            params['thread_id'] = thread_id
         return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params)
 
     def delete_webhook_message(
@@ -415,6 +418,7 @@ class SyncWebhookMessage(Message):
         embed: Optional[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
+        view: Optional[BaseView] = MISSING,
     ) -> SyncWebhookMessage:
         """Edits the message.
 
@@ -443,6 +447,19 @@ class SyncWebhookMessage(Message):
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
+            The updated view to update this message with. This can only have non-interactible items, which do not
+            require a state to be attached to it. If ``None`` is passed then the view is removed.
+
+            If you want to edit a webhook message with any component attached to it, check :meth:`WebhookMessage.edit`.
+
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+
+            .. versionadded:: 2.7
 
         Raises
         -------
@@ -451,7 +468,7 @@ class SyncWebhookMessage(Message):
         Forbidden
             Edited a message that is not yours.
         TypeError
-            You specified both ``embed`` and ``embeds``
+            You specified both ``embed`` and ``embeds``.
         ValueError
             The length of ``embeds`` was invalid or
             there was no token associated with this webhook.
@@ -469,6 +486,7 @@ class SyncWebhookMessage(Message):
             attachments=attachments,
             allowed_mentions=allowed_mentions,
             thread=self._state._thread,
+            view=view,
         )
 
     def add_files(self, *files: File) -> SyncWebhookMessage:
@@ -1245,6 +1263,12 @@ class SyncWebhook(BaseWebhook):
 
             If you want to edit a webhook message with any component attached to it, check :meth:`WebhookMessage.edit`.
 
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+
             .. versionadded:: 2.6
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
@@ -1270,6 +1294,13 @@ class SyncWebhook(BaseWebhook):
         if self.token is None:
             raise ValueError('This webhook does not have a token associated with it')
 
+        if view:
+            if not hasattr(view, '__discord_ui_view__'):
+                raise TypeError(f'expected view parameter to be of type View or LayoutView, not {view.__class__.__name__}')
+
+            if view.is_dispatchable():
+                raise ValueError('SyncWebhooks can not send interactable components')
+
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         with handle_message_parameters(
             content=content,
@@ -1278,6 +1309,7 @@ class SyncWebhook(BaseWebhook):
             embeds=embeds,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
+            view=view,
         ) as params:
             thread_id: Optional[int] = None
             if thread is not MISSING:
@@ -1293,6 +1325,7 @@ class SyncWebhook(BaseWebhook):
                 multipart=params.multipart,
                 files=params.files,
                 thread_id=thread_id,
+                with_components=bool(view),
             )
             return self._create_message(data, thread=thread)
 

@@ -118,6 +118,7 @@ __all__ = (
 
 DISCORD_EPOCH = 1420070400000
 DEFAULT_FILE_SIZE_LIMIT_BYTES = 10485760
+TIMESTAMP_PATTERN: re.Pattern[str] = re.compile(r'<t:(-?\d+)(?::[tTdDfFsSR])?>')
 
 
 class _MissingSentinel:

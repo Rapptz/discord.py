@@ -73,6 +73,11 @@ if TYPE_CHECKING:
         UnfurledMediaItem as UnfurledMediaItemPayload,
         LabelComponent as LabelComponentPayload,
         FileUploadComponent as FileUploadComponentPayload,
+        RadioGroupComponent as RadioGroupComponentPayload,
+        RadioGroupOption as RadioGroupOptionPayload,
+        CheckboxGroupComponent as CheckboxGroupComponentPayload,
+        CheckboxGroupOption as CheckboxGroupOptionPayload,
+        CheckboxComponent as CheckboxComponentPayload,
     )
 
     from .emoji import Emoji
@@ -92,6 +97,7 @@ if TYPE_CHECKING:
         'SectionComponent',
         'Component',
     ]
+    OptionPayload = Union[SelectOptionPayload, RadioGroupOptionPayload, CheckboxGroupOptionPayload]
 
 
 __all__ = (
@@ -114,6 +120,11 @@ __all__ = (
     'SeparatorComponent',
     'LabelComponent',
     'FileUploadComponent',
+    'RadioGroupComponent',
+    'CheckboxGroupComponent',
+    'CheckboxComponent',
+    'RadioGroupOption',
+    'CheckboxGroupOption',
 )
 
 
@@ -168,6 +179,71 @@ class Component:
 
     def to_dict(self) -> ComponentPayload:
         raise NotImplementedError
+
+
+class BaseOption:
+    """Represents a base option for components that have options.
+
+    This currently implements:
+
+    - :class:`SelectOption`
+    - :class:`RadioGroupOption`
+    - :class:`CheckboxGroupOption`
+
+    .. versionadded:: 2.7
+    """
+
+    __slots__: Tuple[str, ...] = ('label', 'value', 'description', 'default')
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = ('label', 'value', 'description', 'default')
+
+    def __init__(
+        self,
+        *,
+        label: str,
+        value: str = MISSING,
+        description: Optional[str] = None,
+        default: bool = False,
+    ) -> None:
+        self.label: str = label
+        self.value: str = label if value is MISSING else value
+        self.description: Optional[str] = description
+        self.default: bool = default
+
+    def __repr__(self) -> str:
+        attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__repr_info__)
+        return f'<{self.__class__.__name__} {attrs}>'
+
+    def __str__(self) -> str:
+        base = self.label
+
+        if self.description:
+            return f'{base}\n{self.description}'
+        return base
+
+    @classmethod
+    def from_dict(cls, data: OptionPayload) -> Self:
+        return cls(
+            label=data['label'],
+            value=data['value'],
+            description=data.get('description'),
+            default=data.get('default', False),
+        )
+
+    def to_dict(self) -> OptionPayload:
+        payload: OptionPayload = {
+            'label': self.label,
+            'value': self.value,
+            'default': self.default,
+        }
+
+        if self.description:
+            payload['description'] = self.description
+
+        return payload
+
+    def copy(self) -> Self:
+        return self.__class__.from_dict(self.to_dict())
 
 
 class ActionRow(Component):
@@ -416,7 +492,7 @@ class SelectMenu(Component):
         return payload
 
 
-class SelectOption:
+class SelectOption(BaseOption):
     """Represents a select menu's option.
 
     These can be created by users.
@@ -454,13 +530,8 @@ class SelectOption:
         Whether this option is selected by default.
     """
 
-    __slots__: Tuple[str, ...] = (
-        'label',
-        'value',
-        'description',
-        '_emoji',
-        'default',
-    )
+    __slots__: Tuple[str, ...] = BaseOption.__slots__ + ('_emoji',)
+    __repr_info__ = BaseOption.__repr_info__ + ('emoji',)
 
     def __init__(
         self,
@@ -471,18 +542,9 @@ class SelectOption:
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         default: bool = False,
     ) -> None:
-        self.label: str = label
-        self.value: str = label if value is MISSING else value
-        self.description: Optional[str] = description
+        super().__init__(label=label, value=value, description=description, default=default)
 
         self.emoji = emoji
-        self.default: bool = default
-
-    def __repr__(self) -> str:
-        return (
-            f'<SelectOption label={self.label!r} value={self.value!r} description={self.description!r} '
-            f'emoji={self.emoji!r} default={self.default!r}>'
-        )
 
     def __str__(self) -> str:
         if self.emoji:
@@ -512,7 +574,7 @@ class SelectOption:
             self._emoji = None
 
     @classmethod
-    def from_dict(cls, data: SelectOptionPayload) -> SelectOption:
+    def from_dict(cls, data: SelectOptionPayload) -> Self:
         try:
             emoji = PartialEmoji.from_dict(data['emoji'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
@@ -522,27 +584,17 @@ class SelectOption:
             label=data['label'],
             value=data['value'],
             description=data.get('description'),
-            emoji=emoji,
             default=data.get('default', False),
+            emoji=emoji,
         )
 
     def to_dict(self) -> SelectOptionPayload:
-        payload: SelectOptionPayload = {
-            'label': self.label,
-            'value': self.value,
-            'default': self.default,
-        }
+        payload: SelectOptionPayload = super().to_dict()  # type: ignore
 
         if self.emoji:
             payload['emoji'] = self.emoji.to_dict()
 
-        if self.description:
-            payload['description'] = self.description
-
         return payload
-
-    def copy(self) -> SelectOption:
-        return self.__class__.from_dict(self.to_dict())
 
 
 class TextInput(Component):
@@ -1453,6 +1505,248 @@ class FileUploadComponent(Component):
         return payload
 
 
+class RadioGroupComponent(Component):
+    """Represents a radio group component from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    .. note::
+
+        The user constructible and usable type for creating a radio group is
+        :class:`discord.ui.RadioGroup` not this one.
+
+    .. versionadded:: 2.7
+
+    Attributes
+    ------------
+    custom_id: Optional[:class:`str`]
+        The ID of the component that gets received during an interaction.
+    id: Optional[:class:`int`]
+        The ID of this component.
+    required: :class:`bool`
+        Whether the component is required.
+        Defaults to ``True``.
+    options: List[:class:`RadioGroupOption`]
+        A list of options that can be selected in this group.
+    """
+
+    __slots__: Tuple[str, ...] = ('custom_id', 'required', 'id', 'options')
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+
+    def __init__(self, data: RadioGroupComponentPayload, /) -> None:
+        self.custom_id: str = data['custom_id']
+        self.required: bool = data.get('required', True)
+        self.id: Optional[int] = data.get('id')
+        self.options: List[RadioGroupOption] = [RadioGroupOption.from_dict(option) for option in data.get('options', [])]
+
+    @property
+    def type(self) -> Literal[ComponentType.radio_group]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.radio_group
+
+    def to_dict(self) -> RadioGroupComponentPayload:
+        payload: RadioGroupComponentPayload = {
+            'type': self.type.value,
+            'custom_id': self.custom_id,
+            'required': self.required,
+        }
+        if self.id is not None:
+            payload['id'] = self.id
+        if self.options:
+            payload['options'] = [option.to_dict() for option in self.options]
+
+        return payload
+
+
+class RadioGroupOption(BaseOption):
+    """Represents a radio group's option
+
+    These can be created by users.
+
+    .. versionadded:: 2.7
+
+    Parameters
+    -----------
+    label: :class:`str`
+        The label of the option. This is displayed to users.
+        Can only be up to 100 characters.
+    value: :class:`str`
+        The value of the option. This is not displayed to users.
+        If not provided when constructed then it defaults to the label.
+        Can only be up to 100 characters.
+    description: Optional[:class:`str`]
+        An additional description of the option, if any.
+        Can only be up to 100 characters.
+    default: :class:`bool`
+        Whether this option is selected by default.
+
+    Attributes
+    -----------
+    label: :class:`str`
+        The label of the option. This is displayed to users.
+    value: :class:`str`
+        The value of the option. This is not displayed to users.
+        If not provided when constructed then it defaults to the
+        label.
+    description: Optional[:class:`str`]
+        An additional description of the option, if any.
+    default: :class:`bool`
+        Whether this option is selected by default.
+    """
+
+
+class CheckboxGroupComponent(Component):
+    """Represents a checkbox group component from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    .. note::
+
+        The user constructible and usable type for creating a checkbox group is
+        :class:`discord.ui.CheckboxGroup` not this one.
+
+    .. versionadded:: 2.7
+
+    Attributes
+    ------------
+    custom_id: Optional[:class:`str`]
+        The ID of the component that gets received during an interaction.
+    id: Optional[:class:`int`]
+        The ID of this component.
+    required: :class:`bool`
+        Whether the component is required.
+        Defaults to ``True``.
+    min_values: :class:`int`
+        The minimum number of options that must be selected in this component.
+        Must be between 0 and 10. Defaults to 0.
+    max_values: :class:`int`
+        The maximum number of options that can be selected in this component.
+        Must be between 1 and 10. Defaults to 1.
+    options: List[:class:`CheckboxGroupOption`]
+        A list of options that can be selected in this group.
+    """
+
+    __slots__: Tuple[str, ...] = ('custom_id', 'required', 'id', 'min_values', 'max_values', 'options')
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+
+    def __init__(self, data: CheckboxGroupComponentPayload, /) -> None:
+        self.custom_id: str = data['custom_id']
+        self.required: bool = data.get('required', True)
+        self.id: Optional[int] = data.get('id')
+        self.min_values: int = data.get('min_values', 0)
+        self.max_values: int = data.get('max_values', 1)
+        self.options: List[CheckboxGroupOption] = [
+            CheckboxGroupOption.from_dict(option) for option in data.get('options', [])
+        ]
+
+    @property
+    def type(self) -> Literal[ComponentType.checkbox_group]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.checkbox_group
+
+    def to_dict(self) -> CheckboxGroupComponentPayload:
+        payload: CheckboxGroupComponentPayload = {
+            'type': self.type.value,
+            'custom_id': self.custom_id,
+            'min_values': self.min_values,
+            'max_values': self.max_values,
+            'required': self.required,
+        }
+        if self.id is not None:
+            payload['id'] = self.id
+        if self.options:
+            payload['options'] = [option.to_dict() for option in self.options]
+
+        return payload
+
+
+class CheckboxGroupOption(BaseOption):
+    """Represents a checkbox group's option
+
+    These can be created by users.
+
+    .. versionadded:: 2.7
+
+    Parameters
+    -----------
+    label: :class:`str`
+        The label of the option. This is displayed to users.
+        Can only be up to 100 characters.
+    value: :class:`str`
+        The value of the option. This is not displayed to users.
+        If not provided when constructed then it defaults to the label.
+        Can only be up to 100 characters.
+    description: Optional[:class:`str`]
+        An additional description of the option, if any.
+        Can only be up to 100 characters.
+    default: :class:`bool`
+        Whether this option is selected by default.
+
+    Attributes
+    -----------
+    label: :class:`str`
+        The label of the option. This is displayed to users.
+    value: :class:`str`
+        The value of the option. This is not displayed to users.
+        If not provided when constructed then it defaults to the
+        label.
+    description: Optional[:class:`str`]
+        An additional description of the option, if any.
+    default: :class:`bool`
+        Whether this option is selected by default.
+    """
+
+
+class CheckboxComponent(Component):
+    """Represents a checkbox component from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    .. note::
+
+        The user constructible and usable type for creating a checkbox is
+        :class:`discord.ui.Checkbox` not this one.
+
+    .. versionadded:: 2.7
+
+    Attributes
+    ------------
+    custom_id: Optional[:class:`str`]
+        The ID of the component that gets received during an interaction.
+    id: Optional[:class:`int`]
+        The ID of this component.
+    default: :class:`bool`
+        Whether this checkbox is selected by default.
+    """
+
+    __slots__: Tuple[str, ...] = ('custom_id', 'default', 'id')
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+
+    def __init__(self, data: CheckboxComponentPayload, /) -> None:
+        self.custom_id: str = data['custom_id']
+        self.id: Optional[int] = data.get('id')
+        self.default: bool = data.get('default', False)
+
+    @property
+    def type(self) -> Literal[ComponentType.checkbox]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.checkbox
+
+    def to_dict(self) -> CheckboxComponentPayload:
+        payload: CheckboxComponentPayload = {
+            'type': self.type.value,
+            'custom_id': self.custom_id,
+            'default': self.default,
+        }
+        if self.id is not None:
+            payload['id'] = self.id
+
+        return payload
+
+
 def _component_factory(data: ComponentPayload, state: Optional[ConnectionState] = None) -> Optional[Component]:
     if data['type'] == 1:
         return ActionRow(data)
@@ -1480,3 +1774,9 @@ def _component_factory(data: ComponentPayload, state: Optional[ConnectionState] 
         return LabelComponent(data, state)
     elif data['type'] == 19:
         return FileUploadComponent(data)
+    elif data['type'] == 21:
+        return RadioGroupComponent(data)
+    elif data['type'] == 22:
+        return CheckboxGroupComponent(data)
+    elif data['type'] == 23:
+        return CheckboxComponent(data)
