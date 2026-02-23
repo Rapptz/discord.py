@@ -899,7 +899,7 @@ class ViewStore:
             self._modals[view.custom_id] = view  # type: ignore
             return
 
-        dispatch_info = self._views.setdefault(message_id, {})
+        dispatch_info = self._views.get(message_id, {})
         is_fully_dynamic = True
         for item in view.walk_children():
             if isinstance(item, DynamicItem):
@@ -910,6 +910,9 @@ class ViewStore:
                 is_fully_dynamic = False
 
         view._cache_key = message_id
+        if dispatch_info:
+            self._views[message_id] = dispatch_info
+
         if message_id is not None and not is_fully_dynamic:
             self._synced_message_views[message_id] = view
 
@@ -927,8 +930,8 @@ class ViewStore:
                 elif item.is_dispatchable():
                     dispatch_info.pop((item.type.value, item.custom_id), None)  # type: ignore
 
-            if len(dispatch_info) == 0:
-                self._views.pop(view._cache_key, None)
+        if dispatch_info is not None and len(dispatch_info) == 0:
+            self._views.pop(view._cache_key, None)
 
         self._synced_message_views.pop(view._cache_key, None)  # type: ignore
 
