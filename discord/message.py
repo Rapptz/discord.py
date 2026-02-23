@@ -1393,12 +1393,7 @@ class PartialMessage(Hashable):
         :class:`Message`
             The newly edited message.
         """
-
-        if content is not MISSING:
-            previous_allowed_mentions = self._state.allowed_mentions
-        else:
-            previous_allowed_mentions = None
-
+        previous_allowed_mentions = self._state.allowed_mentions
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
 
@@ -2964,11 +2959,7 @@ class Message(PartialMessage, Hashable):
         :class:`Message`
             The newly edited message.
         """
-
-        if content is not MISSING:
-            previous_allowed_mentions = self._state.allowed_mentions
-        else:
-            previous_allowed_mentions = None
+        previous_allowed_mentions = self._state.allowed_mentions
 
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
