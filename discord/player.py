@@ -40,7 +40,7 @@ import io
 from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from .enums import SpeakingState
-from .errors import ClientException, FFmpegError
+from .errors import ClientException, FFmpegProcessError
 from .opus import Encoder as OpusEncoder, OPUS_SILENCE
 from .oggparse import OggStream
 from .utils import MISSING
@@ -236,7 +236,7 @@ class FFmpegAudio(AudioSource):
                     stderr_text = '<failed to read stderr>'
 
             stderr_info = stderr_text if stderr_text else '<no stderr>'
-            self._current_error = FFmpegError(f'FFmpeg exited with code {ret}. Stderr: {stderr_info}')
+            self._current_error = FFmpegProcessError(f'FFmpeg exited with code {ret}. Stderr: {stderr_info}')
 
     def _kill_process(self) -> None:
         # check if FFmpeg process failed

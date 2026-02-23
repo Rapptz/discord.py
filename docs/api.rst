@@ -6216,6 +6216,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: MissingApplicationID
 
+.. autoexception:: FFmpegProcessError
+
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
@@ -6234,6 +6236,7 @@ Exception Hierarchy
                 - :exc:`PrivilegedIntentsRequired`
                 - :exc:`InteractionResponded`
                 - :exc:`MissingApplicationID`
+                - :exc:`FFmpegProcessError`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`

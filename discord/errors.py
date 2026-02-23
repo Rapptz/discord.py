@@ -48,7 +48,7 @@ __all__ = (
     'PrivilegedIntentsRequired',
     'InteractionResponded',
     'MissingApplicationID',
-    'FFmpegError',
+    'FFmpegProcessError',
 )
 
 APP_ID_NOT_FOUND = (
@@ -75,8 +75,11 @@ class ClientException(DiscordException):
     pass
 
 
-class FFmpegError(ClientException):
-    """Exception that's raised when an FFmpeg process fails."""
+class FFmpegProcessError(ClientException):
+    """Exception that's raised when an FFmpeg process fails.
+
+    .. versionadded:: 2.7
+    """
 
     pass
 
