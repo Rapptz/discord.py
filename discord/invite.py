@@ -42,6 +42,9 @@ from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
 from .flags import InviteFlags
 from .colour import Colour
+from .errors import ClientException
+from .role import Role
+
 
 __all__ = (
     'PartialInviteChannel',
@@ -70,7 +73,6 @@ if TYPE_CHECKING:
     from .abc import GuildChannel
     from .user import User
     from .abc import Snowflake
-    from .role import Role
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object]
@@ -140,6 +142,7 @@ class PartialInviteRole:
         'name',
         'position',
         'unicode_emoji',
+        '_guild_id',
         '_colour',
         '_secondary_colour',
         '_tertiary_colour',
@@ -147,8 +150,10 @@ class PartialInviteRole:
         '_state',
     )
 
-    def __init__(self, state: ConnectionState, data: InviteRolePayload) -> None:
+    def __init__(self, *, state: ConnectionState, data: InviteRolePayload, guild_id: int) -> None:
         self._state: ConnectionState = state
+
+        self._guild_id: int = guild_id
 
         self.id: int = int(data['id'])
         self.name: str = data['name']
@@ -166,7 +171,7 @@ class PartialInviteRole:
         return self.name
 
     def __repr__(self) -> str:
-        return f'<Role id={self.id} name={self.name!r}>'
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
 
     @property
     def secondary_colour(self) -> Optional[Colour]:
@@ -226,6 +231,44 @@ class PartialInviteRole:
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention a role."""
         return f'<@&{self.id}>'
+
+    def resolve(self) -> Optional[Role]:
+        """Resolves this partial role to a full :class:`~discord.Role` object,
+        if the guild and role are found in cache.
+
+        Returns
+        --------
+        Optional[:class:`.Role`]
+            The resolved role, or ``None`` if the guild or role is not found in cache.
+        """
+        guild = self._state._get_guild(self._guild_id)
+        if guild is None:
+            return None
+
+        return guild.get_role(self.id)
+
+    async def fetch(self) -> Role:
+        """|coro|
+
+        Fetches the partial role to a full :class:`~discord.Role`.
+
+        Raises
+        --------
+        NotFound
+            The role was not found.
+        HTTPException
+            Retrieving the role failed.
+
+        Returns
+        --------
+        :class:`~discord.Role`
+            The full role.
+        """
+        guild = self._state._get_guild(self._guild_id)
+        if guild is None:
+            raise ClientException(f'Guild with ID {self._guild_id} not found')
+
+        return await guild.fetch_role(self.id)
 
 
 class PartialInviteChannel:
@@ -522,13 +565,11 @@ class Invite(Hashable):
         The ID of the scheduled event associated with this invite, if any.
 
         .. versionadded:: 2.0
-    roles: List[Union[:class:`PartialInviteRole`, :class:`Role`, :class:`Object`]]
+    roles: List[Union[:class:`PartialInviteRole`, :class:`Object`]]
         A list of roles that are granted to users joining via this invite.
 
         Objects in this list may be...
-        - :class:`Role` if the bot is part of the guild this invite resolves to and the role is in cache.
-        - :class:`PartialInviteRole` if the invite is fetched through :meth:`Client.fetch_invite` and
-        the bot is not in the guild the invite resolves to, or if the role is not in cache.
+        - :class:`PartialInviteRole` if the invite is fetched through :meth:`Client.fetch_invite`.
         - :class:`Object` if the invite is received through a gateway event or the role is not in cache.
 
         .. versionadded:: 2.7
@@ -612,7 +653,7 @@ class Invite(Hashable):
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
         self._flags: int = data.get('flags', 0)
 
-        self.roles: List[Union[PartialInviteRole, Role, Object]] = self._resolve_roles(
+        self.roles: List[Union[PartialInviteRole, Object]] = self._resolve_roles(
             data.get('roles', []) or data.get('role_ids', [])
         )
 
@@ -688,26 +729,33 @@ class Invite(Hashable):
     def _resolve_roles(
         self,
         data: Optional[Sequence[Union[InviteRolePayload, int, str]]],
-    ) -> list[Union[PartialInviteRole, Role, Object]]:
+    ) -> list[Union[PartialInviteRole, Object]]:
         if not data:
             return []
 
         guild = self.guild
-        res: List[Union[PartialInviteRole, Role, Object]] = []
+        state = self._state
 
+        res: List[Union[PartialInviteRole, Object]] = []
         for role in data:
+            role_id: int
+            role_data: Optional[InviteRolePayload] = None
             if isinstance(role, (int, str)):
                 role_id = int(role)
-                if guild is not None and not isinstance(guild, (PartialInviteGuild, Object)):
-                    res.append(guild.get_role(role_id) or Object(role_id))
-                else:
-                    res.append(Object(role_id))
             else:
                 role_id = int(role['id'])
-                if guild is not None and not isinstance(guild, (PartialInviteGuild, Object)):
-                    res.append(guild.get_role(role_id) or PartialInviteRole(self._state, role))
-                else:
-                    res.append(PartialInviteRole(self._state, role))
+                role_data = role
+
+            if guild:
+                if not isinstance(guild, (PartialInviteGuild, Object)):
+                    cached_role = guild.get_role(role_id)
+                    if cached_role:
+                        role_data = cached_role._to_partial_dict()
+
+                if role_data:
+                    res.append(PartialInviteRole(state=state, data=role_data, guild_id=guild.id))
+            else:
+                res.append(Object(id=role_id, type=Role))
 
         return res
 
@@ -793,7 +841,7 @@ class Invite(Hashable):
         data = await self._state.http.delete_invite(self.code, reason=reason)
         return self.from_incomplete(state=self._state, data=data)
 
-    async def target_users(self) -> list[int]:
+    async def target_users(self) -> list[Object]:
         """|coro|
 
         Fetches the users that are allowed to join via this invite.
@@ -804,8 +852,8 @@ class Invite(Hashable):
 
         Returns
         --------
-        List[:class:`int`]
-            A list of user IDs.
+        List[:class:`discord.Object`]
+            A list of user objects.
 
         Raises
         -------
@@ -816,9 +864,14 @@ class Invite(Hashable):
         HTTPException
             Fetching the target users failed.
         """
+        # circular import
+        from .user import User
 
         res = await self._state.http.get_invite_target_users(self.code)
-        return list(map(int, res.lstrip('user_id\n').strip().split('\n'))) if res else []
+        if not res:
+            return []
+
+        return list(map(lambda x: Object(id=int(x), type=User), res.lstrip('user_id\n').strip().split('\n')))
 
     async def target_users_job_status(self) -> InviteUsersJob:
         """|coro|
@@ -844,7 +897,6 @@ class Invite(Hashable):
         HTTPException
             Fetching the target users job status failed.
         """
-
         data = await self._state.http.get_invite_target_users_job_status(self.code)
         return InviteUsersJob(data)
 
