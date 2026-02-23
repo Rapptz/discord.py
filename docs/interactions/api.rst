@@ -1169,6 +1169,14 @@ Range
 .. autoclass:: discord.app_commands.Range
     :members:
 
+Timestamp
+++++++++++
+
+.. attributetable:: discord.app_commands.Timestamp
+
+.. autoclass:: discord.app_commands.Timestamp
+    :members:
+
 Translations
 ~~~~~~~~~~~~~
 

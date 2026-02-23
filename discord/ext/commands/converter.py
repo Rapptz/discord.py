@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import datetime
 import inspect
 import re
 from typing import (
@@ -86,6 +87,7 @@ __all__ = (
     'clean_content',
     'Greedy',
     'Range',
+    'Timestamp',
     'run_converters',
 )
 
@@ -891,6 +893,28 @@ class GuildStickerConverter(IDConverter[discord.GuildSticker]):
             raise GuildStickerNotFound(argument)
 
         return result
+
+
+if TYPE_CHECKING:
+    Timestamp = datetime.datetime
+else:
+
+    class Timestamp(Converter[str]):
+        """Converts to a :class:`datetime.datetime`.
+
+        Conversion is attempted based on the :ddocs:`Discord style timestamp <reference#message-formatting>` input format.
+
+        .. versionadded:: 2.7
+
+        .. warning::
+            Due to a Discord limitation, no timezone is provided with the input. The UTC timezone has been supplanted instead.
+        """
+
+        async def convert(self, ctx: Context[BotT], argument: str) -> datetime.datetime:
+            match = discord.utils.TIMESTAMP_PATTERN.match(argument)
+            if not match:
+                raise BadTimestampArgument(argument)
+            return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
 
 
 class ScheduledEventConverter(IDConverter[discord.ScheduledEvent]):
