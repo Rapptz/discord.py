@@ -88,7 +88,7 @@ if TYPE_CHECKING:
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
     from .app_commands import Command, ContextMenu
     from .automod import AutoModAction, AutoModRule
-    from .channel import DMChannel, GroupChannel
+    from .channel import DMChannel, GroupChannel, VoiceChannelEffect
     from .ext.commands import AutoShardedBot, Bot, Context, CommandError
     from .guild import GuildChannel
     from .integrations import Integration
@@ -1753,6 +1753,38 @@ class Client:
         timeout: Optional[float] = ...,
     ) -> Tuple[ScheduledEvent, User]: ...
 
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['scheduled_event_update'],
+        /,
+        *,
+        check: Optional[Callable[[ScheduledEvent, ScheduledEvent], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> Tuple[ScheduledEvent, ScheduledEvent]: ...
+
+    # Soundboard
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['soundboard_sound_create', 'soundboard_sound_delete'],
+        /,
+        *,
+        check: Optional[Callable[[SoundboardSound], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> SoundboardSound: ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['soundboard_sound_update'],
+        /,
+        *,
+        check: Optional[Callable[[SoundboardSound, SoundboardSound], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> Tuple[SoundboardSound, SoundboardSound]: ...
+
     # Stages
 
     @overload
@@ -1858,6 +1890,16 @@ class Client:
         check: Optional[Callable[[Member, VoiceState, VoiceState], bool]] = ...,
         timeout: Optional[float] = ...,
     ) -> Tuple[Member, VoiceState, VoiceState]: ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['voice_channel_effect'],
+        /,
+        *,
+        check: Optional[Callable[[VoiceChannelEffect], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> VoiceChannelEffect: ...
 
     # Polls
 
