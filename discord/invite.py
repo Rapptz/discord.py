@@ -119,10 +119,6 @@ class InviteUsersJob:
 class PartialInviteRole:
     """Represents a "partial" invite role.
 
-    This model will be given when the bot is not part of the
-    guild the :class:`Invite` resolves to, or when the role
-    is not in cache.
-
     .. versionadded:: 2.7
 
     Attributes
@@ -256,6 +252,8 @@ class PartialInviteRole:
         --------
         NotFound
             The role was not found.
+        ClientException
+            The guild was not found in cache.
         HTTPException
             Retrieving the role failed.
 
