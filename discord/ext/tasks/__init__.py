@@ -37,6 +37,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 import aiohttp
@@ -176,7 +177,7 @@ class Loop(Generic[LF]):
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
 
-        self.change_interval(seconds=seconds, minutes=minutes, hours=hours, time=time)
+        self.change_interval(seconds=seconds, minutes=minutes, hours=hours, time=time)  # type: ignore
         self._last_iteration_failed = False
         self._last_iteration: datetime.datetime = MISSING
         self._next_iteration = None
@@ -710,6 +711,22 @@ class Loop(Generic[LF]):
         ret = sorted(set(ret))  # de-dupe and sort times
         return ret
 
+    @overload
+    def change_interval(
+        self,
+        *,
+        seconds: float = 0,
+        minutes: float = 0,
+        hours: float = 0,
+    ) -> None: ...
+
+    @overload
+    def change_interval(
+        self,
+        *,
+        time: Union[datetime.time, Sequence[datetime.time]],
+    ) -> None: ...
+
     def change_interval(
         self,
         *,
@@ -775,6 +792,28 @@ class Loop(Generic[LF]):
             if self._handle and not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval
                 self._handle.recalculate(self._next_iteration)
+
+
+@overload
+def loop(
+    *,
+    seconds: float = 0,
+    minutes: float = 0,
+    hours: float = 0,
+    count: Optional[int] = None,
+    reconnect: bool = True,
+    name: Optional[str] = None,
+) -> Callable[[LF], Loop[LF]]: ...
+
+
+@overload
+def loop(
+    *,
+    time: Union[datetime.time, Sequence[datetime.time]],
+    count: Optional[int] = None,
+    reconnect: bool = True,
+    name: Optional[str] = None,
+) -> Callable[[LF], Loop[LF]]: ...
 
 
 def loop(
