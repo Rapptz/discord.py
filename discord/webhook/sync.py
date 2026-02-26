@@ -183,7 +183,7 @@ class WebhookAdapter:
                         data = response.text or None
                         try:
                             if data and response.headers['Content-Type'] == 'application/json':
-                                data = json.loads(data)
+                                data = utils._from_json(data)
                         except KeyError:
                             pass
 

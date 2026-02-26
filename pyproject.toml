@@ -57,6 +57,7 @@ docs = [
     "imghdr-lts==1.0.0; python_version>='3.13'",
 ]
 speed = [
+    "msgspec>=0.18.0",
     "orjson>=3.5.4",
     "aiodns>=1.1; sys_platform != 'win32'",
     "Brotli",

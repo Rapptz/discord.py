@@ -77,6 +77,13 @@ import logging
 import yarl
 
 try:
+    import msgspec.json  # type: ignore
+except ModuleNotFoundError:
+    HAS_MSGSPEC = False
+else:
+    HAS_MSGSPEC = True
+
+try:
     import orjson  # type: ignore
 except ModuleNotFoundError:
     HAS_ORJSON = False
@@ -657,7 +664,14 @@ def _is_submodule(parent: str, child: str) -> bool:
     return parent == child or child.startswith(parent + '.')
 
 
-if HAS_ORJSON:
+if HAS_MSGSPEC:
+
+    def _to_json(obj: Any) -> str:
+        return msgspec.json.encode(obj).decode('utf-8')
+
+    _from_json = msgspec.json.decode  # type: ignore
+
+elif HAS_ORJSON:
 
     def _to_json(obj: Any) -> str:
         return orjson.dumps(obj).decode('utf-8')
