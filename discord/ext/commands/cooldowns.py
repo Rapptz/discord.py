@@ -218,7 +218,7 @@ class _Semaphore:
             self._waiters.append(future)
             try:
                 await future
-            except:
+            except Exception:
                 future.cancel()
                 if self.value > 0 and not future.cancelled():
                     self.wake_up()

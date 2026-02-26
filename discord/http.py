@@ -474,7 +474,7 @@ class Ratelimit:
                     await asyncio.wait([future], timeout=max_wait_time)
                     if not future.done():
                         await self._refresh()
-            except:
+            except Exception:
                 future.cancel()
                 if self.remaining > 0 and not future.cancelled():
                     self._wake_next()

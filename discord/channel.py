@@ -3293,7 +3293,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
 
         Actual direct messages do not really have the concept of permissions.
 
-        This returns all the Text related permissions set to ``True`` except:
+        This returns all the Text related permissions set to ``True`` except Exception:
 
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
@@ -3467,7 +3467,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
 
         Actual direct messages do not really have the concept of permissions.
 
-        This returns all the Text related permissions set to ``True`` except:
+        This returns all the Text related permissions set to ``True`` except Exception:
 
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
