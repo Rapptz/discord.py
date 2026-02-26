@@ -32,7 +32,6 @@ from __future__ import annotations
 
 import threading
 import logging
-import json
 import time
 import re
 

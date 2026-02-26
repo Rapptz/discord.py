@@ -664,19 +664,19 @@ def _is_submodule(parent: str, child: str) -> bool:
     return parent == child or child.startswith(parent + '.')
 
 
-if HAS_MSGSPEC:
-
-    def _to_json(obj: Any) -> str:
-        return msgspec.json.encode(obj).decode('utf-8')
-
-    _from_json = msgspec.json.decode  # type: ignore
-
-elif HAS_ORJSON:
+if HAS_ORJSON:
 
     def _to_json(obj: Any) -> str:
         return orjson.dumps(obj).decode('utf-8')
 
     _from_json = orjson.loads  # type: ignore
+
+elif HAS_MSGSPEC:
+
+    def _to_json(obj: Any) -> str:
+        return msgspec.json.encode(obj).decode('utf-8')
+
+    _from_json = msgspec.json.decode  # type: ignore
 
 else:
 
