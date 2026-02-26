@@ -77,6 +77,13 @@ import logging
 import yarl
 
 try:
+    import msgspec.json  # type: ignore
+except ModuleNotFoundError:
+    HAS_MSGSPEC = False
+else:
+    HAS_MSGSPEC = True
+
+try:
     import orjson  # type: ignore
 except ModuleNotFoundError:
     HAS_ORJSON = False
@@ -663,6 +670,13 @@ if HAS_ORJSON:
         return orjson.dumps(obj).decode('utf-8')
 
     _from_json = orjson.loads  # type: ignore
+
+elif HAS_MSGSPEC:
+
+    def _to_json(obj: Any) -> str:
+        return msgspec.json.encode(obj).decode('utf-8')
+
+    _from_json = msgspec.json.decode  # type: ignore
 
 else:
 
