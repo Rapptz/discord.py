@@ -24,20 +24,34 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, Union, TYPE_CHECKING
+from typing import List, Optional, Sequence, Union, TYPE_CHECKING
 from .asset import Asset
-from .utils import parse_time, snowflake_time, _get_as_snowflake
+from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING
 from .object import Object
 from .mixins import Hashable
-from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, InviteType, try_enum
+from .enums import (
+    ChannelType,
+    NSFWLevel,
+    VerificationLevel,
+    InviteTarget,
+    InviteType,
+    InviteUsersJobStatus,
+    try_enum,
+)
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
 from .flags import InviteFlags
+from .colour import Colour
+from .errors import ClientException
+from .role import Role
+
 
 __all__ = (
     'PartialInviteChannel',
     'PartialInviteGuild',
     'Invite',
+    'InviteUsersJob',
+    'PartialInviteRole',
 )
 
 if TYPE_CHECKING:
@@ -47,6 +61,8 @@ if TYPE_CHECKING:
         Invite as InvitePayload,
         InviteGuild as InviteGuildPayload,
         GatewayInvite as GatewayInvitePayload,
+        InviteTargetUsersJobStatus as InviteTargetUsersJobStatusPayload,
+        InviteRole as InviteRolePayload,
     )
     from .types.guild import GuildFeature
     from .types.channel import (
@@ -62,6 +78,195 @@ if TYPE_CHECKING:
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object]
 
     import datetime
+
+
+class InviteUsersJob:
+    """Represents the status of an invite's target users job.
+
+    .. versionadded:: 2.7
+
+    Attributes
+    -----------
+    status: :class:`InviteUsersJobStatus`
+        The status of the job.
+    total_users: :class:`int`
+        The total number of users in the job.
+    processed_users: :class:`int`
+        The number of users that have been processed so far.
+    created_at: Optional[:class:`datetime.datetime`]
+        The time the job was created.
+    error_message: Optional[:class:`str`]
+        The error message.
+    completed_at: Optional[:class:`datetime.datetime`]
+        The time the job was completed, if applicable.
+    """
+
+    def __init__(self, data: InviteTargetUsersJobStatusPayload) -> None:
+        self.status: InviteUsersJobStatus = try_enum(InviteUsersJobStatus, data['status'])
+        self.total_users: int = data['total_users']
+        self.processed_users: int = data['processed_users']
+        self.error_message: Optional[str] = data.get('error_message')
+        self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
+        self.completed_at: Optional[datetime.datetime] = parse_time(data.get('completed_at'))
+
+    def __repr__(self) -> str:
+        return (
+            f'<{self.__class__.__name__} status={self.status} '
+            f'total_users={self.total_users} processed_users={self.processed_users}>'
+        )
+
+
+class PartialInviteRole:
+    """Represents a "partial" invite role.
+
+    .. versionadded:: 2.7
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The role's ID.
+    name: :class:`str`
+        The role's name.
+    position: :class:`int`
+        The role's position.
+    unicode_emoji: Optional[:class:`str`]
+        The role's unicode emoji, if it has one.
+    """
+
+    __slots__ = (
+        'id',
+        'name',
+        'position',
+        'unicode_emoji',
+        '_guild_id',
+        '_colour',
+        '_secondary_colour',
+        '_tertiary_colour',
+        '_icon',
+        '_state',
+    )
+
+    def __init__(self, *, state: ConnectionState, data: InviteRolePayload, guild_id: int) -> None:
+        self._state: ConnectionState = state
+
+        self._guild_id: int = guild_id
+
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.position: int = data.get('position', 0)
+
+        colors = data.get('colors', {})
+        self._colour: int = colors.get('primary_color', 0)
+        self._secondary_colour = colors.get('secondary_color', None)
+        self._tertiary_colour = colors.get('tertiary_color', None)
+
+        self.unicode_emoji: Optional[str] = data.get('unicode_emoji')
+        self._icon: Optional[str] = data.get('icon')
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
+
+    @property
+    def secondary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's secondary colour."""
+        return Colour(self._secondary_colour) if self._secondary_colour is not None else None
+
+    @property
+    def secondary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Alias for :attr:`secondary_colour`."""
+        return self.secondary_colour
+
+    @property
+    def tertiary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's tertiary colour."""
+        return Colour(self._tertiary_colour) if self._tertiary_colour is not None else None
+
+    @property
+    def tertiary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Alias for :attr:`tertiary_colour`."""
+        return self.tertiary_colour
+
+    @property
+    def colour(self) -> Colour:
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``color``."""
+        return Colour(self._colour)
+
+    @property
+    def color(self) -> Colour:
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``colour``."""
+        return self.colour
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Returns the role's icon asset, if available.
+
+        .. note::
+            If this is ``None``, the role might instead have unicode emoji as its icon
+            if :attr:`unicode_emoji` is not ``None``.
+
+            If you want the icon that a role has displayed, consider using :attr:`display_icon`.
+        """
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='role')
+
+    @property
+    def display_icon(self) -> Optional[Union[Asset, str]]:
+        """Optional[Union[:class:`.Asset`, :class:`str`]]: Returns the role's display icon, if available."""
+        return self.icon or self.unicode_emoji
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the role's creation time in UTC."""
+        return snowflake_time(self.id)
+
+    @property
+    def mention(self) -> str:
+        """:class:`str`: Returns a string that allows you to mention a role."""
+        return f'<@&{self.id}>'
+
+    def resolve(self) -> Optional[Role]:
+        """Resolves this partial role to a full :class:`~discord.Role` object,
+        if the guild and role are found in cache.
+
+        Returns
+        --------
+        Optional[:class:`.Role`]
+            The resolved role, or ``None`` if the guild or role is not found in cache.
+        """
+        guild = self._state._get_guild(self._guild_id)
+        if guild is None:
+            return None
+
+        return guild.get_role(self.id)
+
+    async def fetch(self) -> Role:
+        """|coro|
+
+        Fetches the partial role to a full :class:`~discord.Role`.
+
+        Raises
+        --------
+        NotFound
+            The role was not found.
+        ClientException
+            The guild was not found in cache.
+        HTTPException
+            Retrieving the role failed.
+
+        Returns
+        --------
+        :class:`~discord.Role`
+            The full role.
+        """
+        guild = self._state._get_guild(self._guild_id)
+        if guild is None:
+            raise ClientException(f'Guild with ID {self._guild_id} not found')
+
+        return await guild.fetch_role(self.id)
 
 
 class PartialInviteChannel:
@@ -358,6 +563,14 @@ class Invite(Hashable):
         The ID of the scheduled event associated with this invite, if any.
 
         .. versionadded:: 2.0
+    roles: List[Union[:class:`PartialInviteRole`, :class:`Object`]]
+        A list of roles that are granted to users joining via this invite.
+
+        Objects in this list may be...
+        - :class:`PartialInviteRole` if the invite is fetched through :meth:`Client.fetch_invite`.
+        - :class:`Object` if the invite is received through a gateway event or the role is not in cache.
+
+        .. versionadded:: 2.7
     """
 
     __slots__ = (
@@ -382,6 +595,7 @@ class Invite(Hashable):
         'scheduled_event_id',
         'type',
         '_flags',
+        'roles',
     )
 
     BASE = 'https://discord.gg'
@@ -437,6 +651,10 @@ class Invite(Hashable):
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
         self._flags: int = data.get('flags', 0)
 
+        self.roles: List[Union[PartialInviteRole, Object]] = self._resolve_roles(
+            data.get('roles', []) or data.get('role_ids', [])
+        )
+
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
         guild: Optional[Union[Guild, PartialInviteGuild]]
@@ -459,7 +677,12 @@ class Invite(Hashable):
             # Upgrade the partial data if applicable
             channel = guild.get_channel(channel.id) or channel
 
-        return cls(state=state, data=data, guild=guild, channel=channel)
+        return cls(
+            state=state,
+            data=data,
+            guild=guild,
+            channel=channel,
+        )
 
     @classmethod
     def from_gateway(cls, *, state: ConnectionState, data: GatewayInvitePayload) -> Self:
@@ -500,6 +723,39 @@ class Invite(Hashable):
             return None
 
         return PartialInviteChannel(data)
+
+    def _resolve_roles(
+        self,
+        data: Optional[Sequence[Union[InviteRolePayload, int, str]]],
+    ) -> list[Union[PartialInviteRole, Object]]:
+        if not data:
+            return []
+
+        guild = self.guild
+        state = self._state
+
+        res: List[Union[PartialInviteRole, Object]] = []
+        for role in data:
+            role_id: int
+            role_data: Optional[InviteRolePayload] = None
+            if isinstance(role, (int, str)):
+                role_id = int(role)
+            else:
+                role_id = int(role['id'])
+                role_data = role
+
+            if guild:
+                if not isinstance(guild, (PartialInviteGuild, Object)):
+                    cached_role = guild.get_role(role_id)
+                    if cached_role:
+                        role_data = cached_role._to_partial_dict()
+
+                if role_data:
+                    res.append(PartialInviteRole(state=state, data=role_data, guild_id=guild.id))
+            else:
+                res.append(Object(id=role_id, type=Role))
+
+        return res
 
     def __str__(self) -> str:
         return self.url
@@ -582,3 +838,97 @@ class Invite(Hashable):
 
         data = await self._state.http.delete_invite(self.code, reason=reason)
         return self.from_incomplete(state=self._state, data=data)
+
+    async def target_users(self) -> list[Object]:
+        """|coro|
+
+        Fetches the users that are allowed to join via this invite.
+
+        Requires the bot to have created the invite or one of
+        the following permissions: :attr:`~Permissions.manage_guild`,
+        :attr:`~Permissions.view_audit_log`.
+
+        Returns
+        --------
+        List[:class:`discord.Object`]
+            A list of user objects.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to fetch target users.
+        NotFound
+            The invite is invalid or expired or the invite does not have target users.
+        HTTPException
+            Fetching the target users failed.
+        """
+        # circular import
+        from .user import User
+
+        res = await self._state.http.get_invite_target_users(self.code)
+        if not res:
+            return []
+
+        return list(map(lambda x: Object(id=int(x), type=User), res.lstrip('user_id\n').strip().split('\n')))
+
+    async def target_users_job_status(self) -> InviteUsersJob:
+        """|coro|
+
+        Fetches the status of the target users job for this invite.
+
+        Requires the bot to have created the invite or one of
+        the following permissions: :attr:`~Permissions.manage_guild`,
+        :attr:`~Permissions.view_audit_log`.
+
+
+        Returns
+        --------
+        :class:`discord.InviteUsersJob`
+            The status of the target users job.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to fetch target users job status.
+        NotFound
+            The invite is invalid or expired or there is no ongoing target users job.
+        HTTPException
+            Fetching the target users job status failed.
+        """
+        data = await self._state.http.get_invite_target_users_job_status(self.code)
+        return InviteUsersJob(data)
+
+    async def edit(
+        self,
+        *,
+        target_users: Sequence[Snowflake] = MISSING,
+    ) -> None:
+        """|coro|
+
+        Edits the invite.
+
+        Parameters
+        -----------
+        users: List[:class:`~discord.abc.Snowflake`]
+            A list of users that should be able to use this invite.
+
+            Requires the bot to have created the invite or the
+            :attr:`~Permissions.manage_guild` permission.
+
+            .. note::
+                You cannot clear the list of target users once set.
+
+                There must be at least one user in the list.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit invites.
+        NotFound
+            The invite is invalid or expired.
+        HTTPException
+            Editing the invite failed.
+        """
+
+        if target_users:
+            await self._state.http.edit_invite_target_users(self.code, user_ids=[user.id for user in target_users])

@@ -1837,6 +1837,18 @@ class HTTPClient:
 
     # Invite management
 
+    def _generate_invite_form(
+        self,
+        *,
+        payload: dict[str, Any],
+        user_ids: List[Snowflake],
+    ) -> list[dict[str, Any]]:
+        users = 'user_id\n' + '\n'.join(map(str, user_ids))
+        return [
+            {'name': 'payload_json', 'value': utils._to_json(payload)},
+            {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'},
+        ]
+
     def create_invite(
         self,
         channel_id: Snowflake,
@@ -1850,6 +1862,8 @@ class HTTPClient:
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
         flags: Optional[int] = None,
+        role_ids: Optional[List[Snowflake]] = None,
+        user_ids: Optional[List[Snowflake]] = None,
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -1870,6 +1884,17 @@ class HTTPClient:
 
         if flags:
             payload['flags'] = flags
+
+        if role_ids:
+            payload['role_ids'] = list(map(str, role_ids))
+
+        if user_ids:
+            form = self._generate_invite_form(payload=payload, user_ids=user_ids)
+            return self.request(
+                r,
+                form=form,
+                reason=reason,
+            )
 
         return self.request(r, reason=reason, json=payload)
 
@@ -1897,6 +1922,35 @@ class HTTPClient:
 
     def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[invite.Invite]:
         return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
+
+    def get_invite_target_users(
+        self,
+        invite_id: str,
+    ) -> Response[str]:
+        return self.request(Route('GET', '/invites/{invite_id}/target-users', invite_id=invite_id))
+
+    def edit_invite_target_users(
+        self,
+        invite_id: str,
+        user_ids: List[Snowflake],
+    ) -> Response[None]:
+        form = self._generate_invite_form(
+            payload={},
+            user_ids=user_ids,
+        )
+        return self.request(Route('PUT', '/invites/{invite_id}/target-users', invite_id=invite_id), form=form)
+
+    def get_invite_target_users_job_status(
+        self,
+        invite_id: str,
+    ) -> Response[invite.InviteTargetUsersJobStatus]:
+        return self.request(
+            Route(
+                'GET',
+                '/invites/{invite_id}/target-users/job-status',
+                invite_id=invite_id,
+            )
+        )
 
     # Role management
 
