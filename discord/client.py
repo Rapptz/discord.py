@@ -252,6 +252,8 @@ class Client:
         sync your system clock to Google's NTP server.
 
         .. versionadded:: 1.3
+        .. deprecated:: 2.7
+            This parameter is deprecated and will be removed in a future version as it is unused.
     enable_debug_events: :class:`bool`
         Whether to enable events that are useful only for debugging gateway related information.
 
@@ -314,7 +316,6 @@ class Client:
             connector,
             proxy=proxy,
             proxy_auth=proxy_auth,
-            unsync_clock=unsync_clock,
             http_trace=http_trace,
             max_ratelimit_timeout=max_ratelimit_timeout,
         )
