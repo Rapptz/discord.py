@@ -11,6 +11,73 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p7p0:
+
+v2.7.0
+-------
+
+New Features
+~~~~~~~~~~~~~
+
+- Add DAVE protocol support for voice connections (:issue:`10300`)
+- Add support for new :class:`ui.Modal` components (:issue:`10390`)
+    - :class:`CheckboxGroupComponent` corresponds to :class:`ui.CheckboxGroup`
+    - :class:`CheckboxComponent` corresponds to :class:`ui.Checkbox`
+    - :class:`RadioGroupComponent` corresponds to :class:`ui.RadioGroup`
+    - :class:`CheckboxGroupOption` and :class:`RadioGroupOption` allow creating these options
+
+- Add timestamp converter and transformer for use with new ``@time`` markdown option (:issue:`10388`)
+    - This is accessible via :class:`app_commands.Timestamp` and :class:`ext.commands.Timestamp` as an annotation
+
+- Add several new permissions:
+    - :attr:`Permissions.bypass_slowmode` (:issue:`10350`)
+    - :attr:`Permissions.set_voice_channel_status` (:issue:`10279`)
+    - :attr:`Permissions.pin_messages`
+
+- Add ``client`` parameter to :meth:`PartialEmoji.from_str` (:issue:`10407`)
+- Add support for user collectibles accessible via :attr:`User.collectibles` and :attr:`Member.collectibles` (:issue:`10277`)
+- Add :meth:`Message.is_forwardable` to check if a message can be forwarded (:issue:`10353`)
+- Add support for getting an integration's scopes (:issue:`10352`)
+- Add :attr:`Interaction.command_id` and :attr:`Interaction.custom_id` helpers (:issue:`10321`)
+- Support new fields in :meth:`Member.edit` (:issue:`10303`)
+- Add support for getting role member counts via :meth:`Guild.role_member_counts`
+- Add :attr:`MessageType.is_deletable`
+- Add ``reason`` keyword argument to :meth:`Client.delete_invite` (:issue:`10318`, :issue:`10340`)
+- Add ``silent`` parameter to :meth:`ForumChannel.create_thread` (:issue:`10304`)
+- Add support for :attr:`MessageType.emoji_added` (:issue:`10284`)
+- Add channel attribute to automod quarantine user AuditLogAction (:issue:`10274`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix FFmpeg errors not sent to after callback (:issue:`10387`)
+- Fix :meth:`Webhook.edit_message` missing the view parameter (:issue:`10395`, :issue:`10398`)
+- Fix :meth:`TextChannel.purge` failing when encountering certain system messages
+- Fix :attr:`Message.call` raising an attribute error when accessed (:issue:`10404`)
+- Fix certain component IDs not being able to be settable afterwards
+- Fix :class:`ui.Modal` not raising when hitting the 5 item limit
+- Fix :attr:`ui.Item.row` not being set appropriately when used in a :class:`ui.Modal` (:issue:`10397`)
+- Fix ``compression.zstd`` not working as expected when Discord does not send encoding information (:issue:`10344`)
+- Fix rare bug where :attr:`Client.latency` was incorrect due to not updating heartbeat state
+- Fix overzealous exporting of symbols within an internal ``primary_guild`` module (:issue:`10295`)
+- Close websocket when reconnecting websocket during polling (:issue:`10409`)
+- Use :meth:`ui.View.walk_children` when removing items from the view cache (:issue:`10402`)
+- |commands| Fix flag annotations not working under Python 3.14
+- |commands| Fix decorator order mattering for hybrid commands
+- |commands| Fix :meth:`~ext.commands.Context.from_interaction` derived :attr:`Message.type` being incorrect
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Allow :class:`ui.View` initialization without a running event loop (:issue:`10367`)
+- Optimise :func:`utils.find` and specialise :func:`utils.as_chunks` (:issue:`10351`)
+- Detach :attr:`ui.Item.view` when the item is removed (:issue:`10348`)
+- Change ``description`` to be optional when creating emoji (:issue:`10346`)
+- Don't assume Python 3.14 always has ``compression.zstd`` (:issue:`10328`)
+- Use webp as the default emoji URL format
+- |tasks| Log handled exceptions before sleeping
+
+
 .. _vp2p6p4:
 
 v2.6.4
