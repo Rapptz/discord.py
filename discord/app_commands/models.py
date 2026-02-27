@@ -310,6 +310,10 @@ class AppCommand(Hashable):
                 self.id,
             )
 
+        tree = self._state._command_tree
+        if tree:
+            tree._command_ids.get(self.guild_id, {}).pop(self.name, None)
+
     async def edit(
         self,
         *,
@@ -393,6 +397,11 @@ class AppCommand(Hashable):
                 self.id,
                 payload,
             )
+
+        tree = self._state._command_tree
+        if tree:
+            tree._update_command_ids(data)
+
         return AppCommand(data=data, state=state)
 
     async def fetch_permissions(self, guild: Snowflake) -> GuildAppCommandPermissions:
