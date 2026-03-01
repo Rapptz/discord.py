@@ -94,7 +94,6 @@ if TYPE_CHECKING:
         'ThumbnailComponent',
         'MediaGalleryComponent',
         'FileComponent',
-        'SectionComponent',
         'Component',
     ]
     OptionPayload = Union[SelectOptionPayload, RadioGroupOptionPayload, CheckboxGroupOptionPayload]
