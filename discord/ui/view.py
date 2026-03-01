@@ -66,6 +66,9 @@ from ..components import (
     ThumbnailComponent,
     Container as ContainerComponent,
     LabelComponent,
+    RadioGroupComponent,
+    CheckboxGroupComponent,
+    CheckboxComponent,
 )
 from ..utils import get as _utils_get, find as _utils_find
 
@@ -156,6 +159,18 @@ def _component_to_item(component: Component, parent: Optional[Item] = None) -> I
         from .label import Label
 
         item = Label.from_component(component)
+    elif isinstance(component, RadioGroupComponent):
+        from .radio import RadioGroup
+
+        item = RadioGroup.from_component(component)
+    elif isinstance(component, CheckboxGroupComponent):
+        from .checkbox import CheckboxGroup
+
+        item = CheckboxGroup.from_component(component)
+    elif isinstance(component, CheckboxComponent):
+        from .checkbox import Checkbox
+
+        item = Checkbox.from_component(component)
     else:
         item = Item.from_component(component)
 
