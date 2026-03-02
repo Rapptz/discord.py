@@ -551,11 +551,16 @@ class HTTPClient:
             self.__session = MISSING
 
     async def ws_connect(self, url: str, *, compress: int = 0) -> aiohttp.ClientWebSocketResponse:
+        try:
+            timeout: Any = aiohttp.ClientWSTimeout(ws_close=30.0)  # pyright: ignore[reportCallIssue]
+        except (AttributeError, TypeError):
+            timeout = 30.0
+
         kwargs = {
             'proxy_auth': self.proxy_auth,
             'proxy': self.proxy,
             'max_msg_size': 0,
-            'timeout': 30.0,
+            'timeout': timeout,
             'autoclose': False,
             'headers': {
                 'User-Agent': self.user_agent,
