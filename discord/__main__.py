@@ -48,6 +48,14 @@ def show_version() -> None:
             entries.append(f'    - discord.py metadata: v{version}')
 
     entries.append(f'- aiohttp v{aiohttp.__version__}')
+
+    try:
+        import davey  # type: ignore
+    except ImportError:
+        entries.append('- davey not found')
+    else:
+        entries.append(f'- davey v{davey.__version__}')
+
     uname = platform.uname()
     entries.append('- system info: {0.system} {0.release} {0.version}'.format(uname))
     print('\n'.join(entries))
