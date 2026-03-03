@@ -11,6 +11,24 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p7p1:
+
+v2.7.1
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix memory leak when using :class:`ui.LayoutView` and removing items but those items not being removed from internal cache.
+- Fix ``aiohttp`` deprecation warning for websocket timeouts (:issue:`10418`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Show ``davey`` dependency output in ``python -m discord --version`` to debug DAVE issues
+- Raise an error and warn when ``davey`` is not installed and using voice
+- Change how views are bound to the internal cache when using interactions
+
 .. _vp2p7p0:
 
 v2.7.0
