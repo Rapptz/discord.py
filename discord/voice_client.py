@@ -34,7 +34,7 @@ from .gateway import *
 from .errors import ClientException
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
-from .voice_state import VoiceConnectionState
+from .voice_state import VoiceConnectionState, has_dave
 
 if TYPE_CHECKING:
     from .gateway import DiscordVoiceWebSocket
@@ -218,6 +218,8 @@ class VoiceClient(VoiceProtocol):
     def __init__(self, client: Client, channel: abc.Connectable) -> None:
         if not has_nacl:
             raise RuntimeError('PyNaCl library needed in order to use voice')
+        if not has_dave:
+            raise RuntimeError('davey library needed in order to use voice')
 
         super().__init__(client, channel)
         state = client._connection
@@ -235,6 +237,7 @@ class VoiceClient(VoiceProtocol):
         self._connection: VoiceConnectionState = self.create_connection_state()
 
     warn_nacl: bool = not has_nacl
+    warn_dave: bool = not has_dave
     supported_modes: Tuple[SupportedModes, ...] = (
         'aead_xchacha20_poly1305_rtpsize',
         'xsalsa20_poly1305_lite',
