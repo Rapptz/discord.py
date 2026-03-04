@@ -41,6 +41,7 @@ from .errors import (
     ConnectionClosed,
     PrivilegedIntentsRequired,
 )
+from .utils import MISSING
 
 from .enums import Status
 
@@ -389,6 +390,7 @@ class AutoShardedClient(Client):
         self.__shards = {}
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
+        self.__queue: asyncio.PriorityQueue = MISSING
 
     def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
         if shard_id is None:
@@ -554,7 +556,8 @@ class AutoShardedClient(Client):
                 await asyncio.wait(to_close)
 
             await self.http.close()
-            self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
+            if self.__queue is not MISSING:
+                self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
 
         self._closing_task = asyncio.create_task(_close())
         await self._closing_task
