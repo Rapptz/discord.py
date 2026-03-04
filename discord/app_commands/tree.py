@@ -257,7 +257,7 @@ class CommandTree(Generic[ClientT]):
         --------
         CommandLimitReached
             The maximum number of commands was reached for that guild.
-            This is currently 100 for slash commands and 5 for context menu commands.
+            This is currently 100 for slash commands and 15 for context menu commands.
         """
 
         try:
@@ -277,9 +277,9 @@ class CommandTree(Generic[ClientT]):
 
         counter = Counter(cmd_type for _, _, cmd_type in ctx_menu)
         for cmd_type, count in counter.items():
-            if count > 5:
+            if count > 15:
                 as_enum = AppCommandType(cmd_type)
-                raise CommandLimitReached(guild_id=guild.id, limit=5, type=as_enum)
+                raise CommandLimitReached(guild_id=guild.id, limit=15, type=as_enum)
 
         self._context_menus.update(ctx_menu)
         self._guild_commands[guild.id] = mapping
@@ -338,7 +338,7 @@ class CommandTree(Generic[ClientT]):
             Or, ``guild`` and ``guilds`` were both given.
         CommandLimitReached
             The maximum number of commands was reached globally or for that guild.
-            This is currently 100 for slash commands and 5 for context menu commands.
+            This is currently 100 for slash commands and 15 for context menu commands.
         """
 
         guild_ids = _retrieve_guild_ids(command, guild, guilds)
@@ -361,8 +361,8 @@ class CommandTree(Generic[ClientT]):
                 # read as `0 if override and found else 1` if confusing
                 to_add = not (override and found)
                 total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
-                if total + to_add > 5:
-                    raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
+                if total + to_add > 15:
+                    raise CommandLimitReached(guild_id=guild_id, limit=15, type=AppCommandType(type))
                 data[key] = command
 
             if guild_ids is None:
