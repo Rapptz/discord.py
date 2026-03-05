@@ -87,6 +87,8 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
+    'NameFont',
+    'NameEffect',
 )
 
 
@@ -1004,6 +1006,30 @@ class NameplatePalette(Enum):
     clover = 'clover'
     lemon = 'lemon'
     white = 'white'
+
+
+class NameFont(Enum):
+    default = 11
+    bangers = 1
+    bio_rhyme = 2
+    cherry_bomb = 3
+    chicle = 4
+    compagnon = 5
+    museo_moderno = 6
+    neo_castel = 7
+    pixelify = 8
+    ribes = 9
+    sinistre = 10
+    zilla_slab = 12
+
+
+class NameEffect(Enum):
+    solid = 1
+    gradient = 2
+    neon = 3
+    toon = 4
+    pop = 5
+    glow = 6 
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
