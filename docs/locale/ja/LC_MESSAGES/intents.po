@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-21 01:17+0000\n"
-"PO-Revision-Date: 2024-04-17 02:43\n"
+"POT-Creation-Date: 2025-08-18 19:11+0000\n"
+"PO-Revision-Date: 2026-01-12 18:06\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -162,158 +162,162 @@ msgid "Whether you use :attr:`Message.components` to check message components."
 msgstr "メッセージコンポーネントをチェックするために :attr:`Message.components` を使用するかどうか。"
 
 #: ../../intents.rst:117
+msgid "Whether you use :attr:`Message.poll` to check the message polls."
+msgstr ""
+
+#: ../../intents.rst:118
 msgid "Whether you use the commands extension with a non-mentioning prefix."
 msgstr "コマンド拡張機能をメンションなしプレフィックスで使用するかどうか。"
 
-#: ../../intents.rst:122
+#: ../../intents.rst:123
 msgid "Member Cache"
 msgstr "メンバーキャッシュ"
 
-#: ../../intents.rst:124
+#: ../../intents.rst:125
 msgid "Along with intents, Discord now further restricts the ability to cache members and expects bot authors to cache as little as is necessary. However, to properly maintain a cache the :attr:`Intents.members` intent is required in order to track the members who left and properly evict them."
 msgstr "Discordは、インテントとともにメンバーをキャッシュする機能をさらに制限し、必要に応じてボット作成者がキャッシュできるようになりました。 しかし、退出したメンバーを追跡・退出させるには、適切にキャッシュを維持する :attr:`Intents.members` インテントが必要です。"
 
-#: ../../intents.rst:126
+#: ../../intents.rst:127
 msgid "To aid with member cache where we don't need members to be cached, the library now has a :class:`MemberCacheFlags` flag to control the member cache. The documentation page for the class goes over the specific policies that are possible."
 msgstr "キャッシュされる必要のないメンバーキャッシュを手伝うために、ライブラリにメンバーキャッシュを制御するための :class:`MemberCacheFlags` フラグが追加されました。クラスのドキュメントページではできる限り明確なポリシーを調べることができます。"
 
-#: ../../intents.rst:128
+#: ../../intents.rst:129
 msgid "It should be noted that certain things do not need a member cache since Discord will provide full member information if possible. For example:"
 msgstr "可能な限りDiscordがメンバー情報を提供するため、メンバーキャッシュを必要としないことがあります。例えば："
 
-#: ../../intents.rst:130
+#: ../../intents.rst:131
 msgid ":func:`on_message` will have :attr:`Message.author` be a member even if cache is disabled."
 msgstr "キャッシュが無効になっていても、:func:`on_message` は :attr:`Message.author` がメンバーになります。"
 
-#: ../../intents.rst:131
+#: ../../intents.rst:132
 msgid ":func:`on_voice_state_update` will have the ``member`` parameter be a member even if cache is disabled."
 msgstr "キャッシュが無効の場合でも、:func:`on_voice_state_update` は ``member`` パラメータをメンバーにします。"
 
-#: ../../intents.rst:132
+#: ../../intents.rst:133
 msgid ":func:`on_reaction_add` will have the ``user`` parameter be a member when in a guild even if cache is disabled."
 msgstr ":func:`on_reaction_add` は、キャッシュが無効になっている場合でもサーバー内であれば ``user`` パラメータをメンバーにします。"
 
-#: ../../intents.rst:133
+#: ../../intents.rst:134
 msgid ":func:`on_raw_reaction_add` will have :attr:`RawReactionActionEvent.member` be a member when in a guild even if cache is disabled."
 msgstr ":func:`on_raw_reaction_add` は、キャッシュが無効になっていてもサーバー内にいれば :attr:`RawReactionActionEvent.member` がメンバーになります。"
 
-#: ../../intents.rst:134
+#: ../../intents.rst:135
 msgid "The reaction add events do not contain additional information when in direct messages. This is a Discord limitation."
 msgstr "ダイレクトメッセージで追加されたリアクションは追加情報を含んでいません。これはDiscordの制限です。"
 
-#: ../../intents.rst:135
+#: ../../intents.rst:136
 msgid "The reaction removal events do not have member information. This is a Discord limitation."
 msgstr "リアクション削除イベントにメンバー情報はありません。これはDiscordの制限です。"
 
-#: ../../intents.rst:137
+#: ../../intents.rst:138
 msgid "Other events that take a :class:`Member` will require the use of the member cache. If absolute accuracy over the member cache is desirable, then it is advisable to have the :attr:`Intents.members` intent enabled."
 msgstr ":class:`Member` を取るその他のイベントでは、メンバーキャッシュの使用が必要になります。メンバーキャッシュの絶対的な精度が必要な場合は、 :attr:`Intents.members` インテントを有効にすることをお勧めします。"
 
-#: ../../intents.rst:142
+#: ../../intents.rst:143
 msgid "Retrieving Members"
 msgstr "メンバーの取得"
 
-#: ../../intents.rst:144
+#: ../../intents.rst:145
 msgid "If the cache is disabled or you disable chunking guilds at startup, we might still need a way to load members. The library offers a few ways to do this:"
 msgstr "キャッシュが無効になっている場合、または起動時にサーバーのチャンキングを無効にしている場合でも、membersをロードする方法が必要になる場合があります。 ライブラリには、以下の方法が用意されています。"
 
-#: ../../intents.rst:148
+#: ../../intents.rst:149
 msgid ":meth:`Guild.query_members`"
 msgstr ":meth:`Guild.query_members`"
 
-#: ../../intents.rst:147
+#: ../../intents.rst:148
 msgid "Used to query members by a prefix matching nickname or username."
 msgstr "ニックネームまたはユーザー名の一致でメンバーを照会するために使用されます。"
 
-#: ../../intents.rst:148
+#: ../../intents.rst:149
 msgid "This can also be used to query members by their user ID."
 msgstr "これは、ユーザーIDによってメンバーを照会するためにも使用できます。"
 
-#: ../../intents.rst:149
+#: ../../intents.rst:150
 msgid "This uses the gateway and not the HTTP."
 msgstr "これはHTTPではなくゲートウェイを使用します。"
 
-#: ../../intents.rst:150
+#: ../../intents.rst:151
 msgid ":meth:`Guild.chunk`"
 msgstr ":meth:`Guild.chunk`"
 
-#: ../../intents.rst:151
+#: ../../intents.rst:152
 msgid "This can be used to fetch the entire member list through the gateway."
 msgstr "これはゲートウェイからメンバーリスト全体を取得するために使用できます。"
 
-#: ../../intents.rst:152
+#: ../../intents.rst:153
 msgid ":meth:`Guild.fetch_member`"
 msgstr ":meth:`Guild.fetch_member`"
 
-#: ../../intents.rst:153
+#: ../../intents.rst:154
 msgid "Used to fetch a member by ID through the HTTP API."
 msgstr "HTTP APIを介してIDからメンバーを取得するために使用されます。"
 
-#: ../../intents.rst:155
+#: ../../intents.rst:156
 msgid ":meth:`Guild.fetch_members`"
 msgstr ":meth:`Guild.fetch_members`"
 
-#: ../../intents.rst:155
+#: ../../intents.rst:156
 msgid "used to fetch a large number of members through the HTTP API."
 msgstr "HTTP APIを介して多数のメンバーを取得するために使用されます。"
 
-#: ../../intents.rst:157
+#: ../../intents.rst:158
 msgid "It should be noted that the gateway has a strict rate limit of 120 requests per 60 seconds."
 msgstr "ゲートウェイには、60秒あたり120リクエストという厳格なレート制限があることに注意してください。"
 
-#: ../../intents.rst:160
+#: ../../intents.rst:161
 msgid "Troubleshooting"
 msgstr "トラブルシューティング"
 
-#: ../../intents.rst:162
+#: ../../intents.rst:163
 msgid "Some common issues relating to the mandatory intent change."
 msgstr "強制的なインテントの変更に関連するいくつかの一般的な問題。"
 
-#: ../../intents.rst:165
+#: ../../intents.rst:166
 msgid "Where'd my members go?"
 msgstr "私のメンバーはどこに行ったのか？"
 
-#: ../../intents.rst:167
+#: ../../intents.rst:168
 msgid "Due to an :ref:`API change <intents_member_cache>` Discord is now forcing developers who want member caching to explicitly opt-in to it. This is a Discord mandated change and there is no way to bypass it. In order to get members back you have to explicitly enable the :ref:`members privileged intent <privileged_intents>` and change the :attr:`Intents.members` attribute to true."
 msgstr ":ref:`APIの変更 <intents_member_cache>` に伴い、Discordはメンバーキャッシュを必要とする開発者に明示的なオプトインを求めるようになりました。これはDiscordが強制的に行っている変更で、これを回避する方法はありません。これを取り戻すためには、明示的に :ref:`メンバー特権インテント <privileged_intents>` を有効にして、 :attr:`Intents.members` 属性をtrueに変更する必要があります。"
 
-#: ../../intents.rst:169
+#: ../../intents.rst:170
 msgid "For example:"
 msgstr "例："
 
-#: ../../intents.rst:185
+#: ../../intents.rst:186
 msgid "Why does ``on_ready`` take so long to fire?"
 msgstr "``on_ready`` が発火するまでに時間がかかるのはなぜか？"
 
-#: ../../intents.rst:187
+#: ../../intents.rst:188
 msgid "As part of the API change regarding intents, Discord also changed how members are loaded in the beginning. Originally the library could request 75 guilds at once and only request members from guilds that have the :attr:`Guild.large` attribute set to ``True``. With the new intent changes, Discord mandates that we can only send 1 guild per request. This causes a 75x slowdown which is further compounded by the fact that *all* guilds, not just large guilds are being requested."
 msgstr "インテントに関するAPIの変更の一環として、Discordは起動時のメンバーの読み込み方法も変更しました。 もともとライブラリは 75 個のギルドを一度にリクエストでき、 :attr:`Guild.large` 属性が ``True`` になるサーバーのみのメンバーをリクエストしました。Intentが新しく変更された場合、Discordはリクエストごとに1つのサーバーしか送信できません。 これは75倍の減速を引き起こし、大規模なサーバーだけでなく*すべての*サーバーが要求されているという事実によってさらに複雑になります。"
 
-#: ../../intents.rst:189
+#: ../../intents.rst:190
 msgid "There are a few solutions to fix this."
 msgstr "これを修正するためにいくつかの解決策があります。"
 
-#: ../../intents.rst:191
+#: ../../intents.rst:192
 msgid "The first solution is to request the privileged presences intent along with the privileged members intent and enable both of them. This allows the initial member list to contain online members just like the old gateway. Note that we're still limited to 1 guild per request but the number of guilds we request is significantly reduced."
 msgstr "最初の解決策は、presence intentとmember intentの両方を有効にすることです。 これにより、初期メンバーリストに以前のゲートウェイと同様にオンラインメンバーを含めることができます。 我々はまだリクエストごとに1つのギルドに制限されていることに注意してください。しかし、我々がリクエストするギルドの数は大幅に減少します。"
 
-#: ../../intents.rst:193
+#: ../../intents.rst:194
 msgid "The second solution is to disable member chunking by setting ``chunk_guilds_at_startup`` to ``False`` when constructing a client. Then, when chunking for a guild is necessary you can use the various techniques to :ref:`retrieve members <retrieving_members>`."
 msgstr "二つ目の解決方法は、クライアントを構築する際に ``chunk_guilds_at_startup`` を ``False`` に設定することでメンバーのチャンクを無効にすることです。 サーバーのチャンキングが必要な場合は、 :ref:`メンバーの取得 <retrieving_members>` の様々なテクニックを使うことができます。"
 
-#: ../../intents.rst:195
+#: ../../intents.rst:196
 msgid "To illustrate the slowdown caused by the API change, take a bot who is in 840 guilds and 95 of these guilds are \"large\" (over 250 members)."
 msgstr "APIの変更によって引き起こされる減速を説明するために、840サーバーに参加していて、そのうち95サーバーは「大きい」(250人以上のメンバーがいる) というボットを使います。"
 
-#: ../../intents.rst:197
+#: ../../intents.rst:198
 msgid "Under the original system this would result in 2 requests to fetch the member list (75 guilds, 20 guilds) roughly taking 60 seconds. With :attr:`Intents.members` but not :attr:`Intents.presences` this requires 840 requests, with a rate limit of 120 requests per 60 seconds means that due to waiting for the rate limit it totals to around 7 minutes of waiting for the rate limit to fetch all the members. With both :attr:`Intents.members` and :attr:`Intents.presences` we mostly get the old behaviour so we're only required to request for the 95 guilds that are large, this is slightly less than our rate limit so it's close to the original timing to fetch the member list."
 msgstr "元のシステムでは、メンバーリスト(75サーバーと、20サーバー)を取得するために2回のリクエストを行うと、およそ60秒かかります。 :attr:`Intents.presences` は使用せず :attr:`Intents.members` を使用した場合、840回のリクエストが必要となり、60秒あたり120回のリクエストというレート制限があるため、すべてのメンバーを取得するためにレート制限を待つ時間は合計で約7分となります。 :attr:`Intents.members` と :attr:`Intents.presences` の両方がある状況では、ほとんどが以前の動作になるので、大規模な95のギルドに対してのみリクエストする必要があることになります。これはレートリミットよりわずかに少ないので、元のシステムでメンバーリストを取得する時間と近くなります。"
 
-#: ../../intents.rst:199
+#: ../../intents.rst:200
 msgid "Unfortunately due to this change being required from Discord there is nothing that the library can do to mitigate this."
 msgstr "申し訳ありませんが、この変更はDiscordから要求されているため、ライブラリがこれを軽減するためにできることはありません。"
 
-#: ../../intents.rst:201
+#: ../../intents.rst:202
 msgid "If you truly dislike the direction Discord is going with their API, you can contact them via `support <https://dis.gd/contact>`_."
 msgstr "DiscordのAPIに関する方向性が本当に嫌いなら、`サポート <https://dis.gd/contact>`_ で連絡できます。"
 

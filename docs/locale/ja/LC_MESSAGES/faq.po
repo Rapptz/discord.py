@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-21 01:17+0000\n"
-"PO-Revision-Date: 2024-04-17 02:43\n"
+"POT-Creation-Date: 2025-08-18 19:11+0000\n"
+"PO-Revision-Date: 2026-01-12 18:06\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -439,8 +439,8 @@ msgid "This requires three steps."
 msgstr "これには3つのステップが必要です。"
 
 #: ../../faq.rst:442
-msgid "Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :meth:`Interaction.original_response`."
-msgstr ":meth:`~abc.Messageable.send` の戻り値の型を使用して、または :meth:`Interaction.original_response` から取得した :class:`~discord.ui.View` にメッセージを添付します。"
+msgid "Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :attr:`InteractionCallbackResponse.resource`."
+msgstr ":meth:`~abc.Messageable.send` の戻り値、または :attr:`InteractionCallbackResponse.resource` を介して取得することにより、:class:`~discord.ui.View` にメッセージを添付します。"
 
 #: ../../faq.rst:443
 msgid "Inside :meth:`~ui.View.on_timeout`, loop over all items inside the view and mark them disabled."
@@ -455,30 +455,82 @@ msgid "Putting it all together, we can do this in a text command:"
 msgstr "すべてをまとめると、テキストコマンドではこのように行うことができます。"
 
 #: ../../faq.rst:470
-msgid "Application commands do not return a message when you respond with :meth:`InteractionResponse.send_message`, therefore in order to reliably do this we should retrieve the message using :meth:`Interaction.original_response`."
-msgstr "アプリケーションコマンドは :meth:`InteractionResponse.send_message` で応答したときメッセージを返さないため、信頼性の高い方法で行うには :meth:`Interaction.original_response` を使用してメッセージを取得すべきです。"
+msgid "Application commands, when you respond with :meth:`InteractionResponse.send_message`, return an instance of :class:`InteractionCallbackResponse` which contains the message you sent. This is the message you should attach to the view."
+msgstr "アプリケーションコマンドは、:meth:`InteractionResponse.send_message` で応答すると、送信したメッセージを含む :class:`InteractionCallbackResponse` のインスタンスを返します。このメッセージをビューにアタッチする必要があります。"
 
 #: ../../faq.rst:472
 msgid "Putting it all together, using the previous view definition:"
 msgstr "以前のビューの定義を使用して、すべてをまとめます。"
 
-#: ../../faq.rst:487
+#: ../../faq.rst:490
 msgid "Application Commands"
 msgstr "アプリケーションコマンド"
 
-#: ../../faq.rst:489
+#: ../../faq.rst:492
 msgid "Questions regarding Discord's new application commands, commonly known as \"slash commands\" or \"context menu commands\"."
 msgstr "一般的に「スラッシュコマンド」や「コンテキストメニューコマンド」と呼ばれている、Discordの新しいアプリケーションコマンドに関する質問。"
 
-#: ../../faq.rst:492
+#: ../../faq.rst:495
 msgid "My bot's commands are not showing up!"
 msgstr "私のボットのコマンドが一覧に表示されません！"
 
-#: ../../faq.rst:494
+#: ../../faq.rst:497
 msgid "Did you :meth:`~.CommandTree.sync` your command? Commands need to be synced before they will appear."
 msgstr "コマンドを :meth:`~.CommandTree.sync` しましたか？コマンドが表示されるにはその前に同期する必要があります。"
 
-#: ../../faq.rst:495
+#: ../../faq.rst:498
 msgid "Did you invite your bot with the correct permissions? Bots need to be invited with the ``applications.commands`` scope in addition to the ``bot`` scope. For example, invite the bot with the following URL: ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot``. Alternatively, if you use :func:`utils.oauth_url`, you can call the function as such: ``oauth_url(<other options>, scopes=(\"bot\", \"applications.commands\"))``."
 msgstr "正しい権限でBotを招待しましたか？ ``bot`` スコープに加えて、 ``applications.commands`` スコープ付きでBotを招待する必要があります。例えば、以下の URL でBotを招待します: ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot`` 。 あるいは、 :func:`utils.oauth_url` を使用している場合は、 ``oauth_url(<other options>, scopes=(\"bot\", \"applications.commands\"))`` のように関数を呼び出すことができます。"
+
+#: ../../faq.rst:505
+msgid "How do I restrict a command to a specific guild?"
+msgstr "コマンドを特定のギルドに制限するにはどうすればよいですか？"
+
+#: ../../faq.rst:507
+msgid "To restrict an application command to one or more guilds, you must register it as a **guild command** instead of a global command. Guild commands are only available in the specified guild(s)."
+msgstr "アプリケーションコマンドを1つ以上のギルドに制限するには、グローバルコマンドではなく**ギルドコマンド**として登録する必要があります。ギルドコマンドは、指定されたギルドでのみ利用可能です。"
+
+#: ../../faq.rst:510
+msgid "The most straightforward way is to use the :meth:`~app_commands.guilds` decorator on your command or GroupCog."
+msgstr "最も簡単な方法は、コマンドまたはGroupCogに`:meth:`~app_commands.guilds` デコレーターを使用することです。"
+
+#: ../../faq.rst:512
+msgid "``123456789012345678`` should be replaced with the actual guild ID you want to restrict the command to."
+msgstr "``123456789012345678`` は、コマンドを制限したい実際のギルドIDに置き換える必要があります。"
+
+#: ../../faq.rst:529
+msgid "After that, you must :meth:`~app_commands.CommandTree.sync` the command tree for each guild:"
+msgstr "その後、ギルドごとにコマンドツリーを :meth:`~app_commands.CommandTree.sync` する必要があります。"
+
+#: ../../faq.rst:535
+msgid "Other methods to restrict commands to specific guilds include:"
+msgstr "コマンドを特定のギルドに制限する他の方法としては、以下のようなものがあります。"
+
+#: ../../faq.rst:537
+msgid "Using the ``guild`` or ``guilds`` argument in the :meth:`~app_commands.CommandTree.command` decorator:"
+msgstr "``app_commands.CommandTree.command`` デコレータの ``guild`` または ``guilds`` 引数を使用する:"
+
+#: ../../faq.rst:545
+msgid "Adding commands with :meth:`~app_commands.CommandTree.add_command` and specifying ``guild`` or ``guilds``:"
+msgstr ":meth:`~app_commands.CommandTree.add_command` でコマンドを追加し、``guild`` または ``guilds`` を指定します。"
+
+#: ../../faq.rst:557
+msgid "Do not combine this method with the :meth:`~app_commands.CommandTree.command` decorator, as it will cause duplicate commands."
+msgstr "このメソッドを :meth:`~app_commands.CommandTree.command` デコレータと組み合わせないでください。"
+
+#: ../../faq.rst:560
+msgid "Using ``guild`` or ``guilds`` in :meth:`~ext.commands.Bot.add_cog`:"
+msgstr ":meth:`~ext.commands.Bot.add_cog` で ``guild`` または ``guilds`` を使用します。"
+
+#: ../../faq.rst:562
+msgid "This is mainly for :class:`~ext.commands.GroupCog`, but also works for cogs with application commands. Note: This does not work with hybrid app commands (:issue:`9366`)."
+msgstr "これは主に :class:`~ext.commands.GroupCog` 用ですが、アプリケーションコマンドを持つコグでも機能します。注意: ハイブリッドアプリケーションコマンド (:issue:`9366`) では機能しません。"
+
+#: ../../faq.rst:575
+msgid "Using :meth:`~app_commands.CommandTree.copy_global_to`:"
+msgstr ":meth:`~app_commands.CommandTree.copy_global_to`を使用:"
+
+#: ../../faq.rst:577
+msgid "This copies all global commands to a specific guild. This is mainly for development purposes."
+msgstr "これは、すべてのグローバルコマンドを特定のギルドにコピーします。これは主に開発目的のためです。"
 
