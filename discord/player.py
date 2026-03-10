@@ -37,7 +37,7 @@ import sys
 import re
 import io
 
-from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Any, Callable, Generic, IO, Mapping, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from .enums import SpeakingState
 from .errors import ClientException, FFmpegProcessError
@@ -350,6 +350,8 @@ class FFmpegPCMAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
+    env: Optional[Mapping[:class:`str`, :class:`str`]]
+        A :class:`Mapping` that defines the environment variables for the Popen constructor.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
     options: Optional[:class:`str`]
@@ -368,11 +370,12 @@ class FFmpegPCMAudio(FFmpegAudio):
         executable: str = 'ffmpeg',
         pipe: bool = False,
         stderr: Optional[IO[bytes]] = None,
+        env: Optional[Mapping[str, str]] = None,
         before_options: Optional[str] = None,
         options: Optional[str] = None,
     ) -> None:
         args = []
-        subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr, 'env': env}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -462,6 +465,8 @@ class FFmpegOpusAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
+    env: Optional[Mapping[:class:`str`, :class:`str`]]
+        A :class:`Mapping` that defines the environment variables for the Popen constructor.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
     options: Optional[:class:`str`]
@@ -482,11 +487,12 @@ class FFmpegOpusAudio(FFmpegAudio):
         executable: str = 'ffmpeg',
         pipe: bool = False,
         stderr: Optional[IO[bytes]] = None,
+        env: Optional[Mapping[str, str]] = None,
         before_options: Optional[str] = None,
         options: Optional[str] = None,
     ) -> None:
         args = []
-        subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr, 'env': env}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
