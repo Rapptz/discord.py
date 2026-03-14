@@ -59,7 +59,7 @@ V = TypeVar('V', bound='BaseView', covariant=True)
 
 
 class CheckboxGroup(Item[V]):
-    """Represents a checkbox group component within a modal.
+    """Represents a checkbox group component within a modal that can only be used in :class:`Label`.
 
     .. versionadded:: 2.7
 
@@ -281,7 +281,7 @@ class CheckboxGroup(Item[V]):
 
 
 class Checkbox(Item[V]):
-    """Represents a checkbox component within a modal.
+    """Represents a checkbox component within a modal that can only be used in :class:`Label`.
 
     .. versionadded:: 2.7
 
