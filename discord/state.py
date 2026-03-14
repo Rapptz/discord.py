@@ -279,7 +279,7 @@ class ConnectionState(Generic[ClientT]):
     # So this is checked instead, it's a small penalty to pay
     @property
     def cache_guild_expressions(self) -> bool:
-        return self._intents.emojis_and_stickers
+        return self._intents.expressions
 
     async def close(self) -> None:
         for voice in self.voice_clients:

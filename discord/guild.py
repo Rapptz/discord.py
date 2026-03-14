@@ -677,7 +677,7 @@ class Guild(Hashable):
                 scheduled_event = ScheduledEvent(data=s, state=self._state)
                 self._scheduled_events[scheduled_event.id] = scheduled_event
 
-        if 'soundboard_sounds' in guild:
+        if 'soundboard_sounds' in guild and state.cache_guild_expressions:
             for s in guild['soundboard_sounds']:
                 soundboard_sound = SoundboardSound(guild=self, data=s, state=self._state)
                 self._add_soundboard_sound(soundboard_sound)
