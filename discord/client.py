@@ -340,6 +340,10 @@ class Client:
             VoiceClient.warn_nacl = False
             _log.warning('PyNaCl is not installed, voice will NOT be supported')
 
+        if VoiceClient.warn_dave:
+            VoiceClient.warn_dave = False
+            _log.warning('davey is not installed, voice will NOT be supported')
+
     async def __aenter__(self) -> Self:
         await self._async_setup_hook()
         return self

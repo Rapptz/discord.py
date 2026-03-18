@@ -34,6 +34,10 @@ If the bug report is missing this information then it'll take us longer to fix t
 
 Submitting a pull request is fairly simple, just make sure it focuses on a single aspect and doesn't manage to have scope creep and it's probably good to go. It would be incredibly lovely if the style is consistent to that found in the project. This project follows PEP-8 guidelines (mostly) with a column limit of 125.
 
+### AI Contributions
+
+This repository does not accept any AI contributions at all. Using tools like Claude Code, Copilot, Gemini, ChatGPT, OpenAI Codex, etc. are simply blanket banned. AI contributions are typically nonsensical and just take up very valuable review time and thus are banned. Pull requests that are made with AI tools will be instantly closed without review, no matter how small the changeset is.
+
 ### Git Commit Guidelines
 
 - Use present tense (e.g. "Add feature" not "Added feature")
