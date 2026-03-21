@@ -228,6 +228,7 @@ class Message(PartialMessage):
     thread: NotRequired[Thread]
     call: NotRequired[CallMessage]
     purchase_notification: NotRequired[PurchaseNotificationResponse]
+    shared_client_theme: NotRequired[SharedClientTheme]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']
@@ -248,3 +249,13 @@ class MessagePin(TypedDict):
 class ChannelPins(TypedDict):
     items: List[MessagePin]
     has_more: bool
+
+
+BaseTheme = Literal[0, 1, 2, 3, 4]
+
+
+class SharedClientTheme(TypedDict):
+    colors: List[str]
+    gradient_angle: int
+    base_mix: int
+    base_theme: BaseTheme
