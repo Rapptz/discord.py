@@ -1945,7 +1945,7 @@ def check(predicate: UserCheck[ContextT], /) -> Check[ContextT]:
 
         return func
 
-    if discord.utils._iscoroutinefunction(predicate):
+    if inspect.iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 
@@ -2369,7 +2369,7 @@ def guild_only() -> Check[Any]:
 
         return func
 
-    if discord.utils._iscoroutinefunction(predicate):
+    if inspect.iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 
@@ -2444,7 +2444,7 @@ def is_nsfw() -> Check[Any]:
 
         return func
 
-    if discord.utils._iscoroutinefunction(predicate):
+    if inspect.iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 

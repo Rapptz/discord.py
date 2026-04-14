@@ -58,16 +58,7 @@ from ..message import Message
 from ..user import User
 from ..member import Member
 from ..permissions import Permissions
-from ..utils import (
-    resolve_annotation,
-    MISSING,
-    is_inside_class,
-    maybe_coroutine,
-    async_all,
-    _iscoroutinefunction,
-    _shorten,
-    _to_kebab_case,
-)
+from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all, _shorten, _to_kebab_case
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate, Unpack
@@ -355,7 +346,7 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         if callback is MISSING:
             continue
 
-        if not _iscoroutinefunction(callback):
+        if not inspect.iscoroutinefunction(callback):
             raise TypeError('autocomplete callback must be a coroutine function')
 
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
@@ -1046,7 +1037,7 @@ class Command(Generic[GroupT, P, T]):
             The coroutine passed is not actually a coroutine.
         """
 
-        if not _iscoroutinefunction(coro):
+        if not inspect.iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         self.on_error = coro
@@ -1107,7 +1098,7 @@ class Command(Generic[GroupT, P, T]):
         """
 
         def decorator(coro: AutocompleteCallback[GroupT, ChoiceT]) -> AutocompleteCallback[GroupT, ChoiceT]:
-            if not _iscoroutinefunction(coro):
+            if not inspect.iscoroutinefunction(coro):
                 raise TypeError('The autocomplete callback must be a coroutine function.')
 
             try:
@@ -1356,7 +1347,7 @@ class ContextMenu:
             The coroutine passed is not actually a coroutine.
         """
 
-        if not _iscoroutinefunction(coro):
+        if not inspect.iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         self.on_error = coro
@@ -1849,7 +1840,7 @@ class Group:
             The coroutine passed is not actually a coroutine, or is an invalid coroutine.
         """
 
-        if not _iscoroutinefunction(coro):
+        if not inspect.iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         params = inspect.signature(coro).parameters
@@ -1999,7 +1990,7 @@ class Group:
         """
 
         def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
-            if not _iscoroutinefunction(func):
+            if not inspect.iscoroutinefunction(func):
                 raise TypeError('command function must be a coroutine function')
 
             if description is MISSING:
@@ -2060,7 +2051,7 @@ def command(
     """
 
     def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
-        if not _iscoroutinefunction(func):
+        if not inspect.iscoroutinefunction(func):
             raise TypeError('command function must be a coroutine function')
 
         if description is MISSING:
@@ -2132,7 +2123,7 @@ def context_menu(
     """
 
     def decorator(func: ContextMenuCallback) -> ContextMenu:
-        if not _iscoroutinefunction(func):
+        if not inspect.iscoroutinefunction(func):
             raise TypeError('context menu function must be a coroutine function')
 
         actual_name = func.__name__.title() if name is MISSING else name

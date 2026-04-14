@@ -190,7 +190,7 @@ def flatten_user(cls: T) -> T:
             # probably a member function by now
             def generate_function(x):
                 # We want sphinx to properly show coroutine functions as coroutines
-                if utils._iscoroutinefunction(value):
+                if inspect.iscoroutinefunction(value):
 
                     async def general(self, *args, **kwargs):  # type: ignore
                         return await getattr(self._user, x)(*args, **kwargs)
