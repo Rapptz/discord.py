@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import array
 import asyncio
+import inspect
 from textwrap import TextWrapper
 from typing import (
     Any,
@@ -1542,3 +1543,11 @@ class _RawReprMixin:
     def __repr__(self) -> str:
         value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
         return f'<{self.__class__.__name__} {value}>'
+
+
+# `inspect.iscoroutinefunction()` only became equivalent to (now deprecated) `inspect.iscoroutinefunction()` in Python 3.12
+# https://github.com/python/cpython/issues/122858#issuecomment-2466239748
+if sys.version_info >= (3, 12):
+    _iscoroutinefunction = inspect.iscoroutinefunction
+else:
+    _iscoroutinefunction = asyncio.iscoroutinefunction
