@@ -40,7 +40,6 @@ from typing import (
 )
 from contextvars import ContextVar
 import copy
-import inspect
 import os
 
 from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
