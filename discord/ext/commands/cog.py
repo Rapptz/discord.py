@@ -28,7 +28,7 @@ import inspect
 import discord
 import logging
 from discord import app_commands
-from discord.utils import maybe_coroutine, _to_kebab_case
+from discord.utils import maybe_coroutine, _iscoroutinefunction, _to_kebab_case
 
 from typing import (
     Any,
@@ -233,7 +233,7 @@ class CogMeta(type):
                     if elem.startswith(('cog_', 'bot_')):
                         raise TypeError(no_bot_cog.format(base, elem))
                     cog_app_commands[elem] = value
-                elif inspect.iscoroutinefunction(value):
+                elif _iscoroutinefunction(value):
                     try:
                         getattr(value, '__cog_listener__')
                     except AttributeError:
@@ -522,7 +522,7 @@ class Cog(metaclass=CogMeta):
             actual = func
             if isinstance(actual, staticmethod):
                 actual = actual.__func__
-            if not inspect.iscoroutinefunction(actual):
+            if not _iscoroutinefunction(actual):
                 raise TypeError('Listener function must be a coroutine function.')
             actual.__cog_listener__ = True
             to_assign = name or actual.__name__

@@ -62,7 +62,7 @@ from .installs import AppCommandContext, AppInstallationType
 from .translator import Translator, locale_str
 from ..errors import ClientException, HTTPException
 from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
+from ..utils import MISSING, _get_as_snowflake, _iscoroutinefunction, _is_submodule, _shorten
 from .._types import ClientT
 
 
@@ -839,7 +839,7 @@ class CommandTree(Generic[ClientT]):
             not match the signature.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         params = inspect.signature(coro).parameters
@@ -908,7 +908,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         def decorator(func: CommandCallback[Group, P, T]) -> Command[Group, P, T]:
-            if not inspect.iscoroutinefunction(func):
+            if not _iscoroutinefunction(func):
                 raise TypeError('command function must be a coroutine function')
 
             if description is MISSING:
@@ -1005,7 +1005,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         def decorator(func: ContextMenuCallback) -> ContextMenu:
-            if not inspect.iscoroutinefunction(func):
+            if not _iscoroutinefunction(func):
                 raise TypeError('context menu function must be a coroutine function')
 
             actual_name = func.__name__.title() if name is MISSING else name
