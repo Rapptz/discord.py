@@ -1545,7 +1545,7 @@ class _RawReprMixin:
         return f'<{self.__class__.__name__} {value}>'
 
 
-# `inspect.iscoroutinefunction()` only became equivalent to (now deprecated) `inspect.iscoroutinefunction()` in Python 3.12
+# `inspect.iscoroutinefunction()` only became equivalent to (now deprecated) `asyncio.iscoroutinefunction()` in Python 3.12
 # https://github.com/python/cpython/issues/122858#issuecomment-2466239748
 if sys.version_info >= (3, 12):
     _iscoroutinefunction = inspect.iscoroutinefunction
