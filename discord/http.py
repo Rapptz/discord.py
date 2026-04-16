@@ -1854,6 +1854,7 @@ class HTTPClient:
         target_type: Optional[invite.InviteTargetType] = None,
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
+        target_role_ids: Optional[List[Snowflake]] = None,
         flags: Optional[int] = None,
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
@@ -1872,6 +1873,9 @@ class HTTPClient:
 
         if target_application_id:
             payload['target_application_id'] = str(target_application_id)
+
+        if target_role_ids is not None:
+            payload['target_role_ids'] = [str(r) for r in target_role_ids]
 
         if flags:
             payload['flags'] = flags

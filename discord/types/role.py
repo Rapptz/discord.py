@@ -59,3 +59,13 @@ class RoleTags(TypedDict, total=False):
     premium_subscriber: None
     available_for_purchase: None
     guild_connections: None
+
+
+class PartialInviteRole(TypedDict):
+    id: Snowflake
+    name: str
+    position: int
+    color: int
+    colors: RoleColours
+    icon: Optional[str]
+    unicode_emoji: Optional[str]

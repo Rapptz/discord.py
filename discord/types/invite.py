@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, Optional, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
 from .scheduled_event import GuildScheduledEvent
@@ -33,6 +33,7 @@ from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
 from .user import PartialUser
 from .appinfo import PartialAppInfo
+from .role import PartialInviteRole
 
 InviteTargetType = Literal[1, 2]
 InviteType = Literal[0, 1, 2]
@@ -66,6 +67,7 @@ class Invite(IncompleteInvite, total=False):
     type: InviteType
     flags: NotRequired[int]
     expires_at: Optional[str]
+    roles: List[PartialInviteRole]
 
 
 class InviteWithCounts(Invite, _GuildPreviewUnique): ...

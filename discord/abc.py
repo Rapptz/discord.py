@@ -1282,6 +1282,7 @@ class GuildChannel:
         target_type: Optional[InviteTarget] = None,
         target_user: Optional[User] = None,
         target_application_id: Optional[int] = None,
+        target_role_ids: Optional[List[int]] = None,
         guest: bool = False,
     ) -> Invite:
         """|coro|
@@ -1321,6 +1322,9 @@ class GuildChannel:
             The id of the embedded application for the invite, required if ``target_type`` is :attr:`.InviteTarget.embedded_application`.
 
             .. versionadded:: 2.0
+        target_role_ids: Optional[List[:class:`int`]]
+            A list of role IDs to assign to the user upon accepting this invite.
+
         guest: :class:`bool`
             Whether the invite is a guest invite.
 
@@ -1357,6 +1361,7 @@ class GuildChannel:
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
+            target_role_ids=target_role_ids,
             flags=flags.value if flags else None,
         )
         return Invite.from_incomplete(data=data, state=self._state)
