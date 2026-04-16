@@ -1361,7 +1361,7 @@ class GuildChannel:
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
             target_application_id=target_application_id,
-            target_role_ids=target_role_ids,
+            target_role_ids=[r.id for r in target_role_ids] if target_role_ids is not None else None,
             flags=flags.value if flags else None,
         )
         return Invite.from_incomplete(data=data, state=self._state)

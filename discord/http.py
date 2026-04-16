@@ -1854,7 +1854,7 @@ class HTTPClient:
         target_type: Optional[invite.InviteTargetType] = None,
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
-        target_role_ids: Optional[Sequence[Snowflake]] = None,
+        target_role_ids: Optional[SnowflakeList] = None,
         flags: Optional[int] = None,
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
