@@ -90,12 +90,12 @@ class File:
 
             A *non-exhaustive* list of supported formats are: `ogg`, `mp3`, `wav`, `aac`, and `flac`.
 
-        .. versionadded:: 2.7
+        .. versionadded:: 2.8
 
     duration: Optional[:class:`float`]
         The duration of the voice message in seconds
 
-        .. versionadded:: 2.7
+        .. versionadded:: 2.8
 
     waveform: Optional[List[:class:`int`]]
         The waveform data of the voice message
@@ -105,7 +105,7 @@ class File:
 
             Accurate generation is only provided for the Opus format. Other formats will be provided with a random waveform
 
-        .. versionadded:: 2.7
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
