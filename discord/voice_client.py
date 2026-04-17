@@ -34,7 +34,7 @@ from .gateway import *
 from .errors import ClientException
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
-from .voice_state import VoiceConnectionState
+from .voice_state import VoiceConnectionState, has_dave
 
 if TYPE_CHECKING:
     from .gateway import DiscordVoiceWebSocket
@@ -218,6 +218,8 @@ class VoiceClient(VoiceProtocol):
     def __init__(self, client: Client, channel: abc.Connectable) -> None:
         if not has_nacl:
             raise RuntimeError('PyNaCl library needed in order to use voice')
+        if not has_dave:
+            raise RuntimeError('davey library needed in order to use voice')
 
         super().__init__(client, channel)
         state = client._connection
@@ -235,6 +237,7 @@ class VoiceClient(VoiceProtocol):
         self._connection: VoiceConnectionState = self.create_connection_state()
 
     warn_nacl: bool = not has_nacl
+    warn_dave: bool = not has_dave
     supported_modes: Tuple[SupportedModes, ...] = (
         'aead_xchacha20_poly1305_rtpsize',
         'xsalsa20_poly1305_lite',
@@ -283,6 +286,17 @@ class VoiceClient(VoiceProtocol):
     @property
     def timeout(self) -> float:
         return self._connection.timeout
+
+    @property
+    def voice_privacy_code(self) -> Optional[str]:
+        """:class:`str`: Get the voice privacy code of this E2EE session's group.
+
+        A new privacy code is created and cached each time a new transition is executed.
+        This can be None if there is no active DAVE session happening.
+
+        .. versionadded:: 2.7
+        """
+        return self._connection.dave_session.voice_privacy_code if self._connection.dave_session else None
 
     def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
@@ -368,7 +382,12 @@ class VoiceClient(VoiceProtocol):
 
     # audio related
 
-    def _get_voice_packet(self, data):
+    def _get_voice_packet(self, data: bytes):
+        packet = (
+            self._connection.dave_session.encrypt_opus(data)
+            if self._connection.dave_session and self._connection.can_encrypt
+            else data
+        )
         header = bytearray(12)
 
         # Formulate rtp header
@@ -379,7 +398,7 @@ class VoiceClient(VoiceProtocol):
         struct.pack_into('>I', header, 8, self.ssrc)
 
         encrypt_packet = getattr(self, '_encrypt_' + self.mode)
-        return encrypt_packet(header, data)
+        return encrypt_packet(header, packet)
 
     def _encrypt_aead_xchacha20_poly1305_rtpsize(self, header: bytes, data) -> bytes:
         # Esentially the same as _lite

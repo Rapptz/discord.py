@@ -1732,6 +1732,15 @@ of :class:`enum.Enum`.
 
           Checks if two messages are not equal.
 
+    .. method:: is_deletable()
+
+        Checks if the message type is deletable, as some system messages cannot be deleted.
+
+        .. versionadded:: 2.7
+
+        :return: A boolean denoting if the message type is deletable.
+        :rtype: :class:`bool`
+
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
@@ -2824,6 +2833,7 @@ of :class:`enum.Enum`.
         which was created.
 
         Possible attributes for :class:`AuditLogDiff`:
+
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.description`
@@ -2843,6 +2853,7 @@ of :class:`enum.Enum`.
         which was updated.
 
         Possible attributes for :class:`AuditLogDiff`:
+
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.description`
@@ -2862,6 +2873,7 @@ of :class:`enum.Enum`.
         which was deleted.
 
         Possible attributes for :class:`AuditLogDiff`:
+
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.description`
@@ -5441,6 +5453,7 @@ CategoryChannel
 .. autoclass:: CategoryChannel()
     :members:
     :inherited-members:
+    :exclude-members: category
 
 DMChannel
 ~~~~~~~~~
@@ -6203,6 +6216,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: MissingApplicationID
 
+.. autoexception:: FFmpegProcessError
+
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
@@ -6221,6 +6236,7 @@ Exception Hierarchy
                 - :exc:`PrivilegedIntentsRequired`
                 - :exc:`InteractionResponded`
                 - :exc:`MissingApplicationID`
+                - :exc:`FFmpegProcessError`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`

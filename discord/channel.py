@@ -322,8 +322,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work" or "age restricted".
     default_auto_archive_duration: :class:`int`
@@ -1516,8 +1515,7 @@ class VoiceChannel(VocalGuildChannel):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
 
         .. versionadded:: 2.2
     """
@@ -1744,8 +1742,7 @@ class StageChannel(VocalGuildChannel):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
 
         .. versionadded:: 2.2
     """
@@ -2409,8 +2406,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between creating threads
         in this forum. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
     nsfw: :class:`bool`
         If the forum is marked as "not safe for work" or "age restricted".
     default_auto_archive_duration: :class:`int`
@@ -2879,6 +2875,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         applied_tags: Sequence[ForumTag] = ...,
         view: LayoutView,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
         reason: Optional[str] = ...,
     ) -> ThreadWithMessage: ...
 
@@ -2901,6 +2898,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         applied_tags: Sequence[ForumTag] = ...,
         view: View = ...,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
         reason: Optional[str] = ...,
     ) -> ThreadWithMessage: ...
 
@@ -2922,6 +2920,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         applied_tags: Sequence[ForumTag] = MISSING,
         view: BaseView = MISSING,
         suppress_embeds: bool = False,
+        silent: bool = False,
         reason: Optional[str] = None,
     ) -> ThreadWithMessage:
         """|coro|
@@ -2976,6 +2975,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             A list of stickers to upload. Must be a maximum of 3.
         suppress_embeds: :class:`bool`
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+        silent: :class:`bool`
+            Whether to suppress push and desktop notifications for the message. This will increment the mention counter
+            in the UI, but will not actually send a notification.
+
+            .. versionadded:: 2.7
         reason: :class:`str`
             The reason for creating a new thread. Shows up on the audit log.
 
@@ -3008,8 +3012,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
-        if suppress_embeds:
-            flags = MessageFlags._from_value(4)
+        if suppress_embeds or silent:
+            flags = MessageFlags._from_value(0)
+            flags.suppress_embeds = suppress_embeds
+            flags.suppress_notifications = silent
         else:
             flags = MISSING
 

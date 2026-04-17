@@ -84,6 +84,15 @@ class Separator(Item[V]):
         return True
 
     @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this separator."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
+
+    @property
     def visible(self) -> bool:
         """:class:`bool`: Whether this separator is visible.
 

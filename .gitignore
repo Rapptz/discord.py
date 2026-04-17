@@ -16,3 +16,5 @@ docs/crowdin.py
 *.mo
 /.coverage
 build/*
+uv.lock*
+pylock*.toml

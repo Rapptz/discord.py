@@ -67,10 +67,12 @@ if TYPE_CHECKING:
         default_permissions: bool
         nsfw: bool
         description: str
+        case_insensitive: bool
 
     class _HybridGroupDecoratorKwargs(_HybridGroupKwargs, total=False):
         description: Union[str, app_commands.locale_str]
-        fallback: Union[str, app_commands.locale_str]
+        fallback: Optional[str]
+        fallback_locale: Optional[app_commands.locale_str]
 
 
 __all__ = (
@@ -533,6 +535,10 @@ class HybridCommand(Command[CogT, P, T]):
         )
 
     @property
+    def __discord_app_commands_unwrap__(self) -> Optional[HybridAppCommand[CogT, Any, T]]:
+        return self.app_command
+
+    @property
     def cog(self) -> CogT:
         return self._cog
 
@@ -699,6 +705,10 @@ class HybridGroup(Group[CogT, P, T]):
         if self.app_command is MISSING:
             return None
         return self.app_command.get_command(self.fallback)  # type: ignore
+
+    @property
+    def __discord_app_commands_unwrap__(self) -> Optional[app_commands.Group]:
+        return self.app_command
 
     @property
     def cog(self) -> CogT:

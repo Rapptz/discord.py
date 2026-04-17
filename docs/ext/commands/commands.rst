@@ -485,7 +485,7 @@ commands in an easy to use manner.
 typing.Union
 ^^^^^^^^^^^^^^
 
-A :data:`typing.Union` is a special type hint that allows for the command to take in any of the specific types instead of
+A :obj:`typing.Union` is a special type hint that allows for the command to take in any of the specific types instead of
 a singular type. For example, given the following:
 
 .. code-block:: python3
@@ -502,12 +502,12 @@ The way this works is through a left-to-right order. It first attempts to conver
 :class:`discord.TextChannel`, and if it fails it tries to convert it to a :class:`discord.Member`. If all converters fail,
 then a special error is raised, :exc:`~ext.commands.BadUnionArgument`.
 
-Note that any valid converter discussed above can be passed in to the argument list of a :data:`typing.Union`.
+Note that any valid converter discussed above can be passed in to the argument list of a :obj:`typing.Union`.
 
 typing.Optional
 ^^^^^^^^^^^^^^^^^
 
-A :data:`typing.Optional` is a special type hint that allows for "back-referencing" behaviour. If the converter fails to
+A :obj:`typing.Optional` is a special type hint that allows for "back-referencing" behaviour. If the converter fails to
 parse into the specified type, the parser will skip the parameter and then either ``None`` or the specified default will be
 passed into the parameter instead. The parser will then continue on to the next parameters and converters, if any.
 
@@ -536,7 +536,7 @@ typing.Literal
 
 .. versionadded:: 2.0
 
-A :data:`typing.Literal` is a special type hint that requires the passed parameter to be equal to one of the listed values
+A :obj:`typing.Literal` is a special type hint that requires the passed parameter to be equal to one of the listed values
 after being converted to the same type. For example, given the following:
 
 .. code-block:: python3
@@ -550,7 +550,7 @@ after being converted to the same type. For example, given the following:
 
 The ``buy_sell`` parameter must be either the literal string ``"buy"`` or ``"sell"`` and ``amount`` must convert to the
 ``int`` ``1`` or ``2``. If ``buy_sell`` or ``amount`` don't match any value, then a special error is raised,
-:exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :data:`typing.Literal` converter.
+:exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :obj:`typing.Literal` converter.
 
 Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow the :class:`bool` converter rules.
 
@@ -559,7 +559,7 @@ typing.Annotated
 
 .. versionadded:: 2.0
 
-A :data:`typing.Annotated` is a special type introduced in Python 3.9 that allows the type checker to see one type, but allows the library to see another type. This is useful for appeasing the type checker for complicated converters. The second parameter of ``Annotated`` must be the converter that the library should use.
+A :obj:`typing.Annotated` is a special type introduced in Python 3.9 that allows the type checker to see one type, but allows the library to see another type. This is useful for appeasing the type checker for complicated converters. The second parameter of ``Annotated`` must be the converter that the library should use.
 
 For example, given the following:
 
@@ -581,7 +581,7 @@ The type checker will see ``arg`` as a regular :class:`str` but the library will
 Greedy
 ^^^^^^^^
 
-The :class:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied
+The :class:`~ext.commands.Greedy` converter is a generalisation of the :obj:`typing.Optional` converter, except applied
 to a list of arguments. In simple terms, this means that it tries to convert as much as it can until it can't convert
 any further.
 
@@ -606,7 +606,7 @@ The type passed when using this converter depends on the parameter type that it 
 
 :class:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
 
-When mixed with the :data:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:
+When mixed with the :obj:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:
 
 .. code-block:: python3
 
@@ -632,16 +632,16 @@ This command can be invoked any of the following ways:
 
 .. warning::
 
-    The usage of :class:`~ext.commands.Greedy` and :data:`typing.Optional` are powerful and useful, however as a
+    The usage of :class:`~ext.commands.Greedy` and :obj:`typing.Optional` are powerful and useful, however as a
     price, they open you up to some parsing ambiguities that might surprise some people.
 
-    For example, a signature expecting a :data:`typing.Optional` of a :class:`discord.Member` followed by a
+    For example, a signature expecting a :obj:`typing.Optional` of a :class:`discord.Member` followed by a
     :class:`int` could catch a member named after a number due to the different ways a
     :class:`~ext.commands.MemberConverter` decides to fetch members. You should take care to not introduce
     unintended parsing ambiguities in your code. One technique would be to clamp down the expected syntaxes
     allowed through custom converters or reordering the parameters to minimise clashes.
 
-    To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and
+    To help aid with some parsing ambiguities, :class:`str`, ``None``, :obj:`typing.Optional` and
     :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter.
 
 
@@ -663,7 +663,7 @@ Consider the following example:
         await ctx.send(f'You have uploaded <{attachment.url}>')
 
 
-When this command is invoked, the user must directly upload a file for the command body to be executed. When combined with the :data:`typing.Optional` converter, the user does not have to provide an attachment.
+When this command is invoked, the user must directly upload a file for the command body to be executed. When combined with the :obj:`typing.Optional` converter, the user does not have to provide an attachment.
 
 .. code-block:: python3
 
@@ -809,7 +809,7 @@ In order to customise the flag syntax we also have a few options that can be pas
         topic: Optional[str]
         nsfw: Optional[bool]
         slowmode: Optional[int]
-    
+
     # Hello there --bold True
     class Greeting(commands.FlagConverter):
         text: str = commands.flag(positional=True)

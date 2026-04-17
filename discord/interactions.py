@@ -65,6 +65,8 @@ if TYPE_CHECKING:
         ApplicationCommandInteractionData,
         InteractionCallback as InteractionCallbackPayload,
         InteractionCallbackActivity as InteractionCallbackActivityPayload,
+        MessageComponentInteractionData,
+        ModalSubmitInteractionData,
     )
     from .types.webhook import (
         Webhook as WebhookPayload,
@@ -191,6 +193,8 @@ class Interaction(Generic[ClientT]):
         'channel',
         '_cs_namespace',
         '_cs_command',
+        '_cs_command_id',
+        '_cs_custom_id',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
@@ -376,6 +380,21 @@ class Interaction(Generic[ClientT]):
         else:
             return tree._get_context_menu(data)
 
+    @utils.cached_slot_property('_cs_command_id')
+    def command_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of the command that triggered this interaction.
+
+        Only applicable if :attr:`type` is one of, :attr:`InteractionType.application_command` or
+        :attr:`InteractionType.autocomplete`.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+            return None
+
+        data: ApplicationCommandInteractionData = self.data  # type: ignore
+        return int(data.get('id', 0))
+
     @utils.cached_slot_property('_cs_response')
     def response(self) -> InteractionResponse[ClientT]:
         """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction.
@@ -404,6 +423,21 @@ class Interaction(Generic[ClientT]):
     def expires_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction expires."""
         return self.created_at + datetime.timedelta(minutes=15)
+
+    @utils.cached_slot_property('_cs_custom_id')
+    def custom_id(self) -> Optional[str]:
+        """Optional[:class:`str`]: The custom ID of the component that triggered this interaction.
+
+        Only applicable if :attr:`type` is one of, :attr:`InteractionType.component` or
+        :attr:`InteractionType.modal_submit`.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (InteractionType.component, InteractionType.modal_submit):
+            return None
+
+        data: Union[MessageComponentInteractionData, ModalSubmitInteractionData] = self.data  # type: ignore
+        return data.get('custom_id')
 
     def is_expired(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is expired."""
@@ -581,7 +615,7 @@ class Interaction(Generic[ClientT]):
         state = _InteractionMessageState(self, self._state)
         message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished() and view.is_dispatchable():
-            self._state.store_view(view, message.id, interaction_id=self.id)
+            self._state.store_view(view, message.id)
         return message
 
     async def delete_original_response(self) -> None:
@@ -1048,7 +1082,7 @@ class InteractionResponse(Generic[ClientT]):
         )
 
         http = parent._state.http
-        response = await adapter.create_interaction_response(
+        data = await adapter.create_interaction_response(
             parent.id,
             parent.token,
             session=parent._session,
@@ -1056,17 +1090,19 @@ class InteractionResponse(Generic[ClientT]):
             proxy_auth=http.proxy_auth,
             params=params,
         )
+        self._response_type = InteractionResponseType.channel_message
+        response = InteractionCallbackResponse(
+            data=data,
+            parent=self._parent,
+            state=self._parent._state,
+            type=self._response_type,
+        )
 
         if view is not MISSING and not view.is_finished():
             if ephemeral and view.timeout is None:
                 view.timeout = 15 * 60.0
 
-            # If the interaction type isn't an application command then there's no way
-            # to obtain this interaction_id again, so just default to None
-            entity_id = parent.id if parent.type is InteractionType.application_command else None
-            self._parent._state.store_view(view, entity_id)
-
-        self._response_type = InteractionResponseType.channel_message
+            self._parent._state.store_view(view, response.message_id)
 
         if delete_after is not None:
 
@@ -1079,12 +1115,7 @@ class InteractionResponse(Generic[ClientT]):
 
             asyncio.create_task(inner_call())
 
-        return InteractionCallbackResponse(
-            data=response,
-            parent=self._parent,
-            state=self._parent._state,
-            type=self._response_type,
-        )
+        return response
 
     async def edit_message(
         self,
@@ -1171,12 +1202,8 @@ class InteractionResponse(Generic[ClientT]):
         state = parent._state
         if msg is not None:
             message_id = msg.id
-            # If this was invoked via an application command then we can use its original interaction ID
-            # Since this is used as a cache key for view updates
-            original_interaction_id = msg.interaction_metadata.id if msg.interaction_metadata is not None else None
         else:
             message_id = None
-            original_interaction_id = None
 
         if parent.type not in (InteractionType.component, InteractionType.modal_submit):
             return
@@ -1204,7 +1231,7 @@ class InteractionResponse(Generic[ClientT]):
         )
 
         http = parent._state.http
-        response = await adapter.create_interaction_response(
+        data = await adapter.create_interaction_response(
             parent.id,
             parent.token,
             session=parent._session,
@@ -1212,11 +1239,16 @@ class InteractionResponse(Generic[ClientT]):
             proxy_auth=http.proxy_auth,
             params=params,
         )
+        self._response_type = InteractionResponseType.message_update
+        response = InteractionCallbackResponse(
+            data=data,
+            parent=self._parent,
+            state=self._parent._state,
+            type=self._response_type,
+        )
 
         if view and not view.is_finished() and view.is_dispatchable():
-            state.store_view(view, message_id, interaction_id=original_interaction_id)
-
-        self._response_type = InteractionResponseType.message_update
+            state.store_view(view, message_id or response.message_id)
 
         if delete_after is not None:
 
@@ -1229,12 +1261,7 @@ class InteractionResponse(Generic[ClientT]):
 
             asyncio.create_task(inner_call())
 
-        return InteractionCallbackResponse(
-            data=response,
-            parent=self._parent,
-            state=self._parent._state,
-            type=self._response_type,
-        )
+        return response
 
     async def send_modal(self, modal: Modal, /) -> InteractionCallbackResponse[ClientT]:
         """|coro|

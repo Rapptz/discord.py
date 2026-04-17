@@ -53,6 +53,8 @@ V = TypeVar('V', bound='BaseView', covariant=True)
 class TextInput(Item[V]):
     """Represents a UI text input.
 
+    This a top-level layout component that can only be used in :class:`Label`.
+
     .. container:: operations
 
         .. describe:: str(x)
@@ -144,10 +146,18 @@ class TextInput(Item[V]):
             id=id,
         )
         self.row = row
-        self.id = id
 
     def __str__(self) -> str:
         return self.value
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this text input."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
 
     @property
     def custom_id(self) -> str:

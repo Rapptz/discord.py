@@ -79,6 +79,7 @@ __all__ = (
     'SoundboardSoundNotFound',
     'PartialEmojiConversionFailure',
     'BadBoolArgument',
+    'BadTimestampArgument',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
@@ -602,6 +603,24 @@ class BadBoolArgument(BadArgument):
         super().__init__(f'{argument} is not a recognised boolean option')
 
 
+class BadTimestampArgument(BadArgument):
+    """Exception raised when a timestamp argument was not convertable.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.7
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The datetime/timestamp argument supplied by the caller that was not a valid timestamp format.
+    """
+
+    def __init__(self, argument: str) -> None:
+        self.argument: str = argument
+        super().__init__(f'{argument} is not a recognised datetime or timestamp option')
+
+
 class RangeError(BadArgument):
     """Exception raised when an argument is out of range.
 
@@ -870,7 +889,7 @@ class BotMissingPermissions(CheckFailure):
 
 
 class BadUnionArgument(UserInputError):
-    """Exception raised when a :data:`typing.Union` converter fails for all
+    """Exception raised when a :obj:`typing.Union` converter fails for all
     its associated types.
 
     This inherits from :exc:`UserInputError`
