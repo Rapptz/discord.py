@@ -1041,7 +1041,7 @@ class SharedClientTheme:
         if len(value) > 5:
             raise ValueError('cannot have more than 5 colours')
 
-        if len(value) <= 1:
+        if len(value) < 2:
             self.intensity = 0
 
         self._colours = value
@@ -1056,7 +1056,7 @@ class SharedClientTheme:
 
     @gradient_angle.setter
     def gradient_angle(self, value: int) -> None:
-        if len(self.colours) <= 1 and value != 0:
+        if len(self.colours) < 2 and value != 0:
             raise ValueError('gradient_angle may only be set if there are at least 2 colours')
 
         if not 0 <= value <= 360:
@@ -2281,7 +2281,7 @@ class Message(PartialMessage, Hashable):
     shared_client_theme: Optional[:class:`SharedClientTheme`]
         The client theme shared in this message.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
