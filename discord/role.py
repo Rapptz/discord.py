@@ -296,7 +296,6 @@ class Role(Hashable):
         except KeyError:
             self.tags = None
 
-
     def is_default(self) -> bool:
         """:class:`bool`: Checks if the role is the default role."""
         return self.guild.id == self.id
