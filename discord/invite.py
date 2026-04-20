@@ -563,12 +563,13 @@ class Invite(Hashable):
         The ID of the scheduled event associated with this invite, if any.
 
         .. versionadded:: 2.0
-    roles: List[Union[:class:`PartialInviteRole`, :class:`Object`]]
+    roles: List[Union[:class:`PartialInviteRole`, :class:`Object`, :class:`Role`]]
         A list of roles that are granted to users joining via this invite.
 
         Objects in this list may be...
         - :class:`PartialInviteRole` if the invite is fetched through :meth:`Client.fetch_invite`.
         - :class:`Object` if the invite is received through a gateway event or the role is not in cache.
+        - :class:`Role` if the role is in cache.
 
         .. versionadded:: 2.7
     """
@@ -651,7 +652,7 @@ class Invite(Hashable):
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
         self._flags: int = data.get('flags', 0)
 
-        self.roles: List[Union[PartialInviteRole, Object]] = self._resolve_roles(
+        self.roles: List[Union[PartialInviteRole, Object, Role]] = self._resolve_roles(
             data.get('roles', []) or data.get('role_ids', [])
         )
 
@@ -727,33 +728,42 @@ class Invite(Hashable):
     def _resolve_roles(
         self,
         data: Optional[Sequence[Union[InviteRolePayload, int, str]]],
-    ) -> list[Union[PartialInviteRole, Object]]:
+    ) -> List[Union[PartialInviteRole, Object, Role]]:
         if not data:
             return []
 
         guild = self.guild
         state = self._state
 
-        res: List[Union[PartialInviteRole, Object]] = []
+        res: List[Union[PartialInviteRole, Object, Role]] = []
         for role in data:
             role_id: int
             role_data: Optional[InviteRolePayload] = None
+
             if isinstance(role, (int, str)):
                 role_id = int(role)
             else:
                 role_id = int(role['id'])
                 role_data = role
 
-            if guild:
-                if not isinstance(guild, (PartialInviteGuild, Object)):
-                    cached_role = guild.get_role(role_id)
-                    if cached_role:
-                        role_data = cached_role._to_partial_dict()
+            if not guild:
+                res.append(Object(id=role_id, type=Role))
+                continue
 
+            if isinstance(guild, (PartialInviteGuild, Object)):
                 if role_data:
                     res.append(PartialInviteRole(state=state, data=role_data, guild_id=guild.id))
+                else:
+                    res.append(Object(id=role_id, type=Role))
+                continue
+
+            resolved = guild.get_role(role_id)
+            if not resolved and role_data:
+                resolved = PartialInviteRole(state=state, data=role_data, guild_id=guild.id)
             else:
-                res.append(Object(id=role_id, type=Role))
+                resolved = resolved or Object(id=role_id, type=Role)
+
+            res.append(resolved)
 
         return res
 

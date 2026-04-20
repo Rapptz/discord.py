@@ -296,20 +296,6 @@ class Role(Hashable):
         except KeyError:
             self.tags = None
 
-    def _to_partial_dict(self) -> InviteRolePayload:
-        return {
-            'id': str(self.id),
-            'name': self.name,
-            'position': self.position,
-            'color': self._colour,
-            'colors': {
-                'primary_color': self._colour,
-                'secondary_color': self._secondary_colour,
-                'tertiary_color': self._tertiary_colour,
-            },
-            'icon': self._icon,
-            'unicode_emoji': self.unicode_emoji,
-        }
 
     def is_default(self) -> bool:
         """:class:`bool`: Checks if the role is the default role."""
