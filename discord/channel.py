@@ -3237,8 +3237,8 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         'id',
         'recipients',
         'me',
-        '_state',
         'last_pin_timestamp',
+        '_state',
     )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
@@ -3419,8 +3419,8 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
         '_icon',
         'name',
         'me',
-        '_state',
         'last_pin_timestamp',
+        '_state',
     )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
