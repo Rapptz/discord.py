@@ -333,6 +333,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         The default slowmode delay in seconds for threads created in this channel.
 
         .. versionadded:: 2.3
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -350,6 +354,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         'last_message_id',
         'default_auto_archive_duration',
         'default_thread_slowmode_delay',
+        'last_pin_timestamp',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
@@ -383,6 +388,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
         self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
         self._fill_overwrites(data)
 
     async def _get_channel(self) -> Self:
@@ -3221,15 +3227,26 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         The user presenting yourself.
     id: :class:`int`
         The direct message channel ID.
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+
+        .. versionadded:: 2.8
     """
 
-    __slots__ = ('id', 'recipients', 'me', '_state')
+    __slots__ = (
+        'id',
+        'recipients',
+        'me',
+        'last_pin_timestamp',
+        '_state',
+    )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
         self.recipients: List[User] = [state.store_user(u) for u in data.get('recipients', [])]
         self.me: ClientUser = me
         self.id: int = int(data['id'])
+        self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
 
     async def _get_channel(self) -> Self:
         return self
@@ -3388,9 +3405,23 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
         .. versionadded:: 2.0
     name: Optional[:class:`str`]
         The group channel's name if provided.
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+
+        .. versionadded:: 2.8
     """
 
-    __slots__ = ('id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state')
+    __slots__ = (
+        'id',
+        'recipients',
+        'owner_id',
+        'owner',
+        '_icon',
+        'name',
+        'me',
+        'last_pin_timestamp',
+        '_state',
+    )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
         self._state: ConnectionState = state
@@ -3409,6 +3440,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
             self.owner = self.me
         else:
             self.owner = utils.find(lambda u: u.id == self.owner_id, self.recipients)
+        self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
 
     async def _get_channel(self) -> Self:
         return self
