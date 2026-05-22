@@ -1212,7 +1212,7 @@ This allows you to define a command as both slash and text command without writi
 both counterparts.
 
 
-In order to define a hybrid command, The command callback should be decorated with
+In order to define a hybrid command, the command callback should be decorated with
 :meth:`.Bot.hybrid_command` decorator.
 
 .. code-block:: python3
@@ -1264,11 +1264,11 @@ Apart from that, all other features such as converters, checks, autocomplete, fl
 are supported on hybrid commands. Note that due to a design constraint, decorators related to application commands
 such as :func:`discord.app_commands.autocomplete` should be placed below the :func:`~ext.commands.hybrid_command` decorator.
 
-For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements
+For convenience and ease in writing code, the :class:`~ext.commands.Context` class implements
 some behavioural changes for various methods and attributes:
 
 - :attr:`.Context.interaction` can be used to retrieve the slash command interaction.
-- Since interaction can only be responded to once, The :meth:`.Context.send` automatically
+- Since interaction can only be responded to once, the :meth:`.Context.send` automatically
   determines whether to send an interaction response or a followup response.
 - :meth:`.Context.defer` defers the interaction response for slash commands but shows typing
   indicator for text commands.

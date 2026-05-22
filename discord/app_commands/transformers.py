@@ -53,7 +53,7 @@ from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, 
 from ..abc import GuildChannel
 from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
-from ..utils import MISSING, maybe_coroutine, _human_join, TIMESTAMP_PATTERN
+from ..utils import MISSING, maybe_coroutine, _human_join, _iscoroutinefunction, TIMESTAMP_PATTERN
 from ..user import User
 from ..role import Role
 from ..member import Member
@@ -814,7 +814,7 @@ def get_supported_annotation(
             params = inspect.signature(transform_classmethod.__func__).parameters
             if len(params) != 3:
                 raise TypeError('Inline transformer with transform classmethod requires 3 parameters')
-            if not inspect.iscoroutinefunction(transform_classmethod.__func__):
+            if not _iscoroutinefunction(transform_classmethod.__func__):
                 raise TypeError('Inline transformer with transform classmethod must be a coroutine')
             return (InlineTransformer(annotation), MISSING, False)
 
