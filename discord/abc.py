@@ -87,7 +87,7 @@ if TYPE_CHECKING:
     from .member import Member
     from .channel import CategoryChannel
     from .embeds import Embed
-    from .message import Message, MessageReference, PartialMessage
+    from .message import Message, MessageReference, PartialMessage, SharedClientTheme
     from .channel import (
         TextChannel,
         DMChannel,
@@ -1458,6 +1458,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1478,6 +1479,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1498,6 +1500,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1518,6 +1521,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     async def send(
@@ -1539,6 +1543,7 @@ class Messageable:
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
+        shared_client_theme: Optional[SharedClientTheme] = None,
     ) -> Message:
         """|coro|
 
@@ -1629,6 +1634,10 @@ class Messageable:
             The poll to send with this message.
 
             .. versionadded:: 2.4
+        shared_client_theme: :class:`~discord.SharedClientTheme`
+            The shared client theme to send with this message.
+
+            .. versionadded:: 2.8
 
         Raises
         --------
@@ -1702,6 +1711,7 @@ class Messageable:
             view=view,
             flags=flags,
             poll=poll,
+            shared_client_theme=shared_client_theme,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 

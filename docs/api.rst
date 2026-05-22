@@ -4154,6 +4154,35 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
+.. class:: BaseTheme
+
+    Represents the available themes for a shared client theme.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: unset
+
+        The theme is unset.
+        
+        This is equivalent to :attr:`dark`.
+
+    .. attribute:: dark
+
+        The shared theme is based on the dark theme.
+
+    .. attribute:: light
+
+        The shared theme is based on the light theme.
+
+    .. attribute:: darker
+
+        The shared theme is based on the darker theme.
+
+    .. attribute:: midnight
+
+        The shared theme is based on the midnight theme.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -6180,6 +6209,14 @@ PollMedia
 .. autoclass:: PollMedia
     :members:
 
+
+SharedClientTheme
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SharedClientTheme
+
+.. autoclass:: SharedClientTheme
+    :members:
 
 Exceptions
 ------------
