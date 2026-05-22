@@ -54,7 +54,7 @@ V = TypeVar('V', bound='BaseView', covariant=True)
 
 
 class RadioGroup(Item[V]):
-    """Represents a radio group component within a modal.
+    """Represents a radio group component within a modal that can only be used in :class:`Label`.
 
     .. versionadded:: 2.7
 
