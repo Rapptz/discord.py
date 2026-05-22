@@ -37,6 +37,7 @@ from .flags import InviteFlags
 __all__ = (
     'PartialInviteChannel',
     'PartialInviteGuild',
+    'PartialInviteRole',
     'Invite',
 )
 
@@ -48,6 +49,7 @@ if TYPE_CHECKING:
         InviteGuild as InviteGuildPayload,
         GatewayInvite as GatewayInvitePayload,
     )
+    from .types.role import PartialInviteRole as PartialInviteRolePayload
     from .types.guild import GuildFeature
     from .types.channel import (
         PartialChannel as InviteChannelPayload,
@@ -62,6 +64,47 @@ if TYPE_CHECKING:
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object]
 
     import datetime
+
+
+class PartialInviteRole:
+    """Represents a partial role that is assigned to a user upon accepting an invite.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The role's ID.
+    name: :class:`str`
+        The role's name.
+    position: :class:`int`
+        The role's position in the role hierarchy.
+    color: :class:`int`
+        The role's color as an integer.
+    icon: Optional[:class:`str`]
+        The role's icon hash, if any.
+    unicode_emoji: Optional[:class:`str`]
+        The role's unicode emoji, if any.
+    """
+
+    __slots__ = ('id', 'name', 'position', 'color', 'icon', 'unicode_emoji')
+
+    def __init__(self, data: PartialInviteRolePayload) -> None:
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.position: int = data['position']
+        self.color: int = data['color']
+        self.icon: Optional[str] = data.get('icon')
+        self.unicode_emoji: Optional[str] = data.get('unicode_emoji')
+
+    def __repr__(self) -> str:
+        return f'<PartialInviteRole id={self.id} name={self.name!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, PartialInviteRole) and other.id == self.id
+
+    def __hash__(self) -> int:
+        return hash(self.id)
 
 
 class PartialInviteChannel:
@@ -358,6 +401,11 @@ class Invite(Hashable):
         The ID of the scheduled event associated with this invite, if any.
 
         .. versionadded:: 2.0
+    roles: List[:class:`PartialInviteRole`]
+        The roles that will be assigned to the user upon accepting this invite.
+        Empty list if no roles are assigned.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -382,6 +430,7 @@ class Invite(Hashable):
         'scheduled_event_id',
         'type',
         '_flags',
+        'roles',
     )
 
     BASE = 'https://discord.gg'
@@ -436,6 +485,9 @@ class Invite(Hashable):
         )
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
         self._flags: int = data.get('flags', 0)
+        self.roles: List[PartialInviteRole] = [
+            PartialInviteRole(r) for r in data.get('roles', [])
+        ]
 
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
