@@ -169,7 +169,7 @@ class Reaction:
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function will now raise :exc:`ValueError` instead of
+            This function will now raise :exc:`TypeError` instead of
             ``InvalidArgument``.
 
         Raises
