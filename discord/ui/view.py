@@ -468,8 +468,8 @@ class BaseView:
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
-        item._update_view(self)
         self._add_count(item._total_count)
+        item._update_view(self)
         self._children.append(item)
         return self
 
