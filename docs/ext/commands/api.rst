@@ -619,6 +619,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.MissingRequiredAttachment
     :members:
 
+.. autoexception:: discord.ext.commands.MissingRequiredSticker
+    :members:
+
 .. autoexception:: discord.ext.commands.ArgumentParsingError
     :members:
 
@@ -799,6 +802,7 @@ Exception Hierarchy
             - :exc:`~.commands.UserInputError`
                 - :exc:`~.commands.MissingRequiredArgument`
                 - :exc:`~.commands.MissingRequiredAttachment`
+                - :exc:`~.commands.MissingRequiredSticker`
                 - :exc:`~.commands.TooManyArguments`
                 - :exc:`~.commands.BadArgument`
                     - :exc:`~.commands.MessageNotFound`
