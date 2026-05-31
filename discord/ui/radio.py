@@ -113,7 +113,7 @@ class RadioGroup(Item[V]):
 
     @property
     def value(self) -> Optional[str]:
-        """Optional[:class:`str`]: The value have been selected by the user, if any."""
+        """Optional[:class:`str`]: The value that has been selected by the user, if any."""
         return self._value
 
     @property
