@@ -2224,7 +2224,9 @@ class Message(PartialMessage, Hashable):
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
         self.call: Optional[CallMessage] = None
-        self.channel_type: Optional[ChannelType] = try_enum(ChannelType, data['channel_type']) if 'channel_type' in data else None
+        self.channel_type: Optional[ChannelType] = (
+            try_enum(ChannelType, data['channel_type']) if 'channel_type' in data else None
+        )
         # Set by Messageable.pins
         self._pinned_at: Optional[datetime.datetime] = None
 
