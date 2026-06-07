@@ -12,7 +12,7 @@ module.exports = (async function ({github, context}) {
         await new Promise(r => setTimeout(r, 5000));
 
         // Close the PR
-        github.issues.update({
+        await github.rest.issues.update({
             issue_number: pr_number,
             owner: context.repo.owner,
             repo: context.repo.repo,
