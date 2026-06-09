@@ -370,6 +370,10 @@ class BaseUser(_UserTag):
 
     @property
     def display_name_style(self) -> Optional[DisplayNameStyle]:
+        """Optional[:class:`DisplayNameStyle`]: Returns the user's display name style.
+        
+        .. versionadded:: 2.8
+        """
         if self._display_name_style is None:
             return None
         return DisplayNameStyle(data=self._display_name_style)
