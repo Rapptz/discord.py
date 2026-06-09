@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+import datetime
 import inspect
 
 from dataclasses import dataclass
@@ -52,7 +53,7 @@ from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, 
 from ..abc import GuildChannel
 from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
-from ..utils import MISSING, maybe_coroutine, _human_join
+from ..utils import MISSING, maybe_coroutine, _human_join, _iscoroutinefunction, TIMESTAMP_PATTERN
 from ..user import User
 from ..role import Role
 from ..member import Member
@@ -62,6 +63,7 @@ from .._types import ClientT
 __all__ = (
     'Transformer',
     'Transform',
+    'Timestamp',
     'Range',
 )
 
@@ -681,6 +683,41 @@ class UnionChannelTransformer(BaseChannelTransformer[ClientT]):
         return resolved
 
 
+if TYPE_CHECKING:
+    Timestamp = datetime.datetime
+else:
+
+    class Timestamp(Transformer[ClientT]):
+        """A type annotation that can be applied to a parameter for transforming a :ddocs:`Discord style timestamp <reference#message-formatting>` input to a
+        :class:`datetime.datetime`.
+
+
+        .. versionadded:: 2.7
+
+        .. warning::
+            Due to a Discord limitation, no timezone is provided with the input. The UTC timezone has been supplanted instead.
+
+        Examples
+        ---------
+
+        .. code-block:: python3
+
+            @app_commands.command()
+            async def datetime(interaction: discord.Interaction, value: app_commands.Timestamp):
+                await interaction.response.send_message(value.isoformat())
+        """
+
+        @property
+        def type(self) -> AppCommandOptionType:
+            return AppCommandOptionType.string
+
+        async def transform(self, interaction: Interaction[ClientT], value: Any, /):
+            match = TIMESTAMP_PATTERN.match(value)
+            if not match:
+                raise TransformerError(value, AppCommandOptionType.string, self)
+            return datetime.datetime.fromtimestamp(int(match[1]), tz=datetime.timezone.utc)
+
+
 CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     AppCommandChannel: [
         ChannelType.stage_voice,
@@ -777,7 +814,7 @@ def get_supported_annotation(
             params = inspect.signature(transform_classmethod.__func__).parameters
             if len(params) != 3:
                 raise TypeError('Inline transformer with transform classmethod requires 3 parameters')
-            if not inspect.iscoroutinefunction(transform_classmethod.__func__):
+            if not _iscoroutinefunction(transform_classmethod.__func__):
                 raise TypeError('Inline transformer with transform classmethod must be a coroutine')
             return (InlineTransformer(annotation), MISSING, False)
 

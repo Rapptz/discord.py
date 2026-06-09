@@ -364,6 +364,7 @@ class AsyncWebhookAdapter:
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
+        with_components: bool = False,
     ) -> Response[MessagePayload]:
         route = Route(
             'PATCH',
@@ -372,7 +373,9 @@ class AsyncWebhookAdapter:
             webhook_token=token,
             message_id=message_id,
         )
-        params = None if thread_id is None else {'thread_id': thread_id}
+        params = {'with_components': int(with_components)}
+        if thread_id:
+            params['thread_id'] = thread_id
         return self.request(
             route,
             session=session,
@@ -848,7 +851,15 @@ class WebhookMessage(Message):
             See :meth:`.abc.Messageable.send` for more information.
         view: Optional[:class:`~discord.ui.View`]
             The updated view to update this message with. If ``None`` is passed then
-            the view is removed.
+            the view is removed. If the webhook is partial or is not managed by the
+            library, then you can not send interactable components. Otherwise, you
+            can send views with any type of components.
+
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
 
             .. versionadded:: 2.0
 
@@ -1772,7 +1783,7 @@ class Webhook(BaseWebhook):
             .. versionadded:: 1.4
         view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             The view to send with the message. If the webhook is partial or
-            is not managed by the library, then you can only send URL buttons.
+            is not managed by the library, then you can not send interactable components.
             Otherwise, you can send views with any type of components.
 
             .. versionadded:: 2.0
@@ -1857,12 +1868,10 @@ class Webhook(BaseWebhook):
 
         if view is not MISSING:
             if not hasattr(view, '__discord_ui_view__'):
-                raise TypeError(f'expected view parameter to be of type View not {view.__class__.__name__}')
+                raise TypeError(f'expected view parameter to be of type View or LayoutView, not {view.__class__.__name__}')
 
             if isinstance(self._state, _WebhookState) and view.is_dispatchable():
-                raise ValueError(
-                    'Webhook views with any component other than URL buttons require an associated state with the webhook'
-                )
+                raise ValueError('Webhook views with interactable components require an associated state with the webhook')
 
             if ephemeral is True and view.timeout is None and view.is_dispatchable():
                 view.timeout = 15 * 60.0
@@ -2048,8 +2057,9 @@ class Webhook(BaseWebhook):
             See :meth:`.abc.Messageable.send` for more information.
         view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
-            the view is removed. The webhook must have state attached, similar to
-            :meth:`send`.
+            the view is removed. If the webhook is partial or is not managed by the
+            library, then you can not send interactable components. Otherwise, you
+            can send views with any type of components.
 
             .. note::
 
@@ -2085,11 +2095,12 @@ class Webhook(BaseWebhook):
         if self.token is None:
             raise ValueError('This webhook does not have a token associated with it')
 
-        if view is not MISSING:
-            if isinstance(self._state, _WebhookState):
-                raise ValueError('This webhook does not have state associated with it')
+        if view:
+            if not hasattr(view, '__discord_ui_view__'):
+                raise TypeError(f'expected view parameter to be of type View or LayoutView, not {view.__class__.__name__}')
 
-            self._state.prevent_view_updates_for(message_id)
+            if isinstance(self._state, _WebhookState) and view.is_dispatchable():
+                raise ValueError('Webhook views with interactable components require an associated state with the webhook')
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         with handle_message_parameters(
@@ -2117,6 +2128,7 @@ class Webhook(BaseWebhook):
                 multipart=params.multipart,
                 files=params.files,
                 thread_id=thread_id,
+                with_components=bool(view),
             )
 
         message = self._create_message(data, thread=thread)

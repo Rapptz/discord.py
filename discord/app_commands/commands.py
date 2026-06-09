@@ -58,7 +58,16 @@ from ..message import Message
 from ..user import User
 from ..member import Member
 from ..permissions import Permissions
-from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all, _shorten, _to_kebab_case
+from ..utils import (
+    resolve_annotation,
+    MISSING,
+    is_inside_class,
+    maybe_coroutine,
+    async_all,
+    _iscoroutinefunction,
+    _shorten,
+    _to_kebab_case,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate, Unpack
@@ -346,7 +355,7 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         if callback is MISSING:
             continue
 
-        if not inspect.iscoroutinefunction(callback):
+        if not _iscoroutinefunction(callback):
             raise TypeError('autocomplete callback must be a coroutine function')
 
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
@@ -1037,7 +1046,7 @@ class Command(Generic[GroupT, P, T]):
             The coroutine passed is not actually a coroutine.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         self.on_error = coro
@@ -1098,7 +1107,7 @@ class Command(Generic[GroupT, P, T]):
         """
 
         def decorator(coro: AutocompleteCallback[GroupT, ChoiceT]) -> AutocompleteCallback[GroupT, ChoiceT]:
-            if not inspect.iscoroutinefunction(coro):
+            if not _iscoroutinefunction(coro):
                 raise TypeError('The autocomplete callback must be a coroutine function.')
 
             try:
@@ -1347,7 +1356,7 @@ class ContextMenu:
             The coroutine passed is not actually a coroutine.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         self.on_error = coro
@@ -1802,7 +1811,7 @@ class Group:
                 yield from command.walk_commands()
 
     @mark_overrideable
-    async def on_error(self, interaction: Interaction, error: AppCommandError, /) -> None:
+    async def on_error(self, interaction: Interaction[ClientT], error: AppCommandError, /) -> None:
         """|coro|
 
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
@@ -1840,7 +1849,7 @@ class Group:
             The coroutine passed is not actually a coroutine, or is an invalid coroutine.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         params = inspect.signature(coro).parameters
@@ -1850,7 +1859,7 @@ class Group:
         self.on_error = coro  # type: ignore
         return coro
 
-    async def interaction_check(self, interaction: Interaction, /) -> bool:
+    async def interaction_check(self, interaction: Interaction[ClientT], /) -> bool:
         """|coro|
 
         A callback that is called when an interaction happens within the group
@@ -1990,7 +1999,7 @@ class Group:
         """
 
         def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
-            if not inspect.iscoroutinefunction(func):
+            if not _iscoroutinefunction(func):
                 raise TypeError('command function must be a coroutine function')
 
             if description is MISSING:
@@ -2051,7 +2060,7 @@ def command(
     """
 
     def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
-        if not inspect.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('command function must be a coroutine function')
 
         if description is MISSING:
@@ -2123,7 +2132,7 @@ def context_menu(
     """
 
     def decorator(func: ContextMenuCallback) -> ContextMenu:
-        if not inspect.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('context menu function must be a coroutine function')
 
         actual_name = func.__name__.title() if name is MISSING else name
@@ -2180,8 +2189,9 @@ def describe(**parameters: Union[str, locale_str]) -> Callable[[T], T]:
     '''
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, Command):
-            _populate_descriptions(inner._params, parameters)
+        unwrapped = getattr(inner, '__discord_app_commands_unwrap__', inner) or inner
+        if isinstance(unwrapped, Command):
+            _populate_descriptions(unwrapped._params, parameters)
         else:
             try:
                 inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
@@ -2223,8 +2233,9 @@ def rename(**parameters: Union[str, locale_str]) -> Callable[[T], T]:
     """
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, Command):
-            _populate_renames(inner._params, parameters)
+        unwrapped = getattr(inner, '__discord_app_commands_unwrap__', inner) or inner
+        if isinstance(unwrapped, Command):
+            _populate_renames(unwrapped._params, parameters)
         else:
             try:
                 inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore # Runtime attribute access
@@ -2292,8 +2303,9 @@ def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
     """
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, Command):
-            _populate_choices(inner._params, parameters)
+        unwrapped = getattr(inner, '__discord_app_commands_unwrap__', inner) or inner
+        if isinstance(unwrapped, Command):
+            _populate_choices(unwrapped._params, parameters)
         else:
             try:
                 inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore # Runtime attribute access
@@ -2351,8 +2363,9 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
     """
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, Command):
-            _populate_autocomplete(inner._params, parameters)
+        unwrapped = getattr(inner, '__discord_app_commands_unwrap__', inner) or inner
+        if isinstance(unwrapped, Command):
+            _populate_autocomplete(unwrapped._params, parameters)
         else:
             try:
                 inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore # Runtime attribute access
@@ -2408,13 +2421,14 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
     defaults: List[int] = [g if isinstance(g, int) else g.id for g in guild_ids]
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, (Group, ContextMenu)):
-            inner._guild_ids = defaults
-        elif isinstance(inner, Command):
-            if inner.parent is not None:
+        unwrapped = getattr(inner, '__discord_app_commands_unwrap__', inner) or inner
+        if isinstance(unwrapped, (Group, ContextMenu)):
+            unwrapped._guild_ids = defaults
+        elif isinstance(unwrapped, Command):
+            if unwrapped.parent is not None:
                 raise ValueError('child commands of a group cannot have default guilds set')
 
-            inner._guild_ids = defaults
+            unwrapped._guild_ids = defaults
         else:
             # Runtime attribute assignment
             inner.__discord_app_commands_default_guilds__ = defaults  # type: ignore
@@ -2470,13 +2484,14 @@ def check(predicate: Check) -> Callable[[T], T]:
     """
 
     def decorator(func: CheckInputParameter) -> CheckInputParameter:
-        if isinstance(func, (Command, ContextMenu)):
-            func.checks.append(predicate)
+        unwrapped = getattr(func, '__discord_app_commands_unwrap__', func) or func
+        if isinstance(unwrapped, (Command, ContextMenu)):
+            unwrapped.checks.append(predicate)
         else:
             if not hasattr(func, '__discord_app_commands_checks__'):
-                func.__discord_app_commands_checks__ = []
+                func.__discord_app_commands_checks__ = []  # type: ignore # Runtime attribute assignment
 
-            func.__discord_app_commands_checks__.append(predicate)
+            func.__discord_app_commands_checks__.append(predicate)  # type: ignore # Runtime attribute access
 
         return func
 
@@ -2513,10 +2528,11 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """
 
     def inner(f: T) -> T:
-        if isinstance(f, (Command, Group, ContextMenu)):
-            f.guild_only = True
-            allowed_contexts = f.allowed_contexts or AppCommandContext()
-            f.allowed_contexts = allowed_contexts
+        unwrapped = getattr(f, '__discord_app_commands_unwrap__', f) or f
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            unwrapped.guild_only = True
+            allowed_contexts = unwrapped.allowed_contexts or AppCommandContext()
+            unwrapped.allowed_contexts = allowed_contexts
         else:
             f.__discord_app_commands_guild_only__ = True  # type: ignore # Runtime attribute assignment
 
@@ -2567,10 +2583,11 @@ def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]
     """
 
     def inner(f: T) -> T:
-        if isinstance(f, (Command, Group, ContextMenu)):
-            f.guild_only = False
-            allowed_contexts = f.allowed_contexts or AppCommandContext()
-            f.allowed_contexts = allowed_contexts
+        unwrapped = getattr(f, '__discord_app_commands_unwrap__', f) or f
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            unwrapped.guild_only = False
+            allowed_contexts = unwrapped.allowed_contexts or AppCommandContext()
+            unwrapped.allowed_contexts = allowed_contexts
         else:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext()
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
@@ -2617,10 +2634,11 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """
 
     def inner(f: T) -> T:
-        if isinstance(f, (Command, Group, ContextMenu)):
-            f.guild_only = False
-            allowed_contexts = f.allowed_contexts or AppCommandContext()
-            f.allowed_contexts = allowed_contexts
+        unwrapped = getattr(f, '__discord_app_commands_unwrap__', f) or f
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            unwrapped.guild_only = False
+            allowed_contexts = unwrapped.allowed_contexts or AppCommandContext()
+            unwrapped.allowed_contexts = allowed_contexts
         else:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext()
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
@@ -2658,10 +2676,11 @@ def allowed_contexts(guilds: bool = MISSING, dms: bool = MISSING, private_channe
     """
 
     def inner(f: T) -> T:
-        if isinstance(f, (Command, Group, ContextMenu)):
-            f.guild_only = False
-            allowed_contexts = f.allowed_contexts or AppCommandContext()
-            f.allowed_contexts = allowed_contexts
+        unwrapped = getattr(f, '__discord_app_commands_unwrap__', f) or f
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            unwrapped.guild_only = False
+            allowed_contexts = unwrapped.allowed_contexts or AppCommandContext()
+            unwrapped.allowed_contexts = allowed_contexts
         else:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext()
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
@@ -2709,9 +2728,10 @@ def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """
 
     def inner(f: T) -> T:
-        if isinstance(f, (Command, Group, ContextMenu)):
-            allowed_installs = f.allowed_installs or AppInstallationType()
-            f.allowed_installs = allowed_installs
+        unwrapped = getattr(f, '__discord_app_commands_unwrap__', f) or f
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            allowed_installs = unwrapped.allowed_installs or AppInstallationType()
+            unwrapped.allowed_installs = allowed_installs
         else:
             allowed_installs = getattr(f, '__discord_app_commands_installation_types__', None) or AppInstallationType()
             f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
@@ -2757,9 +2777,10 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """
 
     def inner(f: T) -> T:
-        if isinstance(f, (Command, Group, ContextMenu)):
-            allowed_installs = f.allowed_installs or AppInstallationType()
-            f.allowed_installs = allowed_installs
+        unwrapped = getattr(f, '__discord_app_commands_unwrap__', f) or f
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            allowed_installs = unwrapped.allowed_installs or AppInstallationType()
+            unwrapped.allowed_installs = allowed_installs
         else:
             allowed_installs = getattr(f, '__discord_app_commands_installation_types__', None) or AppInstallationType()
             f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
@@ -2801,9 +2822,10 @@ def allowed_installs(
     """
 
     def inner(f: T) -> T:
-        if isinstance(f, (Command, Group, ContextMenu)):
-            allowed_installs = f.allowed_installs or AppInstallationType()
-            f.allowed_installs = allowed_installs
+        unwrapped = getattr(f, '__discord_app_commands_unwrap__', f) or f
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            allowed_installs = unwrapped.allowed_installs or AppInstallationType()
+            unwrapped.allowed_installs = allowed_installs
         else:
             allowed_installs = getattr(f, '__discord_app_commands_installation_types__', None) or AppInstallationType()
             f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
@@ -2874,8 +2896,9 @@ def default_permissions(perms_obj: Optional[Permissions] = None, /, **perms: Unp
         permissions = Permissions(**perms)
 
     def decorator(func: T) -> T:
-        if isinstance(func, (Command, Group, ContextMenu)):
-            func.default_permissions = permissions
+        unwrapped = getattr(func, '__discord_app_commands_unwrap__', func) or func
+        if isinstance(unwrapped, (Command, Group, ContextMenu)):
+            unwrapped.default_permissions = permissions
         else:
             func.__discord_app_commands_default_permissions__ = permissions  # type: ignore # Runtime attribute assignment
 

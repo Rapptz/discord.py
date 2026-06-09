@@ -28,7 +28,7 @@ import inspect
 import discord
 import logging
 from discord import app_commands
-from discord.utils import maybe_coroutine, _to_kebab_case
+from discord.utils import maybe_coroutine, _iscoroutinefunction, _to_kebab_case
 
 from typing import (
     Any,
@@ -45,29 +45,18 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
-    TypedDict,
 )
 
-from ._types import _BaseCommand, BotT
+from ._types import _BaseCommand, BotT, MaybeCoro
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, Unpack
+    from typing_extensions import Self
     from discord.abc import Snowflake
     from discord._types import ClientT
 
     from .bot import BotBase
     from .context import Context
-    from .core import Command, _CommandDecoratorKwargs
-
-    class _CogKwargs(TypedDict, total=False):
-        name: str
-        group_name: Union[str, app_commands.locale_str]
-        description: str
-        group_description: Union[str, app_commands.locale_str]
-        group_nsfw: bool
-        group_auto_locale_strings: bool
-        group_extras: Dict[Any, Any]
-        command_attrs: _CommandDecoratorKwargs
+    from .core import Command
 
 
 __all__ = (
@@ -182,7 +171,7 @@ class CogMeta(type):
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
 
-    def __new__(cls, *args: Any, **kwargs: Unpack[_CogKwargs]) -> CogMeta:
+    def __new__(cls, *args: Any, **kwargs: Any) -> CogMeta:
         name, bases, attrs = args
         if any(issubclass(base, app_commands.Group) for base in bases):
             raise TypeError(
@@ -244,7 +233,7 @@ class CogMeta(type):
                     if elem.startswith(('cog_', 'bot_')):
                         raise TypeError(no_bot_cog.format(base, elem))
                     cog_app_commands[elem] = value
-                elif inspect.iscoroutinefunction(value):
+                elif _iscoroutinefunction(value):
                     try:
                         getattr(value, '__cog_listener__')
                     except AttributeError:
@@ -533,7 +522,7 @@ class Cog(metaclass=CogMeta):
             actual = func
             if isinstance(actual, staticmethod):
                 actual = actual.__func__
-            if not inspect.iscoroutinefunction(actual):
+            if not _iscoroutinefunction(actual):
                 raise TypeError('Listener function must be a coroutine function.')
             actual.__cog_listener__ = True
             to_assign = name or actual.__name__
@@ -594,7 +583,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    def bot_check_once(self, ctx: Context[BotT]) -> bool:
+    def bot_check_once(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
 
@@ -604,7 +593,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def bot_check(self, ctx: Context[BotT]) -> bool:
+    def bot_check(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :meth:`.Bot.check`
         check.
 
@@ -614,7 +603,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_check(self, ctx: Context[BotT]) -> bool:
+    def cog_check(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :func:`~discord.ext.commands.check`
         for every command and subcommand in this cog.
 
@@ -624,7 +613,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def interaction_check(self, interaction: discord.Interaction[ClientT], /) -> bool:
+    def interaction_check(self, interaction: discord.Interaction[ClientT], /) -> MaybeCoro[bool]:
         """A special method that registers as a :func:`discord.app_commands.check`
         for every app command and subcommand in this cog.
 
@@ -657,7 +646,9 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
+    async def cog_app_command_error(
+        self, interaction: discord.Interaction[ClientT], error: app_commands.AppCommandError
+    ) -> None:
         """|coro|
 
         A special method that is called whenever an error within

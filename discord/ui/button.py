@@ -26,14 +26,14 @@ from __future__ import annotations
 
 import copy
 from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
-import inspect
 import os
 
 
-from .item import Item, ContainedItemCallbackType as ItemCallbackType
+from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from ..enums import ButtonStyle, ComponentType
 from ..partial_emoji import PartialEmoji, _EmojiTag
 from ..components import Button as ButtonComponent
+from ..utils import _iscoroutinefunction
 
 __all__ = (
     'Button',
@@ -304,6 +304,9 @@ class Button(Item[V]):
             sku_id=self.sku_id,
             id=self.id,
         )
+        if isinstance(new.callback, _ItemCallback):
+            new.callback.item = new
+        new._update_view(self.view)
         return new
 
     def __deepcopy__(self, memo) -> Self:
@@ -367,7 +370,7 @@ def button(
     """
 
     def decorator(func: ItemCallbackType[S, Button[V]]) -> ItemCallbackType[S, Button[V]]:
-        if not inspect.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 
         func.__discord_ui_model_type__ = Button

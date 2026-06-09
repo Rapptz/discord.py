@@ -551,11 +551,16 @@ class HTTPClient:
             self.__session = MISSING
 
     async def ws_connect(self, url: str, *, compress: int = 0) -> aiohttp.ClientWebSocketResponse:
+        try:
+            timeout: Any = aiohttp.ClientWSTimeout(ws_close=30.0)  # pyright: ignore[reportCallIssue]
+        except (AttributeError, TypeError):
+            timeout = 30.0
+
         kwargs = {
             'proxy_auth': self.proxy_auth,
             'proxy': self.proxy,
             'max_msg_size': 0,
-            'timeout': 30.0,
+            'timeout': timeout,
             'autoclose': False,
             'headers': {
                 'User-Agent': self.user_agent,
@@ -1136,18 +1141,15 @@ class HTTPClient:
     def edit_profile(self, payload: Dict[str, Any]) -> Response[user.User]:
         return self.request(Route('PATCH', '/users/@me'), json=payload)
 
-    def change_my_nickname(
+    def edit_my_member(
         self,
         guild_id: Snowflake,
-        nickname: str,
         *,
         reason: Optional[str] = None,
-    ) -> Response[member.Nickname]:
-        r = Route('PATCH', '/guilds/{guild_id}/members/@me/nick', guild_id=guild_id)
-        payload = {
-            'nick': nickname,
-        }
-        return self.request(r, json=payload, reason=reason)
+        **fields: Any,
+    ) -> Response[member.MemberWithUser]:
+        r = Route('PATCH', '/guilds/{guild_id}/members/@me', guild_id=guild_id)
+        return self.request(r, json=fields, reason=reason)
 
     def change_nickname(
         self,
@@ -1348,7 +1350,7 @@ class HTTPClient:
             return self.request(r, json=params.payload, params=query, reason=reason)
 
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
-        return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
+        return self.request(Route('PUT', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
 
     def add_user_to_thread(self, channel_id: Snowflake, user_id: Snowflake) -> Response[None]:
         return self.request(
@@ -1908,6 +1910,9 @@ class HTTPClient:
 
     def get_role(self, guild_id: Snowflake, role_id: Snowflake) -> Response[role.Role]:
         return self.request(Route('GET', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id))
+
+    def get_role_member_counts(self, guild_id: Snowflake) -> Response[Dict[str, int]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/roles/member-counts', guild_id=guild_id))
 
     def edit_role(
         self, guild_id: Snowflake, role_id: Snowflake, *, reason: Optional[str] = None, **fields: Any

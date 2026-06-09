@@ -55,7 +55,7 @@ class Section(Item[V]):
     \*children: Union[:class:`str`, :class:`TextDisplay`]
         The text displays of this section. Up to 3.
     accessory: :class:`Item`
-        The section accessory.
+        The section accessory. This is usually either a :class:`Button` or :class:`Thumbnail`.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
@@ -117,6 +117,7 @@ class Section(Item[V]):
         if not isinstance(value, Item):
             raise TypeError(f'Expected an Item, got {value.__class__.__name__!r} instead')
 
+        value._update_view(self.view)
         value._parent = self
         self._accessory = value
 
@@ -137,8 +138,7 @@ class Section(Item[V]):
             An item in this section.
         """
 
-        for child in self.children:
-            yield child
+        yield from self.children
         yield self.accessory
 
     def _update_view(self, view) -> None:

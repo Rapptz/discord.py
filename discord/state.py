@@ -279,7 +279,7 @@ class ConnectionState(Generic[ClientT]):
     # So this is checked instead, it's a small penalty to pay
     @property
     def cache_guild_expressions(self) -> bool:
-        return self._intents.emojis_and_stickers
+        return self._intents.expressions
 
     async def close(self) -> None:
         for voice in self.voice_clients:
@@ -412,9 +412,7 @@ class ConnectionState(Generic[ClientT]):
         self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
         return sticker
 
-    def store_view(self, view: BaseView, message_id: Optional[int] = None, interaction_id: Optional[int] = None) -> None:
-        if interaction_id is not None:
-            self._view_store.remove_interaction_mapping(interaction_id)
+    def store_view(self, view: BaseView, message_id: Optional[int] = None) -> None:
         self._view_store.add_view(view, message_id)
 
     def prevent_view_updates_for(self, message_id: int) -> Optional[BaseView]:
@@ -828,7 +826,8 @@ class ConnectionState(Generic[ClientT]):
             inner_data = data['data']
             custom_id = inner_data['custom_id']
             components = inner_data['components']
-            self._view_store.dispatch_modal(custom_id, interaction, components)
+            resolved = inner_data.get('resolved', {})
+            self._view_store.dispatch_modal(custom_id, interaction, components, resolved)
         self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data: gw.PresenceUpdateEvent) -> None:

@@ -68,7 +68,7 @@ from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils
-from .utils import MISSING, time_snowflake, deprecated
+from .utils import MISSING, time_snowflake, deprecated, _iscoroutinefunction
 from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
@@ -88,7 +88,7 @@ if TYPE_CHECKING:
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
     from .app_commands import Command, ContextMenu
     from .automod import AutoModAction, AutoModRule
-    from .channel import DMChannel, GroupChannel
+    from .channel import DMChannel, GroupChannel, VoiceChannelEffect
     from .ext.commands import AutoShardedBot, Bot, Context, CommandError
     from .guild import GuildChannel
     from .integrations import Integration
@@ -124,25 +124,25 @@ if TYPE_CHECKING:
     from .flags import MemberCacheFlags
 
     class _ClientOptions(TypedDict, total=False):
-        max_messages: int
-        proxy: str
-        proxy_auth: aiohttp.BasicAuth
-        shard_id: int
-        shard_count: int
+        max_messages: Optional[int]
+        proxy: Optional[str]
+        proxy_auth: Optional[aiohttp.BasicAuth]
+        shard_id: Optional[int]
+        shard_count: Optional[int]
         application_id: int
         member_cache_flags: MemberCacheFlags
         chunk_guilds_at_startup: bool
-        status: Status
-        activity: BaseActivity
-        allowed_mentions: AllowedMentions
+        status: Optional[Status]
+        activity: Optional[BaseActivity]
+        allowed_mentions: Optional[AllowedMentions]
         heartbeat_timeout: float
         guild_ready_timeout: float
         assume_unsync_clock: bool
         enable_debug_events: bool
         enable_raw_presences: bool
         http_trace: aiohttp.TraceConfig
-        max_ratelimit_timeout: float
-        connector: aiohttp.BaseConnector
+        max_ratelimit_timeout: Optional[float]
+        connector: Optional[aiohttp.BaseConnector]
 
 
 # fmt: off
@@ -339,6 +339,10 @@ class Client:
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
             _log.warning('PyNaCl is not installed, voice will NOT be supported')
+
+        if VoiceClient.warn_dave:
+            VoiceClient.warn_dave = False
+            _log.warning('davey is not installed, voice will NOT be supported')
 
     async def __aenter__(self) -> Self:
         await self._async_setup_hook()
@@ -1753,6 +1757,38 @@ class Client:
         timeout: Optional[float] = ...,
     ) -> Tuple[ScheduledEvent, User]: ...
 
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['scheduled_event_update'],
+        /,
+        *,
+        check: Optional[Callable[[ScheduledEvent, ScheduledEvent], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> Tuple[ScheduledEvent, ScheduledEvent]: ...
+
+    # Soundboard
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['soundboard_sound_create', 'soundboard_sound_delete'],
+        /,
+        *,
+        check: Optional[Callable[[SoundboardSound], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> SoundboardSound: ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['soundboard_sound_update'],
+        /,
+        *,
+        check: Optional[Callable[[SoundboardSound, SoundboardSound], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> Tuple[SoundboardSound, SoundboardSound]: ...
+
     # Stages
 
     @overload
@@ -1858,6 +1894,16 @@ class Client:
         check: Optional[Callable[[Member, VoiceState, VoiceState], bool]] = ...,
         timeout: Optional[float] = ...,
     ) -> Tuple[Member, VoiceState, VoiceState]: ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['voice_channel_effect'],
+        /,
+        *,
+        check: Optional[Callable[[VoiceChannelEffect], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> VoiceChannelEffect: ...
 
     # Polls
 
@@ -2052,7 +2098,7 @@ class Client:
             The coroutine passed is not actually a coroutine.
         """
 
-        if not asyncio.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
@@ -2511,7 +2557,7 @@ class Client:
         )
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    async def delete_invite(self, invite: Union[Invite, str], /) -> Invite:
+    async def delete_invite(self, invite: Union[Invite, str], /, *, reason: Optional[str] = None) -> Invite:
         """|coro|
 
         Revokes an :class:`.Invite`, URL, or ID to an invite.
@@ -2527,6 +2573,8 @@ class Client:
         ----------
         invite: Union[:class:`.Invite`, :class:`str`]
             The invite to revoke.
+        reason: Optional[:class:`str`]
+            The reason for deleting the invite. Shows up on the audit log.
 
         Raises
         -------
@@ -2539,7 +2587,7 @@ class Client:
         """
 
         resolved = utils.resolve_invite(invite)
-        data = await self.http.delete_invite(resolved.code)
+        data = await self.http.delete_invite(resolved.code, reason=reason)
         return Invite.from_incomplete(state=self._connection, data=data)
 
     # Miscellaneous stuff

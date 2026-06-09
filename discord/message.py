@@ -1415,11 +1415,7 @@ class PartialMessage(Hashable):
             message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished() and view.is_dispatchable():
-            interaction: Optional[MessageInteractionMetadata] = getattr(self, 'interaction_metadata', None)
-            if interaction is not None:
-                self._state.store_view(view, self.id, interaction_id=interaction.id)
-            else:
-                self._state.store_view(view, self.id)
+            self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
@@ -1453,7 +1449,7 @@ class PartialMessage(Hashable):
 
         Pins the message.
 
-        You must have :attr:`~Permissions.manage_messages` to do
+        You must have :attr:`~Permissions.pin_messages` to do
         this in a non-private channel context.
 
         Parameters
@@ -1471,7 +1467,7 @@ class PartialMessage(Hashable):
             The message or channel was not found or deleted.
         HTTPException
             Pinning the message failed, probably due to the channel
-            having more than 50 pinned messages.
+            having more than 250 pinned messages.
         """
 
         await self._state.http.pin_message(self.channel.id, self.id, reason=reason)
@@ -1483,7 +1479,7 @@ class PartialMessage(Hashable):
 
         Unpins the message.
 
-        You must have :attr:`~Permissions.manage_messages` to do
+        You must have :attr:`~Permissions.pin_messages` to do
         this in a non-private channel context.
 
         Parameters
@@ -2221,6 +2217,7 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
+        self.call: Optional[CallMessage] = None
         # Set by Messageable.pins
         self._pinned_at: Optional[datetime.datetime] = None
 
@@ -2513,11 +2510,8 @@ class Message(PartialMessage, Hashable):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
     def _handle_call(self, data: CallMessagePayload):
-        self.call: Optional[CallMessage]
         if data is not None:
             self.call = CallMessage(state=self._state, message=self, data=data)
-        else:
-            self.call = None
 
     def _rebind_cached_references(
         self,
@@ -2843,14 +2837,14 @@ class Message(PartialMessage, Hashable):
             if call_ended:
                 duration = utils._format_call_duration(self.call.duration)  # type: ignore # call can't be None here
                 if missed:
-                    return 'You missed a call from {0.author.name} that lasted {1}.'.format(self, duration)
+                    return f'You missed a call from {self.author.name} that lasted {duration}.'
                 else:
-                    return '{0.author.name} started a call that lasted {1}.'.format(self, duration)
+                    return f'{self.author.name} started a call that lasted {duration}.'
             else:
                 if missed:
-                    return '{0.author.name} started a call. \N{EM DASH} Join the call'.format(self)
+                    return f'{self.author.name} started a call. \N{EM DASH} Join the call'
                 else:
-                    return '{0.author.name} started a call.'.format(self)
+                    return f'{self.author.name} started a call.'
 
         if self.type is MessageType.purchase_notification and self.purchase_notification is not None:
             guild_product_purchase = self.purchase_notification.guild_product_purchase
@@ -2864,6 +2858,9 @@ class Message(PartialMessage, Hashable):
                 name='poll_question_text',
             )
             return f"{self.author.display_name}'s poll {poll_title.value} has closed."  # type: ignore
+
+        if self.type is MessageType.emoji_added:
+            return f'{self.author.name} added a new emoji, {self.content}'
 
         # Fallback for unknown message types
         return ''
@@ -3050,3 +3047,30 @@ class Message(PartialMessage, Hashable):
             The newly edited message.
         """
         return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
+
+    def is_forwardable(self) -> bool:
+        """:class:`bool`: Whether the message can be forwarded using :meth:`Message.forward`.
+
+        A message is forwardable only if it is a basic message type and does not
+        contain a poll, call, or activity, and is not a system message.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (
+            MessageType.default,
+            MessageType.reply,
+            MessageType.chat_input_command,
+            MessageType.context_menu_command,
+        ):
+            return False
+
+        if self.poll is not None:
+            return False
+
+        if self.call is not None:
+            return False
+
+        if self.activity is not None:
+            return False
+
+        return True

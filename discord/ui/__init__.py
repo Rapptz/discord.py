@@ -25,3 +25,6 @@ from .text_display import *
 from .thumbnail import *
 from .action_row import *
 from .label import *
+from .file_upload import *
+from .radio import *
+from .checkbox import *

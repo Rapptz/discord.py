@@ -103,8 +103,7 @@ class Thread(Messageable, Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this thread. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
     message_count: :class:`int`
         An approximate number of messages in this thread.
     member_count: :class:`int`
