@@ -1029,7 +1029,7 @@ class DisplayNameEffect(Enum):
     neon = 3
     toon = 4
     pop = 5
-    glow = 6 
+    glow = 6
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

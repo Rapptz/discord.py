@@ -63,6 +63,7 @@ class _OptionalMemberWithUser(PartialMember, total=False):
     avatar_decoration_data: NotRequired[AvatarDecorationData]
     display_name_style: NotRequired[DisplayNameStyle]
 
+
 class MemberWithUser(_OptionalMemberWithUser):
     user: User
 

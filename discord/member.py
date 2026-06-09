@@ -668,16 +668,16 @@ class Member(discord.abc.Messageable, _UserTag):
         if self._banner is None:
             return None
         return Asset._from_guild_banner(self._state, self.guild.id, self.id, self._banner)
-    
+
     @property
     def display_name_style(self) -> Optional[DisplayNameStyle]:
-        """Optional[:class:`DisplayNameStyle`]: Returns the member's guild display name style if they have one, 
+        """Optional[:class:`DisplayNameStyle`]: Returns the member's guild display name style if they have one,
         otherwise their global display name style if they have one, otherwise ``None``.
 
         .. versionadded:: 2.8
         """
         return self.guild_display_name_style or self.global_display_name_style
-    
+
     @property
     def guild_display_name_style(self) -> Optional[DisplayNameStyle]:
         """Optional[:class:`DisplayNameStyle`]: Returns the member's guild specific display name style.
@@ -688,7 +688,7 @@ class Member(discord.abc.Messageable, _UserTag):
         if self._display_name_style is None:
             return None
         return DisplayNameStyle(data=self._display_name_style)
-    
+
     @property
     def global_display_name_style(self) -> Optional[DisplayNameStyle]:
         """Optional[:class:`DisplayNameStyle`]: Returns the user's global display name style.
@@ -947,7 +947,7 @@ class Member(discord.abc.Messageable, _UserTag):
         display_name_font: Optional[:class:`DisplayNameFont`]
             The new display name font for the member. Use ``None`` to remove the display name font.
             This can only be set when editing the bot's own member.
-            
+
             .. versionadded:: 2.8
         display_name_effect: Optional[:class:`DisplayNameEffect`]
             The new display name effect for the member. Use ``None`` to remove the display name effect.
@@ -1022,10 +1022,8 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if not me and self_payload:
             only_fields = {'avatar', 'banner', 'bio', 'display_name_font', 'display_name_effect', 'display_name_colors'}
-            current_fields = utils._human_join(list(only_fields.intersection(set(self_payload.keys()))), final="and")
-            raise ValueError(
-                f'Editing {current_fields} can only happen when editing the bot\'s own member.'
-            )
+            current_fields = utils._human_join(list(only_fields.intersection(set(self_payload.keys()))), final='and')
+            raise ValueError(f"Editing {current_fields} can only happen when editing the bot's own member.")
 
         if deafen is not MISSING:
             payload['deaf'] = deafen
