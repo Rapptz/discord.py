@@ -36,12 +36,13 @@ from .asset import Asset
 from .utils import MISSING
 from .user import BaseUser, ClientUser, User, _UserTag
 from .permissions import Permissions
-from .enums import Status
+from .enums import DisplayNameEffect, DisplayNameFont, Status
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
 from .flags import MemberFlags
 from .presences import ClientStatus
+from .user import DisplayNameStyle
 
 __all__ = (
     'VoiceState',
@@ -64,7 +65,7 @@ if TYPE_CHECKING:
         UserWithMember as UserWithMemberPayload,
     )
     from .types.gateway import GuildMemberUpdateEvent
-    from .types.user import User as UserPayload, AvatarDecorationData
+    from .types.user import User as UserPayload, AvatarDecorationData, DisplayNameStyle as DisplayNameStylePayload
     from .abc import Snowflake
     from .state import ConnectionState
     from .message import Message
@@ -75,7 +76,6 @@ if TYPE_CHECKING:
     )
     from .primary_guild import PrimaryGuild
     from .collectible import Collectible
-    from .user import DisplayNameStyle
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
@@ -290,6 +290,7 @@ class Member(discord.abc.Messageable, _UserTag):
         '_banner',
         '_flags',
         '_avatar_decoration_data',
+        '_display_name_style',
     )
 
     if TYPE_CHECKING:
@@ -313,7 +314,6 @@ class Member(discord.abc.Messageable, _UserTag):
         avatar_decoration_sku_id: Optional[int]
         primary_guild: PrimaryGuild
         collectibles: List[Collectible]
-        display_name_style: DisplayNameStyle
 
     def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
@@ -331,6 +331,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._permissions: Optional[int]
         self._flags: int = data['flags']
         self._avatar_decoration_data: Optional[AvatarDecorationData] = data.get('avatar_decoration_data')
+        self._display_name_style: Optional[DisplayNameStylePayload] = data.get('display_name_style')
         try:
             self._permissions = int(data['permissions'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
@@ -410,6 +411,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._avatar = member._avatar
         self._banner = member._banner
         self._avatar_decoration_data = member._avatar_decoration_data
+        self._display_name_style = member._display_name_style
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
@@ -440,6 +442,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._banner = data.get('banner')
         self._flags = data.get('flags', 0)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
+        self._display_name_style = data.get('display_name_style')
 
     def _presence_update(self, raw: RawPresenceUpdateEvent, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = raw.activities
@@ -458,10 +461,12 @@ class Member(discord.abc.Messageable, _UserTag):
             u._public_flags,
             u._avatar_decoration_data['sku_id'] if u._avatar_decoration_data is not None else None,
             u._primary_guild,
+            u._display_name_style,
         )
 
         decoration_payload = user.get('avatar_decoration_data')
         primary_guild_payload = user.get('primary_guild', None)
+        display_name_style_payload = user.get('display_name_style', None)
         # These keys seem to always be available
         modified = (
             user['username'],
@@ -471,6 +476,7 @@ class Member(discord.abc.Messageable, _UserTag):
             user.get('public_flags', 0),
             decoration_payload['sku_id'] if decoration_payload is not None else None,
             primary_guild_payload,
+            display_name_style_payload,
         )
         if original != modified:
             to_return = User._copy(self._user)
@@ -482,6 +488,7 @@ class Member(discord.abc.Messageable, _UserTag):
                 u._public_flags,
                 u._avatar_decoration_data,
                 u._primary_guild,
+                u._display_name_style,
             ) = (
                 user['username'],
                 user['discriminator'],
@@ -490,6 +497,7 @@ class Member(discord.abc.Messageable, _UserTag):
                 user.get('public_flags', 0),
                 decoration_payload,
                 primary_guild_payload,
+                display_name_style_payload,
             )
             # Signal to dispatch on_user_update
             return to_return, u
@@ -660,6 +668,35 @@ class Member(discord.abc.Messageable, _UserTag):
         if self._banner is None:
             return None
         return Asset._from_guild_banner(self._state, self.guild.id, self.id, self._banner)
+    
+    @property
+    def display_name_style(self) -> Optional[DisplayNameStyle]:
+        """Optional[:class:`DisplayNameStyle`]: Returns the member's guild display name style if they have one, 
+        otherwise their global display name style if they have one, otherwise ``None``.
+
+        .. versionadded:: 2.8
+        """
+        return self.guild_display_name_style or self.global_display_name_style
+    
+    @property
+    def guild_display_name_style(self) -> Optional[DisplayNameStyle]:
+        """Optional[:class:`DisplayNameStyle`]: Returns the member's guild specific display name style.
+        if the member has no guild display name style set then ``None`` is returned.
+
+        .. versionadded:: 2.8
+        """
+        if self._display_name_style is None:
+            return None
+        return DisplayNameStyle(data=self._display_name_style)
+    
+    @property
+    def global_display_name_style(self) -> Optional[DisplayNameStyle]:
+        """Optional[:class:`DisplayNameStyle`]: Returns the user's global display name style.
+        if the user has no global display name style set then ``None`` is returned.
+
+        .. versionadded:: 2.8
+        """
+        return self._user.display_name_style
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
@@ -819,6 +856,9 @@ class Member(discord.abc.Messageable, _UserTag):
         avatar: Optional[bytes] = MISSING,
         banner: Optional[bytes] = MISSING,
         bio: Optional[str] = MISSING,
+        display_name_font: Optional[DisplayNameFont] = MISSING,
+        display_name_effect: Optional[DisplayNameEffect] = MISSING,
+        display_name_colors: Optional[List[Union[Colour, int]]] = MISSING,
         reason: Optional[str] = None,
     ) -> Optional[Member]:
         """|coro|
@@ -904,7 +944,22 @@ class Member(discord.abc.Messageable, _UserTag):
             This can only be set when editing the bot's own member.
 
             .. versionadded:: 2.7
+        display_name_font: Optional[:class:`DisplayNameFont`]
+            The new display name font for the member. Use ``None`` to remove the display name font.
+            This can only be set when editing the bot's own member.
+            
+            .. versionadded:: 2.8
+        display_name_effect: Optional[:class:`DisplayNameEffect`]
+            The new display name effect for the member. Use ``None`` to remove the display name effect.
+            This can only be set when editing the bot's own member.
 
+            .. versionadded:: 2.8
+        display_name_colors: Optional[List[Union[:class:`Colour`, :class:`int`]]]
+            A list of up to 2 colors that will be used for the member's display name
+            gradient. This can only be set when editing the bot's own member.
+            Use ``None`` to remove the display name colors.
+
+            .. versionadded:: 2.8
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
@@ -954,8 +1009,23 @@ class Member(discord.abc.Messageable, _UserTag):
         if bio is not MISSING:
             self_payload['bio'] = bio or ''
 
+        if display_name_font is not MISSING:
+            self_payload['display_name_font_id'] = display_name_font.value if display_name_font else None
+
+        if display_name_effect is not MISSING:
+            self_payload['display_name_effect_id'] = display_name_effect.value if display_name_effect else None
+
+        if display_name_colors is not MISSING:
+            self_payload['display_name_colors'] = [
+                c.value if isinstance(c, Colour) else c for c in display_name_colors or []
+            ]
+
         if not me and self_payload:
-            raise ValueError("Editing the bio, avatar or banner is only for the bot's own member.")
+            only_fields = {'avatar', 'banner', 'bio', 'display_name_font', 'display_name_effect', 'display_name_colors'}
+            current_fields = utils._human_join(list(only_fields.intersection(set(self_payload.keys()))), final="and")
+            raise ValueError(
+                f'Editing {current_fields} can only happen when editing the bot\'s own member.'
+            )
 
         if deafen is not MISSING:
             payload['deaf'] = deafen
