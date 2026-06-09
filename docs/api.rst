@@ -4154,11 +4154,11 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
-.. class:: NameFont
+.. class:: DisplayNameFont
 
     Represents the available fonts for a user display name style.
 
-    .. versionadded:: 2.7
+    .. versionadded:: 2.8
         
     .. attribute:: default
 
@@ -4208,11 +4208,11 @@ of :class:`enum.Enum`.
 
         The 'Zilla Slab' font is used.
 
-.. class:: NameEffect
+.. class:: DisplayNameEffect
 
     Represents the available effects for a user display name style.
 
-    .. versionadded:: 2.7
+    .. versionadded:: 2.8
 
     .. attribute:: solid
 
