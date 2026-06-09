@@ -87,8 +87,8 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
-    'NameFont',
-    'NameEffect',
+    'DisplayNameFont',
+    'DisplayNameEffect',
 )
 
 
@@ -1008,7 +1008,7 @@ class NameplatePalette(Enum):
     white = 'white'
 
 
-class NameFont(Enum):
+class DisplayNameFont(Enum):
     default = 11
     bangers = 1
     bio_rhyme = 2
@@ -1023,7 +1023,7 @@ class NameFont(Enum):
     zilla_slab = 12
 
 
-class NameEffect(Enum):
+class DisplayNameEffect(Enum):
     solid = 1
     gradient = 2
     neon = 3

@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 import discord.abc
 from .asset import Asset
 from .colour import Colour
-from .enums import DefaultAvatar, NameEffect, NameFont, try_enum
+from .enums import DefaultAvatar, DisplayNameEffect, DisplayNameFont, try_enum
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data, MISSING, _get_as_snowflake
 from .primary_guild import PrimaryGuild
@@ -67,17 +67,17 @@ class DisplayNameStyle:
 
     Attributes
     -----------
-    font: :class:`NameFont`
+    font: :class:`DisplayNameFont`
         The font.
-    effect: :class:`NameEffect`
+    effect: :class:`DisplayNameEffect`
         The applied effect.
     colors: List[:class:`Colour`]
         The colors used in the effect. Max of 2.
     """
 
     def __init__(self, *, data: DisplayNameStylePayload) -> None:
-        self.font: NameFont = try_enum(NameFont, data['font_id'])
-        self.effect: NameEffect = try_enum(NameEffect, data['effect_id'])
+        self.font: DisplayNameFont = try_enum(DisplayNameFont, data['font_id'])
+        self.effect: DisplayNameEffect = try_enum(DisplayNameEffect, data['effect_id'])
         self.colors: List[discord.Colour] = [discord.Colour(color) for color in data.get('colors', [])]
 
     def __repr__(self) -> str:
