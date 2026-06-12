@@ -345,6 +345,32 @@ Is there an event for audit log entries being created?
 
 This event is now available in the library and Discord as of version 2.2. It can be found under :func:`on_audit_log_entry_create`.
 
+.. _obfuscation_faq:
+
+What is obfuscation?
+~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes Discord will tell your bot that a channel exists without actually letting it see what's inside.
+Instead of just hiding the channel, Discord sends it over with most of its info stripped out (like its name
+and topic) and marks it as *obfuscated*. This happens when your bot doesn't have the ``view_channel``
+permission for that channel.
+
+The catch is that these channels still show up in :attr:`Guild.channels` and :attr:`CategoryChannel.channels`,
+so you might run into them without expecting it. If you only want channels your bot can actually see, check the
+:attr:`ChannelFlags.is_obfuscated` flag and filter out the ones that are obfuscated: ::
+
+    channels = [channel for channel in guild.channels if not channel.flags.is_obfuscated]
+
+If you call :meth:`abc.GuildChannel.permissions_for` on an obfuscated channel for your own bot, you'll get
+:meth:`Permissions.none` back, since it can't do anything in a channel it can't view.
+
+One thing to keep in mind: obfuscated channels only ever come from the gateway. That means your cache and
+events like :func:`on_guild_channel_create` or :func:`on_guild_channel_update`. The API won't ever hand you
+one: :meth:`Guild.fetch_channels` simply leaves out anything your bot can't view, and trying to grab a single
+one with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises :exc:`Forbidden` since the bot 
+doesn't have access.
+
+
 
 Commands Extension
 -------------------

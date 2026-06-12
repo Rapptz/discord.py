@@ -684,7 +684,13 @@ class Guild(Hashable):
 
     @property
     def channels(self) -> Sequence[GuildChannel]:
-        """Sequence[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
+        """Sequence[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild.
+
+        .. versionadded:: 2.8
+            This may contain channels that are obfuscated due to permissions. You can use the
+            :attr:`ChannelFlags.is_obfuscated` flag to check if a channel is obfuscated or not.
+            See :ref:`obfuscation_faq` for more information.
+        """
         return utils.SequenceProxy(self._channels.values())
 
     @property
@@ -2393,13 +2399,16 @@ class Guild(Hashable):
     async def fetch_channels(self) -> Sequence[GuildChannel]:
         """|coro|
 
-        Retrieves all :class:`abc.GuildChannel` that the guild has.
+        Retrieves all :class:`abc.GuildChannel` that the bot can view in the guild.
 
         .. note::
 
             This method is an API call. For general usage, consider :attr:`channels` instead.
 
         .. versionadded:: 1.2
+
+        .. versionchanged:: 2.8
+            Due to API changes, this will not longer return channels that the bot cannot view. 
 
         Raises
         -------
@@ -2611,7 +2620,9 @@ class Guild(Hashable):
         NotFound
             Invalid Channel ID.
         Forbidden
-            You do not have permission to fetch this channel.
+            You do not have permission to fetch this channel. This is also raised for
+            obfuscated channels, i.e. ones the bot cannot view. See :ref:`obfuscation_faq`
+            for more information.
 
         Returns
         --------

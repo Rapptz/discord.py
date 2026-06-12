@@ -48,6 +48,7 @@ ChannelType = Union[ChannelTypeWithoutThread, ThreadType]
 class _BaseChannel(TypedDict):
     id: Snowflake
     name: str
+    flags: NotRequired[int]
 
 
 class _BaseGuildChannel(_BaseChannel):

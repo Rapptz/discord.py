@@ -2703,7 +2703,9 @@ class Client:
         NotFound
             Invalid Channel ID.
         Forbidden
-            You do not have permission to fetch this channel.
+            You do not have permission to fetch this channel. This is also raised for
+            obfuscated channels, i.e. ones the bot cannot view. See :ref:`obfuscation_faq`
+            for more information.
 
         Returns
         --------

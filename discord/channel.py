@@ -350,6 +350,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         'last_message_id',
         'default_auto_archive_duration',
         'default_thread_slowmode_delay',
+        '_flags',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
@@ -383,6 +384,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
         self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     async def _get_channel(self) -> Self:
@@ -1087,6 +1089,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         'rtc_region',
         'video_quality_mode',
         'last_message_id',
+        '_flags',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]):
@@ -1115,6 +1118,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self.bitrate: int = data['bitrate']
         self.user_limit: int = data['user_limit']
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -2049,7 +2053,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
 
-    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id')
+    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id', '_flags')
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: CategoryChannelPayload):
         self._state: ConnectionState = state
@@ -2065,6 +2069,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
         self.nsfw: bool = data.get('nsfw', False)
         self.position: int = data['position']
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -2175,6 +2180,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """List[:class:`abc.GuildChannel`]: Returns the channels that are under this category.
 
         These are sorted by the official Discord UI, which places voice channels below the text channels.
+
+        .. versionadded:: 2.8
+            This may contain channels that are obfuscated due to permissions. You can use the
+            :attr:`ChannelFlags.is_obfuscated` flag to check if a channel is obfuscated or not.
+            See :ref:`obfuscation_faq` for more information.
         """
 
         def comparator(channel):
