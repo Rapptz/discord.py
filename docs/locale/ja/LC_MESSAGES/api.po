@@ -20187,8 +20187,8 @@ msgstr "詳細については、 :ref:`メンバーインテントの説明 <nee
 #: ../../docstring of discord.Intents.members:32
 #: ../../docstring of discord.Intents.presences:17
 #: ../../docstring of discord.Intents.message_content:19
-msgid "Currently, this requires opting in explicitly via the developer portal as well. Bots in over 100 guilds will need to apply to Discord for verification."
-msgstr "現在、開発者ポータルからも明示的にオプトインする必要があります。100を超えるギルドに属するボットは、認証のためにDiscordに申請する必要があります。"
+msgid "Currently, this requires opting in explicitly via the developer portal as well. Bots with over 10,000 users will need to apply to Discord for verification."
+msgstr "現在、開発者ポータルを通じて明示的に参加を申請する必要があります。ユーザー数が10,000人を超えるボットは、Discordに認証を申請する必要があります。"
 
 #: ../../docstring of discord.Intents.moderation:1
 msgid "Whether guild moderation related events are enabled."

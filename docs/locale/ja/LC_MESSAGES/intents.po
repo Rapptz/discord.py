@@ -90,8 +90,8 @@ msgid "The privileged gateway intents selector."
 msgstr "特権ゲートウェイのセレクタ"
 
 #: ../../intents.rst:77
-msgid "Enabling privileged intents when your bot is in over 100 guilds requires going through `bot verification <https://support.discord.com/hc/en-us/articles/360040720412>`_. If your bot is already verified and you would like to enable a privileged intent you must go through `Discord support <https://dis.gd/contact>`_ and talk to them about it."
-msgstr "もしあなたのBotが100以上のギルドで利用されているなら、特権インテントを有効化するために `bot verification <https://support.discord.com/hc/en-us/articles/360040720412>`_ が必要です。すでに認証済みのBotで特権インテントを有効化したい場合、 `Discord support <https://dis.gd/contact>`_ で報告してください。"
+msgid "Enabling privileged intents when your bot reaches over 10,000 users requires going through `bot verification <https://support.discord.com/hc/en-us/articles/360040720412>`_. If your bot is already verified and you would like to enable a privileged intent you must go through `Discord support <https://dis.gd/contact>`_ and talk to them about it."
+msgstr "ボットのユーザー数が 10,000 人を超える場合は、特権インテントを有効にするために `ボットの認証 <https://support.discord.com/hc/en-us/articles/360040720412>`_ を完了する必要があります。すでに認証済みのボットで特権インテントを有効にしたい場合は、`Discordサポート <https://dis.gd/contact>`_ までご連絡ください。"
 
 #: ../../intents.rst:81
 msgid "Even if you enable intents through the developer portal, you still have to enable the intents through code as well."

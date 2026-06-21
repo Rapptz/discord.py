@@ -905,7 +905,7 @@ class Intents(BaseFlags):
         .. note::
 
             Currently, this requires opting in explicitly via the developer portal as well.
-            Bots in over 100 guilds will need to apply to Discord for verification.
+            Bots with over 10,000 users will need to apply to Discord for verification.
         """
         return 1 << 1
 
@@ -1062,7 +1062,7 @@ class Intents(BaseFlags):
         .. note::
 
             Currently, this requires opting in explicitly via the developer portal as well.
-            Bots in over 100 guilds will need to apply to Discord for verification.
+            Bots with over 10,000 users will need to apply to Discord for verification.
         """
         return 1 << 8
 
@@ -1273,7 +1273,7 @@ class Intents(BaseFlags):
         .. note::
 
             Currently, this requires opting in explicitly via the developer portal as well.
-            Bots in over 100 guilds will need to apply to Discord for verification.
+            Bots with over 10,000 users will need to apply to Discord for verification.
 
         .. versionadded:: 2.0
         """
