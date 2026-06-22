@@ -1690,6 +1690,15 @@ class Group:
 
         # I don't know if propagating to the children is the right behaviour here.
 
+    @property
+    def guild_ids(self) -> Optional[List[int]]:
+        """Optional[List[:class:`int`]]: The guild IDs that this group is restricted to.
+        ``None`` if it is global.
+
+        Due to a Discord limitation, this does not work on subcommands.
+        """
+        return self._guild_ids
+
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
         self.module = owner.__module__
