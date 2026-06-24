@@ -380,7 +380,10 @@ class CommandTree(Generic[ClientT]):
         elif not isinstance(command, (Command, Group)):
             raise TypeError(f'Expected an application command, received {command.__class__.__name__} instead')
 
-        # todo: validate application command groups having children (required)
+        if isinstance(command, Group):
+            for child in [command, *command.walk_commands()]:
+                if isinstance(child, Group) and not child.commands:
+                    raise ValueError(f'Application command group {child.qualified_name!r} has no commands')
 
         root = command.root_parent or command
         name = root.name
