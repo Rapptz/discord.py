@@ -49,7 +49,7 @@ from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any
 
 from .enums import Enum
 from .utils import MISSING, sane_wait_for
-from .errors import ConnectionClosed
+from .errors import ClientException, ConnectionClosed
 from .backoff import ExponentialBackoff
 from .gateway import DiscordVoiceWebSocket
 
@@ -332,6 +332,15 @@ class VoiceConnectionState:
             # being in the reconnect or disconnect flow, we ignore it.  Otherwise, it probably wasn't from us.
             if self._expecting_disconnect:
                 self._expecting_disconnect = False
+            elif self.state in (
+                ConnectionFlowState.set_guild_voice_state,
+                ConnectionFlowState.got_voice_server_update,
+            ):
+                # We were rejected from the channel before completing the handshake.
+                # This typically happens when the voice channel is full.
+                # Setting the state to disconnected will cause _wait_for_state to abort.
+                _log.info('Disconnected from voice during connection handshake (channel may be full).')
+                self.state = ConnectionFlowState.disconnected
             else:
                 _log.debug('We were externally disconnected from voice.')
                 await self.disconnect()
@@ -626,6 +635,8 @@ class VoiceConnectionState:
         while True:
             if self.state in states:
                 return
+            if self.state is ConnectionFlowState.disconnected:
+                raise ClientException('Failed to connect to voice channel; the channel may be full.')
             await sane_wait_for([self._state_event.wait()], timeout=timeout)
 
     async def _voice_connect(self, *, self_deaf: bool = False, self_mute: bool = False) -> None:

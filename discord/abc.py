@@ -2124,7 +2124,8 @@ class Connectable(Protocol):
         asyncio.TimeoutError
             Could not connect to the voice channel in time.
         ~discord.ClientException
-            You are already connected to a voice channel.
+            You are already connected to a voice channel, or the voice
+            channel is full and the connection was rejected.
         ~discord.opus.OpusNotLoaded
             The opus library has not been loaded.
 
@@ -2146,11 +2147,23 @@ class Connectable(Protocol):
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class.')
 
+        if hasattr(self, 'guild') and hasattr(self, 'permissions_for'):
+            me = self.guild.me  # type: ignore
+            permissions = self.permissions_for(me)  # type: ignore
+
+            if not permissions.connect:
+                raise ClientException('You do not have permission to connect to this voice channel.')
+
+            limit = getattr(self, 'user_limit', 0)
+            if limit > 0 and len(getattr(self, 'members', [])) >= limit:
+                if not permissions.administrator and not permissions.move_members:
+                    raise ClientException('The voice channel is full and you do not have permission to bypass the limit.')
+
         state._add_voice_client(key_id, voice)
 
         try:
             await voice.connect(timeout=timeout, reconnect=reconnect, self_deaf=self_deaf, self_mute=self_mute)
-        except asyncio.TimeoutError:
+        except (asyncio.TimeoutError, ClientException):
             try:
                 await voice.disconnect(force=True)
             except Exception:
