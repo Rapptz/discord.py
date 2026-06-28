@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Tuple, Type, TypeVar, Union, Optional
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generic, List, Tuple, Type, TypeVar, Union, Optional, overload
 
 import discord
 import inspect
@@ -98,6 +98,42 @@ if TYPE_CHECKING:
         Callable[Concatenate[CogT, ContextT, P], Coro[T]],
         Callable[Concatenate[ContextT, P], Coro[T]],
     ]
+
+    class _HybridCommandDecorator:
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> HybridCommand[CogT, P, T]: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> HybridCommand[None, P, T]: ...  # type: ignore
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _HybridGroupDecorator:
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> HybridGroup[CogT, P, T]: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> HybridGroup[None, P, T]: ...  # type: ignore
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _CogHybridCommandDecorator(Generic[CogT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> HybridCommand[CogT, P, T]: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> HybridCommand[CogT, P, T]: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _CogHybridGroupDecorator(Generic[CogT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> HybridGroup[CogT, P, T]: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> HybridGroup[CogT, P, T]: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
 else:
     P = TypeVar('P')
     P2 = TypeVar('P2')
@@ -847,7 +883,7 @@ class HybridGroup(Group[CogT, P, T]):
         *args: Any,
         with_app_command: bool = True,
         **kwargs: Unpack[_HybridCommandDecoratorKwargs],  # type: ignore # name, with_app_command
-    ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridCommand[CogT, P2, U]]:
+    ) -> _CogHybridCommandDecorator[CogT]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
         the internal command list via :meth:`add_command`.
 
@@ -863,7 +899,7 @@ class HybridGroup(Group[CogT, P, T]):
             self.add_command(result)
             return result
 
-        return decorator
+        return decorator  # type: ignore # _CogHybridCommandDecorator only exists under TYPE_CHECKING
 
     def group(
         self,
@@ -871,7 +907,7 @@ class HybridGroup(Group[CogT, P, T]):
         *args: Any,
         with_app_command: bool = True,
         **kwargs: Unpack[_HybridGroupDecoratorKwargs],  # type: ignore # name, with_app_command
-    ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridGroup[CogT, P2, U]]:
+    ) -> _CogHybridGroupDecorator[CogT]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
@@ -887,7 +923,7 @@ class HybridGroup(Group[CogT, P, T]):
             self.add_command(result)
             return result
 
-        return decorator
+        return decorator  # type: ignore # _CogHybridGroupDecorator only exists under TYPE_CHECKING
 
 
 def hybrid_command(
@@ -895,7 +931,7 @@ def hybrid_command(
     *,
     with_app_command: bool = True,
     **attrs: Unpack[_HybridCommandDecoratorKwargs],  # type: ignore # name, with_app_command
-) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridCommand[CogT, P, T]]:
+) -> _HybridCommandDecorator:
     r"""A decorator that transforms a function into a :class:`.HybridCommand`.
 
     A hybrid command is one that functions both as a regular :class:`.Command`
@@ -939,7 +975,7 @@ def hybrid_command(
         # Pyright does not allow Command[Any] to be assigned to Command[CogT] despite it being okay here
         return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore # name, with_app_command
 
-    return decorator
+    return decorator  # type: ignore # _HybridCommandDecorator only exists under TYPE_CHECKING
 
 
 def hybrid_group(
@@ -947,7 +983,7 @@ def hybrid_group(
     *,
     with_app_command: bool = True,
     **attrs: Unpack[_HybridGroupDecoratorKwargs],  # type: ignore # name, with_app_command
-) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridGroup[CogT, P, T]]:
+) -> _HybridGroupDecorator:
     """A decorator that transforms a function into a :class:`.HybridGroup`.
 
     This is similar to the :func:`~discord.ext.commands.group` decorator except it creates
@@ -972,4 +1008,4 @@ def hybrid_group(
             raise TypeError('Callback is already a command.')
         return HybridGroup(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore # name, with_app_command
 
-    return decorator
+    return decorator  # type: ignore # _HybridGroupDecorator only exists under TYPE_CHECKING
