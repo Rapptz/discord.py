@@ -308,7 +308,7 @@ def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, Un
             rename_map[name] = name
             continue
 
-        if name in rename_map:
+        if new_name in rename_map.values():
             raise ValueError(f'{new_name} is already used')
 
         if isinstance(new_name, str):
