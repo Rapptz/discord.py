@@ -377,6 +377,9 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
 
 def _populate_file_types(params: Dict[str, CommandParameter], file_types: Dict[str, Sequence[Union[str, FileType]]]) -> None:
     for name, param in params.items():
+        if param.type is not AppCommandOptionType.attachment:
+            raise TypeError('file_types is only supported for attachment option types')
+
         types = file_types.pop(name, MISSING)
         if types is MISSING:
             continue
