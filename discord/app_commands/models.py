@@ -1018,6 +1018,8 @@ class Argument:
         The maximum allowed length for this parameter.
     autocomplete: :class:`bool`
         Whether the argument has autocomplete.
+    file_types: Optional[Sequence[Union[:class:`str`, :class:`FileType`]]]
+        A list of file types that are allowed to be uploaded for this argument.
     """
 
     __slots__ = (
@@ -1036,6 +1038,7 @@ class Argument:
         'autocomplete',
         'parent',
         '_state',
+        'file_types',
     )
 
     def __init__(
@@ -1062,6 +1065,7 @@ class Argument:
         self.choices: List[Choice[Union[int, float, str]]] = [Choice.from_dict(d) for d in data.get('choices', [])]
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
         self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
+        self.file_types: Optional[List[str]] = data.get('file_types')
 
     def to_dict(self) -> ApplicationCommandOption:
         return {
@@ -1079,6 +1083,7 @@ class Argument:
             'options': [],
             'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
             'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
+            'file_types': self.file_types,
         }  # type: ignore # Type checker does not understand this literal.
 
 

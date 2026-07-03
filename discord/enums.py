@@ -87,6 +87,7 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
+    'FileType',
 )
 
 
@@ -1004,6 +1005,29 @@ class NameplatePalette(Enum):
     clover = 'clover'
     lemon = 'lemon'
     white = 'white'
+
+
+class FileType(Enum):
+    audio = 'audio'
+    video = 'video'
+    image = 'image'
+
+    @property
+    def file_extensions(self) -> tuple[str, ...]:
+        """:class:`tuple[str]`: Returns a tuple of file extensions that belong to this file type.
+
+        .. warning::
+
+            These are subject to change at anytime and should not be relied upon for validation.
+        """
+        # fmt: off
+        lookup: Dict[FileType, tuple[str, ...]] = {
+            FileType.image: ('png', 'gif', 'jpg', 'jpeg', 'jfif', 'webp', 'avif'),
+            FileType.video: ('mp4', 'mov', 'qt', 'webm'),
+            FileType.audio: ('mp3', 'm4a', 'wav', 'ogg', 'opus', 'flac'),
+        }
+        # fmt: on
+        return lookup.get(self, ())
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

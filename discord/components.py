@@ -1467,6 +1467,9 @@ class FileUploadComponent(Component):
     required: :class:`bool`
         Whether the component is required.
         Defaults to ``True``.
+    file_types: List[:class:`str`]
+        A list of file types that are allowed to be uploaded for this component.
+        Defaults to allowing all file types.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -1475,6 +1478,7 @@ class FileUploadComponent(Component):
         'max_values',
         'required',
         'id',
+        'file_types',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -1485,6 +1489,7 @@ class FileUploadComponent(Component):
         self.max_values: int = data.get('max_values', 1)
         self.required: bool = data.get('required', True)
         self.id: Optional[int] = data.get('id')
+        self.file_types: List[str] = data.get('file_types', [])
 
     @property
     def type(self) -> Literal[ComponentType.file_upload]:
@@ -1501,6 +1506,8 @@ class FileUploadComponent(Component):
         }
         if self.id is not None:
             payload['id'] = self.id
+        if self.file_types:
+            payload['file_types'] = self.file_types
 
         return payload
 

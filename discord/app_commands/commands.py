@@ -36,6 +36,7 @@ from typing import (
     List,
     MutableMapping,
     Optional,
+    Sequence,
     Set,
     TYPE_CHECKING,
     Tuple,
@@ -48,7 +49,7 @@ from typing import (
 import re
 from copy import copy as shallow_copy
 
-from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
+from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale, FileType
 from .installs import AppCommandContext, AppInstallationType
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
@@ -107,6 +108,7 @@ __all__ = (
     'user_install',
     'allowed_installs',
     'default_permissions',
+    'set_file_types',
 )
 
 if TYPE_CHECKING:
@@ -373,6 +375,22 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         raise TypeError(f'unknown parameter given: {first}')
 
 
+def _populate_file_types(params: Dict[str, CommandParameter], file_types: Dict[str, Sequence[Union[str, FileType]]]) -> None:
+    for name, param in params.items():
+        types = file_types.pop(name, MISSING)
+        if types is MISSING:
+            continue
+
+        if not isinstance(types, (list, tuple)) or not all(isinstance(ft, (str, FileType)) for ft in types):
+            raise TypeError('file_types must be a list of strings or FileType enums')
+
+        param.file_types = [ft.value if isinstance(ft, FileType) else ft for ft in types]
+
+    if file_types:
+        first = next(iter(file_types))
+        raise TypeError(f'unknown parameter given: {first}')
+
+
 def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[str, Any]) -> Dict[str, CommandParameter]:
     params = inspect.signature(func).parameters
     cache = {}
@@ -427,6 +445,13 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
         pass
     else:
         _populate_autocomplete(result, autocomplete.copy())
+
+    try:
+        file_types = func.__discord_app_commands_param_file_types__
+    except AttributeError:
+        pass
+    else:
+        _populate_file_types(result, file_types.copy())
 
     return result
 
@@ -497,6 +522,8 @@ class Parameter:
         The minimum supported value for this parameter.
     max_value: Optional[Union[:class:`int`, :class:`float`]]
         The maximum supported value for this parameter.
+    file_types: Optional[Sequence[Union[:class:`str`, :class:`FileType`]]]
+        A list of file types that are allowed to be uploaded for this parameter.
     default: Any
         The default value of the parameter, if given.
         If not given then this is :data:`~discord.utils.MISSING`.
@@ -573,6 +600,10 @@ class Parameter:
     @property
     def max_value(self) -> Optional[Union[int, float]]:
         return self.__parent.max_value
+
+    @property
+    def file_types(self) -> Optional[Sequence[Union[str, FileType]]]:
+        return self.__parent.file_types
 
 
 class Command(Generic[GroupT, P, T]):
@@ -2903,5 +2934,56 @@ def default_permissions(perms_obj: Optional[Permissions] = None, /, **perms: Unp
             func.__discord_app_commands_default_permissions__ = permissions  # type: ignore # Runtime attribute assignment
 
         return func
+
+    return decorator
+
+
+def set_file_types(**parameters: Sequence[Union[str, FileType]]) -> Callable[[T], T]:
+    r"""Sets the file types for the given parameters by their name using the key of the keyword argument
+    as the name.
+
+    .. warning::
+
+        The actual file is not guaranteed to be of the specified type. The client only
+        checks the file extension, so users can easily bypass this check by renaming the file.
+
+    Example:
+
+    .. code-block:: python3
+
+        @app_commands.command(description='Uploads a file')
+        @app_commands.set_file_types(file=['.png', discord.FileType.video])
+        async def upload(interaction: discord.Interaction, file: discord.Attachment):
+            await interaction.response.send_message(f'Uploaded {file.filename}')
+
+    Parameters
+    -----------
+    \*\*parameters: Sequence[Union[:class:`str`, :class:`FileType`]]
+        The file types of the parameters.
+
+        You can mix and match strings and :class:`FileType` enums in the list.
+
+        If a string is provided, make sure to prefix it with a period (``.``) (e.g. ``.png``).
+        You may provide any string you want.
+
+        Must be between 0 and 10. Defaults to allowing all file types.
+
+    Raises
+    --------
+    TypeError
+        The parameter name is not found or the parameter type was incorrect.
+    """
+
+    def decorator(inner: T) -> T:
+        unwrapped = getattr(inner, '__discord_app_commands_unwrap__', inner) or inner
+        if isinstance(unwrapped, Command):
+            _populate_file_types(unwrapped._params, parameters)
+        else:
+            try:
+                inner.__discord_app_commands_param_file_types__.update(parameters)  # type: ignore # Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_file_types__ = parameters  # type: ignore # Runtime attribute assignment
+
+        return inner
 
     return decorator

@@ -4154,6 +4154,23 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
+
+.. class:: FileType
+
+    .. versionadded:: 2.8
+
+    .. attribute:: image
+
+        Only image files are allowed.
+
+    .. attribute:: video
+
+        Only video files are allowed.
+
+    .. attribute:: audio
+
+        Only audio files are allowed.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
