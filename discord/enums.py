@@ -1013,7 +1013,7 @@ class FileType(Enum):
     image = 'image'
 
     @property
-    def file_extensions(self) -> tuple[str, ...]:
+    def file_extensions(self) -> Tuple[str, ...]:
         """:class:`tuple[str]`: Returns a tuple of file extensions that belong to this file type.
 
         .. warning::
@@ -1021,7 +1021,7 @@ class FileType(Enum):
             These are subject to change at anytime and should not be relied upon for validation.
         """
         # fmt: off
-        lookup: Dict[FileType, tuple[str, ...]] = {
+        lookup: Dict[FileType, Tuple[str, ...]] = {
             FileType.image: ('png', 'gif', 'jpg', 'jpeg', 'jfif', 'webp', 'avif'),
             FileType.video: ('mp4', 'mov', 'qt', 'webm'),
             FileType.audio: ('mp3', 'm4a', 'wav', 'ogg', 'opus', 'flac'),
