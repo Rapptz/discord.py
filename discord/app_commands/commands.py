@@ -522,8 +522,10 @@ class Parameter:
         The minimum supported value for this parameter.
     max_value: Optional[Union[:class:`int`, :class:`float`]]
         The maximum supported value for this parameter.
-    file_types: Optional[Sequence[Union[:class:`str`, :class:`FileType`]]]
+    file_types: Optional[Sequence[Union[:class:`str`, :class:`.FileType`]]]
         A list of file types that are allowed to be uploaded for this parameter.
+
+        .. versionadded:: 2.8
     default: Any
         The default value of the parameter, if given.
         If not given then this is :data:`~discord.utils.MISSING`.
@@ -2960,10 +2962,10 @@ def set_file_types(**parameters: Sequence[Union[str, FileType]]) -> Callable[[T]
 
     Parameters
     -----------
-    \*\*parameters: Sequence[Union[:class:`str`, :class:`FileType`]]
+    \*\*parameters: Sequence[Union[:class:`str`, :class:`.FileType`]]
         The file types of the parameters.
 
-        You can mix and match strings and :class:`FileType` enums in the list.
+        You can mix and match strings and :class:`.FileType` enums in the list.
 
         If a string is provided, make sure to prefix it with a period (``.``) (e.g. ``.png``).
         You may provide any string you want.

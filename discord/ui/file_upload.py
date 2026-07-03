@@ -72,10 +72,10 @@ class FileUpload(Item[V]):
     required: :class:`bool`
         Whether this component is required to be filled before submitting the modal.
         Defaults to ``True``.
-    file_types: List[Union[:class:`str`, :class:`FileType`]]
+    file_types: List[Union[:class:`str`, :class:`.FileType`]]
         A list of file types that are allowed to be uploaded for this component.
 
-        You can mix and match strings and :class:`FileType` enums in the list.
+        You can mix and match strings and :class:`.FileType` enums in the list.
 
         If a string is provided, make sure to prefix it with a period (``.``) (e.g. ``.png``).
         You may provide any string you want.
@@ -187,7 +187,7 @@ class FileUpload(Item[V]):
     def file_types(self) -> List[str]:
         """List[:class:`str`]: A list of file types that are allowed to be uploaded for this component.
 
-        When setting this property, see the documentation for this parameter in the :class:`FileUpload`
+        When setting this property, see the documentation for this parameter in the :class:`.FileUpload`
         constructor for more information.
 
         .. versionadded:: 2.8

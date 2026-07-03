@@ -1018,7 +1018,7 @@ class Argument:
         The maximum allowed length for this parameter.
     autocomplete: :class:`bool`
         Whether the argument has autocomplete.
-    file_types: Sequence[Union[:class:`str`, :class:`FileType`]]
+    file_types: Sequence[Union[:class:`str`, :class:`.FileType`]]
         A list of file types that are allowed to be uploaded for this argument.
 
         .. versionadded:: 2.8
