@@ -1470,6 +1470,8 @@ class FileUploadComponent(Component):
     file_types: List[:class:`str`]
         A list of file types that are allowed to be uploaded for this component.
         Defaults to allowing all file types.
+
+        .. versionadded:: 2.8
     """
 
     __slots__: Tuple[str, ...] = (

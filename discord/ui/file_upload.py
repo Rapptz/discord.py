@@ -86,6 +86,8 @@ class FileUpload(Item[V]):
 
             The actual file is not guaranteed to be of the specified type. The client only
             checks the file extension, so users can easily bypass this check by renaming the file.
+
+        .. versionadded:: 2.8
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -187,6 +189,8 @@ class FileUpload(Item[V]):
 
         When setting this property, see the documentation for this parameter in the :class:`FileUpload`
         constructor for more information.
+
+        .. versionadded:: 2.8
         """
         return self._underlying.file_types
 

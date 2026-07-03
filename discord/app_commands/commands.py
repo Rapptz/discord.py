@@ -2942,6 +2942,8 @@ def set_file_types(**parameters: Sequence[Union[str, FileType]]) -> Callable[[T]
     r"""Sets the file types for the given parameters by their name using the key of the keyword argument
     as the name.
 
+    .. versionadded:: 2.8
+
     .. warning::
 
         The actual file is not guaranteed to be of the specified type. The client only

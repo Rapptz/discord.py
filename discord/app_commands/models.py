@@ -1018,8 +1018,10 @@ class Argument:
         The maximum allowed length for this parameter.
     autocomplete: :class:`bool`
         Whether the argument has autocomplete.
-    file_types: Optional[Sequence[Union[:class:`str`, :class:`FileType`]]]
+    file_types: Sequence[Union[:class:`str`, :class:`FileType`]]
         A list of file types that are allowed to be uploaded for this argument.
+
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -1065,7 +1067,7 @@ class Argument:
         self.choices: List[Choice[Union[int, float, str]]] = [Choice.from_dict(d) for d in data.get('choices', [])]
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
         self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
-        self.file_types: Optional[List[str]] = data.get('file_types')
+        self.file_types: List[str] = data.get('file_types', [])
 
     def to_dict(self) -> ApplicationCommandOption:
         return {
