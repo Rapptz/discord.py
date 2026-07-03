@@ -4161,15 +4161,15 @@ of :class:`enum.Enum`.
 
     .. attribute:: image
 
-        Only image files are allowed.
+        Preset to represent image files.
 
     .. attribute:: video
 
-        Only video files are allowed.
+        Preset to represent video files.
 
     .. attribute:: audio
 
-        Only audio files are allowed.
+        Preset to represent audio files.
 
 .. _discord-api-audit-logs:
 
