@@ -78,7 +78,9 @@ class FileUpload(Item[V]):
         You can mix and match strings and :class:`.FileType` enums in the list.
 
         If a string is provided, make sure to prefix it with a period (``.``) (e.g. ``.png``).
-        You may provide any string you want.
+        This is required.
+        You may provide any string you want, but (if you are specifying only extensions) you must
+        include ``.jpg`` for image uploads, and both ``.mp4`` and ``.mov`` for video uploads.
 
         Must be between 0 and 10. Defaults to allowing all file types.
 

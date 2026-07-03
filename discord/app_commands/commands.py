@@ -2966,12 +2966,15 @@ def set_file_types(**parameters: Sequence[Union[str, FileType]]) -> Callable[[T]
     Parameters
     -----------
     \*\*parameters: Sequence[Union[:class:`str`, :class:`.FileType`]]
-        The file types of the parameters.
+        A list of up to 10 file types that are allowed to be uploaded for each attachment parameter.
+        The type of the parameter must be :class:`discord.Attachment`.
 
         You can mix and match strings and :class:`.FileType` enums in the list.
 
         If a string is provided, make sure to prefix it with a period (``.``) (e.g. ``.png``).
-        You may provide any string you want.
+        This is required.
+        You may provide any string you want, but (if you are specifying only extensions) you must
+        include ``.jpg`` for image uploads, and both ``.mp4`` and ``.mov`` for video uploads.
 
         Must be between 0 and 10. Defaults to allowing all file types.
 
