@@ -1395,7 +1395,7 @@ class GuildChannel:
         data = await state.http.invites_from_channel(self.id)
         guild = self.guild
         return [Invite(state=state, data=invite, channel=self, guild=guild) for invite in data]
-    
+
     @property
     def flags(self) -> ChannelFlags:
         """:class:`~discord.ChannelFlags`: The channel's flags."""

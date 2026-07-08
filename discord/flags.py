@@ -1777,7 +1777,7 @@ class ChannelFlags(BaseFlags):
         .. versionadded:: 2.4
         """
         return 1 << 15
-    
+
     @flag_value
     def is_obfuscated(self):
         """:class:`bool`: Returns ``True`` if the channel is obfuscated, meaning the bot does not

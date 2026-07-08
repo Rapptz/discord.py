@@ -2409,7 +2409,7 @@ class Guild(Hashable):
         .. versionadded:: 1.2
 
         .. versionchanged:: 2.8
-            Due to API changes, this will not longer return channels that the bot cannot view. 
+            Due to API changes, this will not longer return channels that the bot cannot view.
 
         Raises
         -------
