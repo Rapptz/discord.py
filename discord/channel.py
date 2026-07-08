@@ -2568,7 +2568,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this thread.
+        """:class:`ChannelFlags`: The flags associated with this forum.
 
         .. versionadded:: 2.1
         """
