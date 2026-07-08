@@ -766,7 +766,7 @@ class GuildChannel:
             permissions Discord returns in :attr:`~discord.Interaction.app_permissions`,
             though it is recommended to use that attribute instead.
 
-        .. versionadded:: 2.8
+        .. versionchanged:: 2.8
             Obfuscated channels are now taken into account. If a channel is obfuscated, then all permissions are
             denied. See :ref:`obfuscation_faq` for more information.
 

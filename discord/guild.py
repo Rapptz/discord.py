@@ -686,7 +686,8 @@ class Guild(Hashable):
     def channels(self) -> Sequence[GuildChannel]:
         """Sequence[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild.
 
-        .. versionadded:: 2.8
+        .. note::
+
             This may contain channels that are obfuscated due to permissions. You can use the
             :attr:`ChannelFlags.is_obfuscated` flag to check if a channel is obfuscated or not.
             See :ref:`obfuscation_faq` for more information.

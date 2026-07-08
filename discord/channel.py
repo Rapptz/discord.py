@@ -2181,7 +2181,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         These are sorted by the official Discord UI, which places voice channels below the text channels.
 
-        .. versionadded:: 2.8
+        .. note::
+
             This may contain channels that are obfuscated due to permissions. You can use the
             :attr:`ChannelFlags.is_obfuscated` flag to check if a channel is obfuscated or not.
             See :ref:`obfuscation_faq` for more information.
