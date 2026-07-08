@@ -787,7 +787,7 @@ class GuildChannel:
         """
 
         # The current cases can be explained as:
-        # All permissions are denied for bots if .flags.is_obfuscated() is True, else:
+        # All permissions are denied for bots if .flags.is_obfuscated is True, else:
         # Guild owner get all permissions -- no questions asked. Otherwise...
         # The @everyone role gets the first application.
         # After that, the applied roles that the user has in the channel
