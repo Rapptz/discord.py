@@ -29,7 +29,17 @@ async def on_ready():
 async def add(ctx, left: int, right: int):
     """Adds two numbers together."""
     await ctx.send(left + right)
+@bot.command()
+async def ping(ctx):
+    """Mostra a latência do bot."""
+    await ctx.send(f'🏓 Pong! Latência: {round(bot.latency * 1000)} ms')
 
+
+@bot.command()
+async def coinflip(ctx):
+    """Joga uma moeda."""
+    resultado = random.choice(["🪙 Cara!", "🪙 Coroa!"])
+    await ctx.send(resultado)
 
 @bot.command()
 async def roll(ctx, dice: str):
