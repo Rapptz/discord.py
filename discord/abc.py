@@ -430,6 +430,9 @@ class GuildChannel:
         def __init__(self, *, state: ConnectionState, guild: Guild, data: GuildChannelPayload): ...
 
     def __str__(self) -> str:
+        if self.flags.is_obfuscated:
+            return f'Obfuscated Channel ({self.id})'
+
         return self.name
 
     @property
