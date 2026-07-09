@@ -137,7 +137,7 @@ class File:
         to an uploaded file via URL.
 
         .. note::
-            Due to Discord's filename processing, the filename must be ASCII aphanumeric
+            Due to Discord's filename processing, the filename must be ASCII alphanumeric
             with underscores, dashes, and periods.
 
         .. versionadded:: 2.6

@@ -830,7 +830,7 @@ class MessageInteractionMetadata(Hashable):
     original_response_message_id: Optional[:class:`int`]
         The ID of the original response message if the message is a follow-up.
     interacted_message_id: Optional[:class:`int`]
-        The ID of the message that containes the interactive components, if applicable.
+        The ID of the message that contains the interactive components, if applicable.
     modal_interaction: Optional[:class:`.MessageInteractionMetadata`]
         The metadata of the modal submit interaction that triggered this interaction, if applicable.
     target_user: Optional[:class:`User`]
@@ -922,7 +922,7 @@ class MessageInteractionMetadata(Hashable):
     @property
     def interacted_message(self) -> Optional[Message]:
         """Optional[:class:`~discord.Message`]: The message that
-        containes the interactive components, if applicable and is found in cache.
+        contains the interactive components, if applicable and is found in cache.
         """
         if self.interacted_message_id:
             return self._state._get_message(self.interacted_message_id)

@@ -367,7 +367,7 @@ class ActionRow(Item[V]):
 
             Buttons with a URL or a SKU cannot be created with this function.
             Consider creating a :class:`Button` manually and adding it via
-            :meth:`ActionRow.add_item` instead. This is beacuse these buttons
+            :meth:`ActionRow.add_item` instead. This is because these buttons
             cannot have a callback associated with them since Discord does not
             do any processing with them.
 
@@ -378,7 +378,7 @@ class ActionRow(Item[V]):
             Can only be up to 80 characters.
         custom_id: Optional[:class:`str`]
             The ID of the button that gets received during an interaction.
-            It is recommended to not set this parameters to prevent conflicts.
+            It is recommended to not set this parameter to prevent conflicts.
             Can only be up to 100 characters.
         style: :class:`.ButtonStyle`
             The style of the button. Defaults to :attr:`.ButtonStyle.grey`.

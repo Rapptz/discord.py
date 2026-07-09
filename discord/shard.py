@@ -313,7 +313,7 @@ class SessionStartLimits:
     total: :class:`int`
         The total number of session starts the current user is allowed
     remaining: :class:`int`
-        Remaining remaining number of session starts the current user is allowed
+        Remaining number of session starts the current user is allowed
     reset_after: :class:`int`
         The number of milliseconds until the limit resets
     max_concurrency: :class:`int`
