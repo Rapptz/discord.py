@@ -695,7 +695,7 @@ class Guild(Hashable):
         .. note::
 
             This may contain channels that are obfuscated due to permissions. You can use the
-            :meth:`GuildChannel.is_obfuscated` method to check if a channel is obfuscated or not.
+            :meth:`abc.GuildChannel.is_obfuscated` method to check if a channel is obfuscated or not.
             See :ref:`obfuscation_faq` for more information.
         """
         return utils.SequenceProxy(self._channels.values())
