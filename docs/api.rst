@@ -6156,7 +6156,6 @@ InviteFlags
 .. autoclass:: InviteFlags()
     :members:
 
-
 ForumTag
 ~~~~~~~~~
 
