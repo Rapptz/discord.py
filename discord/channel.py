@@ -334,7 +334,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         .. versionadded:: 2.3
     last_pin_timestamp: Optional[:class:`datetime.datetime`]
-        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
 
         .. versionadded:: 2.8
     """
@@ -3228,7 +3228,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
     id: :class:`int`
         The direct message channel ID.
     last_pin_timestamp: Optional[:class:`datetime.datetime`]
-        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
 
         .. versionadded:: 2.8
     """
@@ -3406,7 +3406,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
     name: Optional[:class:`str`]
         The group channel's name if provided.
     last_pin_timestamp: Optional[:class:`datetime.datetime`]
-        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
 
         .. versionadded:: 2.8
     """

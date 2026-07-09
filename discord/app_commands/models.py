@@ -605,7 +605,7 @@ class AppCommandChannel(Hashable):
 
         .. versionadded:: 2.6
     last_pin_timestamp: Optional[:class:`datetime.datetime`]
-        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
 
         .. versionadded:: 2.8
     """
@@ -798,7 +798,7 @@ class AppCommandThread(Hashable):
 
         .. versionadded:: 2.6
     last_pin_timestamp: Optional[:class:`datetime.datetime`]
-        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
 
         .. versionadded:: 2.8
     permissions: :class:`~discord.Permissions`

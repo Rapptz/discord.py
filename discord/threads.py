@@ -134,7 +134,7 @@ class Thread(Messageable, Hashable):
     archive_timestamp: :class:`datetime.datetime`
         An aware timestamp of when the thread's archived status was last updated in UTC.
     last_pin_timestamp: Optional[:class:`datetime.datetime`]
-        When the last pinned message was pinned. ``None`` if no messages are currently pinned.
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
 
         .. versionadded:: 2.8
     """
