@@ -2536,6 +2536,7 @@ class InviteFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if this is a guest invite for a voice channel."""
         return 1 << 0
 
+
 @fill_with_flags()
 class GatewayCapabilities(BaseFlags):
     r"""Wraps up the Discord Gateway capabilities.
@@ -2611,7 +2612,7 @@ class GatewayCapabilities(BaseFlags):
     @flag_value
     def channel_obfuscated(self):
         """:class:`bool`: Opt into receiving obfuscated channels from the gateway instead of full objects.
-        
+
         This flag is only valid until October 12, 2026. From which point, all channels that the bot does
         not have ``view_channel`` permissions for will be obfuscated regardless of this flag.
 

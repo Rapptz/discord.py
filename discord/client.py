@@ -293,14 +293,14 @@ class Client:
     store_obfuscated_channels: :class:`bool`
         Whether to cache obfuscated channels. This applies to :attr:`Guild.channels` and :attr:`CategoryChannel.channels`
         and the relevant events such as :func:`on_guild_channel_create` and :func:`on_guild_channel_update`.
-        
+
         See :ref:`obfuscation_faq` for more information.
 
         Defaults to ``True``.
 
         .. versionadded:: 2.8
     capabilities: Optional[:class:`GatewayCapabilities`]
-        The gateway capabilities to use for this client. 
+        The gateway capabilities to use for this client.
 
     Attributes
     -----------

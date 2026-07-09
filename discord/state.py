@@ -268,7 +268,7 @@ class ConnectionState(Generic[ClientT]):
 
         self.store_obfuscated_channels = options.get('store_obfuscated_channels', True)
         self.gateway_capabilities: Optional[GatewayCapabilities] = options.get('capabilities', None)
-    
+
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):

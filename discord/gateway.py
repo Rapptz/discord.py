@@ -485,7 +485,7 @@ class DiscordWebSocket:
 
         if state._intents is not None:
             payload['d']['intents'] = state._intents.value
-        
+
         if state.gateway_capabilities is not None:
             payload['d']['capabilities'] = state.gateway_capabilities.value
 
