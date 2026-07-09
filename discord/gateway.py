@@ -485,6 +485,9 @@ class DiscordWebSocket:
 
         if state._intents is not None:
             payload['d']['intents'] = state._intents.value
+        
+        if state.gateway_capabilities is not None:
+            payload['d']['capabilities'] = state.gateway_capabilities.value
 
         await self.call_hooks('before_identify', self.shard_id, initial=self._initial_identify)
         await self.send_as_json(payload)

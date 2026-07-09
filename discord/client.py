@@ -61,7 +61,7 @@ from .enums import ChannelType, EntitlementOwnerType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status
-from .flags import ApplicationFlags, Intents
+from .flags import ApplicationFlags, Intents, GatewayCapabilities
 from .gateway import *
 from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
@@ -144,6 +144,7 @@ if TYPE_CHECKING:
         max_ratelimit_timeout: Optional[float]
         connector: Optional[aiohttp.BaseConnector]
         store_obfuscated_channels: bool
+        capabilities: Optional[GatewayCapabilities]
 
 
 # fmt: off
@@ -298,6 +299,8 @@ class Client:
         Defaults to ``True``.
 
         .. versionadded:: 2.8
+    capabilities: Optional[:class:`GatewayCapabilities`]
+        The gateway capabilities to use for this client. 
 
     Attributes
     -----------

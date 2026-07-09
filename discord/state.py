@@ -67,7 +67,7 @@ from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
-from .flags import ApplicationFlags, Intents, MemberCacheFlags
+from .flags import ApplicationFlags, Intents, MemberCacheFlags, GatewayCapabilities
 from .invite import Invite
 from .integrations import _integration_factory
 from .interactions import Interaction
@@ -267,7 +267,8 @@ class ConnectionState(Generic[ClientT]):
             self.raw_presence_flag = not intents.members and intents.presences
 
         self.store_obfuscated_channels = options.get('store_obfuscated_channels', True)
-
+        self.gateway_capabilities: Optional[GatewayCapabilities] = options.get('capabilities', None)
+    
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):

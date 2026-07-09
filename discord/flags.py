@@ -83,6 +83,9 @@ if TYPE_CHECKING:
         voice: bool
         joined: bool
 
+    class _GatewayCapabilitiesKwargs(TypedDict, total=False):
+        channel_obfuscated: bool
+
 
 __all__ = (
     'SystemChannelFlags',
@@ -101,6 +104,7 @@ __all__ = (
     'SKUFlags',
     'EmbedFlags',
     'InviteFlags',
+    'GatewayCapabilities',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -2531,3 +2535,86 @@ class InviteFlags(BaseFlags):
     def guest(self):
         """:class:`bool`: Returns ``True`` if this is a guest invite for a voice channel."""
         return 1 << 0
+
+@fill_with_flags()
+class GatewayCapabilities(BaseFlags):
+    r"""Wraps up the Discord Gateway capabilities.
+
+    To construct an object you can pass keyword arguments denoting the flags
+    to enable or disable.
+
+    This is used to change certain gateway capabilities.
+    To make use of this, it is passed to the ``capabilities`` keyword
+    argument of :class:`Client`.
+
+    .. versionadded:: 2.8
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two GatewayCapabilities are equal.
+
+        .. describe:: x != y
+
+            Checks if two GatewayCapabilities are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a GatewayCapabilities instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x & y, x &= y
+
+            Returns a GatewayCapabilities instance with only flags enabled on
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a GatewayCapabilities instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns a GatewayCapabilities instance with all flags inverted from x.
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    Attributes
+    ----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    def __init__(self, value: int = 0, **kwargs: Unpack[_GatewayCapabilitiesKwargs]) -> None:
+        self.value: int = value
+        for key, kwvalue in kwargs.items():
+            if key not in self.VALID_FLAGS:
+                raise TypeError(f'{key!r} is not a valid flag name.')
+            setattr(self, key, kwvalue)
+
+    @flag_value
+    def channel_obfuscated(self):
+        """:class:`bool`: Opt into receiving obfuscated channels from the gateway instead of full objects.
+        
+        This flag is only valid until October 12, 2026. From which point, all channels that the bot does
+        not have ``view_channel`` permissions for will be obfuscated regardless of this flag.
+
+        See :ref:`obfuscation_faq` for more information.
+        """
+        return 1 << 15
