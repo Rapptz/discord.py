@@ -336,6 +336,7 @@ class Container(Item[V]):
         else:
             if self._view:
                 self._view._add_count(-item._total_count)
+            item._detach_view()
         return self
 
     def find_item(self, id: int, /) -> Optional[Item[V]]:
@@ -367,5 +368,7 @@ class Container(Item[V]):
 
         if self._view:
             self._view._add_count(-len(tuple(self.walk_children())))
+        for item in self._children:
+            item._detach_view()
         self._children.clear()
         return self

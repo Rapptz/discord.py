@@ -299,6 +299,7 @@ class ActionRow(Item[V]):
             if self._view:
                 self._view._add_count(-1)
             self._weight -= item.width
+            item._detach_view()
 
         return self
 
@@ -330,6 +331,8 @@ class ActionRow(Item[V]):
         """
         if self._view:
             self._view._add_count(-len(self._children))
+        for item in self._children:
+            item._detach_view()
         self._children.clear()
         self._weight = 0
         return self
