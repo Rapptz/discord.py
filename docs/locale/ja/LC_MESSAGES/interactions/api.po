@@ -5247,3 +5247,36 @@ msgstr ":exc:`~discord.app_commands.CommandSyncFailure`"
 msgid ":exc:`~discord.HTTPException`"
 msgstr ":exc:`~discord.HTTPException`"
 
+#: ../../interactions/api.rst:205
+msgid "RadioGroupComponent"
+msgstr "RadioGroupComponent"
+
+#: ../../interactions/api.rst:214
+msgid "CheckboxComponent"
+msgstr "CheckboxComponent"
+
+#: ../../interactions/api.rst:223
+msgid "CheckboxGroupComponent"
+msgstr "CheckboxGroupComponent"
+
+#: ../../interactions/api.rst:360
+msgid "RadioGroupOption"
+msgstr "RadioGroupOption"
+
+#: ../../interactions/api.rst:369
+msgid "CheckboxGroupOption"
+msgstr "CheckboxGroupOption"
+
+#: ../../interactions/api.rst:945
+msgid "RadioGroup"
+msgstr "RadioGroup"
+
+#: ../../interactions/api.rst:955
+msgid "Checkbox"
+msgstr "Checkbox"
+
+#: ../../interactions/api.rst:965
+msgid "CheckboxGroup"
+msgstr "CheckboxGroup"
+
+
