@@ -357,7 +357,7 @@ permission for that channel.
 
 The catch is that these channels still show up in :attr:`Guild.channels` and :attr:`CategoryChannel.channels`,
 so you might run into them without expecting it. If you only want channels your bot can actually see, check the
-:attr:`ChannelFlags.is_obfuscated` flag and filter out the ones that are obfuscated: ::
+:meth:`GuildChannel.is_obfuscated` method and filter out the ones that are obfuscated: ::
 
     channels = [channel for channel in guild.channels if not channel.is_obfuscated()]
 
