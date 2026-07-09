@@ -1403,7 +1403,7 @@ class GuildChannel:
     def flags(self) -> ChannelFlags:
         """:class:`~discord.ChannelFlags`: The channel's flags."""
         return ChannelFlags._from_value(self._flags)
-    
+
     def is_obfuscated(self) -> bool:
         """Returns whether the channel is obfuscated.
 
