@@ -266,6 +266,8 @@ class ConnectionState(Generic[ClientT]):
         if self.raw_presence_flag is utils.MISSING:
             self.raw_presence_flag = not intents.members and intents.presences
 
+        self.store_obfuscated_channels = options.get('store_obfuscated_channels', True)
+
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):

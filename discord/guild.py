@@ -472,6 +472,9 @@ class Guild(Hashable):
         self._from_data(data)
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
+        if not self._state.store_obfuscated_channels and channel.is_obfuscated():
+            return
+
         self._channels[channel.id] = channel
 
     def _remove_channel(self, channel: Snowflake, /) -> None:
@@ -492,6 +495,9 @@ class Guild(Hashable):
         self._members.pop(member.id, None)
 
     def _add_thread(self, thread: Thread, /) -> None:
+        if not self._state.store_obfuscated_channels and thread.parent and thread.parent.is_obfuscated():
+            return
+
         self._threads[thread.id] = thread
 
     def _remove_thread(self, thread: Snowflake, /) -> None:
