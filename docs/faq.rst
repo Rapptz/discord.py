@@ -351,13 +351,14 @@ What is obfuscation?
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Sometimes Discord will tell your bot that a channel exists without actually letting it see what's inside.
-Instead of just hiding the channel, Discord sends it over with most of its info stripped out (like its name
-and topic) and marks it as *obfuscated*. This happens when your bot doesn't have the ``view_channel``
-permission for that channel.
+Instead of just hiding the channel, Discord sends it over with most of its info stripped out and marks it
+as *obfuscated*. This happens when your bot doesn't have the ``view_channel`` permission for that channel.
+The only fields that stay intact are ``id``, ``type``, and ``parent_id``; everything else, including
+``permission_overwrites``, is stripped down to just an entry for your bot with every permission denied.
 
 The catch is that these channels still show up in :attr:`Guild.channels` and :attr:`CategoryChannel.channels`,
-so you might run into them without expecting it. If you only want channels your bot can actually see, check the
-:meth:`GuildChannel.is_obfuscated` method and filter out the ones that are obfuscated: ::
+so you might run into them without expecting it. If you only want channels your bot can actually see, use the
+:meth:`GuildChannel.is_obfuscated` method to filter out obfuscated channels: ::
 
     channels = [channel for channel in guild.channels if not channel.is_obfuscated()]
 
