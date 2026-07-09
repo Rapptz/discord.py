@@ -787,7 +787,7 @@ class GuildChannel:
         """
 
         # The current cases can be explained as:
-        # All permissions are denied for bots if .flags.is_obfuscated is True, else:
+        # All permissions are denied for bots if .is_obfuscated() is True, else:
         # Guild owner get all permissions -- no questions asked. Otherwise...
         # The @everyone role gets the first application.
         # After that, the applied roles that the user has in the channel
@@ -801,7 +801,7 @@ class GuildChannel:
         # The operation first takes into consideration the denied
         # and then the allowed.
 
-        if obj.id == self._state.self_id and self.flags.is_obfuscated:
+        if obj.id == self._state.self_id and self.is_obfuscated():
             return Permissions.none()
 
         if self.guild.owner_id == obj.id:
@@ -1416,7 +1416,7 @@ class GuildChannel:
         :class:`bool`
             Whether the channel is obfuscated.
         """
-        return self.flags.is_obfuscated
+        return self.flags.obfuscated
 
 
 class Messageable:
