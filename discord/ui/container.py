@@ -243,7 +243,7 @@ class Container(Item[V]):
         components = self.to_components()
 
         colour = None
-        if self._colour:
+        if self._colour is not None:
             colour = self._colour if isinstance(self._colour, int) else self._colour.value
 
         base = {
