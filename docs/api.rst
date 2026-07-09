@@ -6156,13 +6156,6 @@ InviteFlags
 .. autoclass:: InviteFlags()
     :members:
 
-GatewayCapabilities
-~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: GatewayCapabilities
-
-.. autoclass:: GatewayCapabilities
-    :members:
 
 ForumTag
 ~~~~~~~~~

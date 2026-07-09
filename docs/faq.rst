@@ -350,7 +350,7 @@ This event is now available in the library and Discord as of version 2.2. It can
 What is obfuscation?
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Starting October 12, 2026 (or sooner, if opted in), Discord may tell your bot that a channel exists without letting it see what's inside.
+Starting October 12, 2026, Discord may tell your bot that a channel exists without letting it see what's inside.
 Rather than omitting the channel entirely, Discord sends it with most of its information stripped out and marks
 it as *obfuscated*. This happens whenever your bot lacks the ``view_channel`` permission for that channel.
 Only ``id``, ``type``, and ``parent_id`` keep their real values; every other field is obfuscated, including
@@ -372,19 +372,6 @@ deleted, just with its data obfuscated.
 The API never returns them: :meth:`Guild.fetch_channels` silently omits any channel your bot can't view,
 and fetching one directly with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises
 :exc:`Forbidden`.
-
-If you'd rather not have obfuscated channels cached at all, pass
-``store_obfuscated_channels=False`` to :class:`Client` or a subclass of.
-
-.. note::
-
-    Until October 12, 2026, receiving obfuscated channels requires opting in with the ``channel_obfuscated``
-    :class:`GatewayCapabilities` flag, which is not enabled by default. After that date, this behaviour
-    applies to all bots regardless of the flag, and ``channel_obfuscated`` no longer has any effect.
-
-    To opt in early: ::
-
-        client = discord.Client(capabilities=discord.GatewayCapabilities(channel_obfuscated=True))
 
 
 Commands Extension
