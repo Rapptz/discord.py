@@ -350,27 +350,28 @@ This event is now available in the library and Discord as of version 2.2. It can
 What is obfuscation?
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes Discord will tell your bot that a channel exists without actually letting it see what's inside.
-Instead of just hiding the channel, Discord sends it over with most of its info stripped out and marks it
-as *obfuscated*. This happens when your bot doesn't have the ``view_channel`` permission for that channel.
-The only fields that stay intact are ``id``, ``type``, and ``parent_id``; everything else, including
-``permission_overwrites``, is stripped down to just an entry for your bot with every permission denied.
+As of October 12, 2026, Discord may tell your bot that a channel exists without letting it see what's inside.
+Rather than omitting the channel entirely, Discord sends it with most of its information stripped out and marks
+it as *obfuscated*. This happens whenever your bot lacks the ``view_channel`` permission for that channel.
+Only ``id``, ``type``, and ``parent_id`` keep their real values; every other field is obfuscated, including
+``permission_overwrites``, which is replaced with a single entry for your bot with every permission denied.
 
-The catch is that these channels still show up in :attr:`Guild.channels` and :attr:`CategoryChannel.channels`,
-so you might run into them without expecting it. If you only want channels your bot can actually see, use the
-:meth:`GuildChannel.is_obfuscated` method to filter out obfuscated channels: ::
+Obfuscated channels still show up in :attr:`Guild.channels` and :attr:`CategoryChannel.channels`, so you may
+encounter them without expecting to. To filter out channels your bot can't actually see, use
+:meth:`abc.GuildChannel.is_obfuscated`: ::
 
     channels = [channel for channel in guild.channels if not channel.is_obfuscated()]
 
-If you call :meth:`abc.GuildChannel.permissions_for` on an obfuscated channel for your own bot, you'll get
-:meth:`Permissions.none` back, since it can't do anything in a channel it can't view.
+Calling :meth:`abc.GuildChannel.permissions_for` on an obfuscated channel for your own bot always returns
+:meth:`Permissions.none`, since the bot can't do anything in a channel it can't view.
 
-One thing to keep in mind: obfuscated channels only ever come from the gateway. That means your cache and
-events like :func:`on_guild_channel_create` or :func:`on_guild_channel_update`. The API won't ever hand you
-one: :meth:`Guild.fetch_channels` simply leaves out anything your bot can't view, and trying to grab a single
-one with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises :exc:`Forbidden` since the bot 
-doesn't have access.
+Obfuscated channels only ever come from the gateway, meaning your cache and events such as
+:func:`on_guild_channel_create` and :func:`on_guild_channel_update` may contain them. The API never
+returns them: :meth:`Guild.fetch_channels` silently omits any channel your bot can't view, and fetching one
+directly with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises :exc:`Forbidden`.
 
+If you'd rather not have obfuscated channels stored in the internal cache at all, pass
+``store_obfuscated_channels=False`` to :class:`Client` or a subclass of.
 
 
 Commands Extension
