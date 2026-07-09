@@ -86,3 +86,41 @@ def test_layout_view_add_item_with_too_many_children():
     assert view.total_children_count == max_item_limit - 1
     assert row.view is None
     assert all(item.view is None for item in row.children)
+
+
+def test_section_remove_item_clears_view_and_parent():
+    view = discord.ui.LayoutView()
+    section = discord.ui.Section('test', accessory=discord.ui.Button(label='Test'))
+    view.add_item(section)
+    item = section.children[0]
+
+    section.remove_item(item)
+
+    assert item.view is None
+    assert item.parent is None
+
+
+def test_action_row_remove_item_clears_view_and_parent():
+    view = discord.ui.LayoutView()
+    row = discord.ui.ActionRow()
+    item = discord.ui.Button(label='Test')
+    row.add_item(item)
+    view.add_item(row)
+
+    row.remove_item(item)
+
+    assert item.view is None
+    assert item.parent is None
+
+
+def test_container_remove_item_clears_view_and_parent():
+    view = discord.ui.LayoutView()
+    container = discord.ui.Container()
+    item = discord.ui.TextDisplay('test')
+    container.add_item(item)
+    view.add_item(container)
+
+    container.remove_item(item)
+
+    assert item.view is None
+    assert item.parent is None
