@@ -1779,7 +1779,7 @@ class ChannelFlags(BaseFlags):
         return 1 << 15
 
     @flag_value
-    def is_obfuscated(self):
+    def obfuscated(self):
         """:class:`bool`: Returns ``True`` if the channel is obfuscated, meaning the bot does not
         have ``view_channel`` permissions for it and thus cannot get its information. This only applies
         to channels received from events such as :func:`on_guild_channel_create` or :func:`on_guild_channel_update`
