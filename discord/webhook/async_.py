@@ -1322,6 +1322,9 @@ class Webhook(BaseWebhook):
 
         state = None
         if client is not MISSING:
+            if client._ready is MISSING:
+                raise ValueError('Client must be logged in to use from_url with a client.')
+
             state = client._connection
             if session is MISSING:
                 session = client.http._HTTPClient__session  # type: ignore

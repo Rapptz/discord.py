@@ -54,7 +54,7 @@ V = TypeVar('V', bound='BaseView', covariant=True)
 
 
 class RadioGroup(Item[V]):
-    """Represents a radio group component within a modal.
+    """Represents a radio group component within a modal that can only be used in :class:`Label`.
 
     .. versionadded:: 2.7
 
@@ -113,7 +113,7 @@ class RadioGroup(Item[V]):
 
     @property
     def value(self) -> Optional[str]:
-        """Optional[:class:`str`]: The value have been selected by the user, if any."""
+        """Optional[:class:`str`]: The value that has been selected by the user, if any."""
         return self._value
 
     @property

@@ -2846,7 +2846,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: scheduled_event_update
 
-        A scheduled event was created.
+        A scheduled event was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`ScheduledEvent` or :class:`Object` with the ID of the event
@@ -2866,7 +2866,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: scheduled_event_delete
 
-        A scheduled event was created.
+        A scheduled event was deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`ScheduledEvent` or :class:`Object` with the ID of the event

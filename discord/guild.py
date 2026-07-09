@@ -2027,7 +2027,7 @@ class Guild(Hashable):
         widget_channel: Optional[Snowflake] = MISSING,
         mfa_level: MFALevel = MISSING,
         raid_alerts_disabled: bool = MISSING,
-        safety_alerts_channel: TextChannel = MISSING,
+        safety_alerts_channel: Optional[TextChannel] = MISSING,
         invites_disabled_until: datetime.datetime = MISSING,
         dms_disabled_until: datetime.datetime = MISSING,
     ) -> Guild:
@@ -2285,8 +2285,7 @@ class Guild(Hashable):
                     raise TypeError(
                         f'safety_alerts_channel must be of type TextChannel not {safety_alerts_channel.__class__.__name__}'
                     )
-
-            fields['safety_alerts_channel_id'] = safety_alerts_channel.id
+                fields['safety_alerts_channel_id'] = safety_alerts_channel.id
 
         if owner is not MISSING:
             if self.owner_id != self._state.self_id:
