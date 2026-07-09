@@ -826,7 +826,11 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(limit=0)
+            connector_options: Dict[str, Any] = {'limit': 0}
+            if sys.platform == 'win32':
+                connector_options['resolver'] = aiohttp.ThreadedResolver()
+
+            self.connector = aiohttp.TCPConnector(**connector_options)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
