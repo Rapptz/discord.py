@@ -2872,7 +2872,7 @@ class Message(PartialMessage, Hashable):
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        suppress: bool = False,
+        suppress: bool = MISSING,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         view: Optional[Union[View, LayoutView]] = MISSING,

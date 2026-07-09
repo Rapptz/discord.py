@@ -173,6 +173,9 @@ def handle_message_parameters(
     if attachments is not MISSING and files is not MISSING:
         raise TypeError('Cannot mix attachments and files keyword arguments.')
 
+    if files is not MISSING and len(files) > 10:
+        raise ValueError('files has a maximum of 10 elements.')
+
     payload = {}
     if embeds is not MISSING:
         if len(embeds) > 10:
@@ -212,6 +215,8 @@ def handle_message_parameters(
 
     if stickers is not MISSING:
         if stickers is not None:
+            if len(stickers) > 3:
+                raise ValueError('stickers has a maximum of 3 elements.')
             payload['sticker_ids'] = stickers
         else:
             payload['sticker_ids'] = []
