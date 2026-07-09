@@ -366,11 +366,14 @@ Calling :meth:`abc.GuildChannel.permissions_for` on an obfuscated channel for yo
 :meth:`Permissions.none`, since the bot can't do anything in a channel it can't view.
 
 Obfuscated channels only ever come from the gateway, meaning your cache and events such as
-:func:`on_guild_channel_create` and :func:`on_guild_channel_update` may contain them. The API never
-returns them: :meth:`Guild.fetch_channels` silently omits any channel your bot can't view, and fetching one
-directly with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises :exc:`Forbidden`.
+:func:`on_guild_channel_create`, :func:`on_guild_channel_update`, and :func:`on_guild_channel_delete` may
+contain them. You still receive these events as normal when an obfuscated channel is created, updated, or
+deleted, just with its data obfuscated.
+The API never returns them: :meth:`Guild.fetch_channels` silently omits any channel your bot can't view,
+and fetching one directly with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises
+:exc:`Forbidden`.
 
-If you'd rather not have obfuscated channels stored in the internal cache at all, pass
+If you'd rather not have obfuscated channels cached at all, pass
 ``store_obfuscated_channels=False`` to :class:`Client` or a subclass of.
 
 .. note::
