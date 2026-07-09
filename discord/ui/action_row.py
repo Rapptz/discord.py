@@ -203,6 +203,9 @@ class ActionRow(Item[V]):
     def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
         child_index = self._children.index(base)
         self._children[child_index] = new  # type: ignore
+        base._detach_view()
+        new._update_view(self.view)
+        new._parent = self
 
     @property
     def width(self):

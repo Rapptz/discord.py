@@ -28,6 +28,12 @@ import discord
 import pytest
 
 
+class DynamicButton(discord.ui.DynamicItem[discord.ui.Button], template=r'dynamic:(?P<number>[0-9]+)'):
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(discord.ui.Button(label='Dynamic', custom_id=match.group(0)))
+
+
 def test_add_item_with_full_row():
     view = discord.ui.View()
 
@@ -124,3 +130,53 @@ def test_container_remove_item_clears_view_and_parent():
 
     assert item.view is None
     assert item.parent is None
+
+
+@pytest.mark.asyncio
+async def test_action_row_dynamic_item_swap_preserves_parent_checks():
+    calls = []
+
+    class Row(discord.ui.ActionRow):
+        async def interaction_check(self, interaction):
+            calls.append('row')
+            return True
+
+    base = discord.ui.Button(label='Dynamic', custom_id='dynamic:1')
+    row = Row(base)
+    view = discord.ui.LayoutView()
+    view.add_item(row)
+    item = DynamicButton(discord.ui.Button(label='Dynamic', custom_id='dynamic:1'))
+
+    row._swap_item(base, item, 'dynamic:1')
+    await item._run_checks(None)
+
+    assert item.view is view
+    assert item.parent is row
+    assert base.view is None
+    assert base.parent is None
+    assert calls == ['row']
+
+
+@pytest.mark.asyncio
+async def test_container_dynamic_item_swap_preserves_parent_checks():
+    calls = []
+
+    class Container(discord.ui.Container):
+        async def interaction_check(self, interaction):
+            calls.append('container')
+            return True
+
+    base = discord.ui.ActionRow(discord.ui.Button(label='Dynamic', custom_id='dynamic:1'))
+    container = Container(base)
+    view = discord.ui.LayoutView()
+    view.add_item(container)
+    item = DynamicButton(discord.ui.Button(label='Dynamic', custom_id='dynamic:1'))
+
+    container._swap_item(base, item, 'dynamic:1')
+    await item._run_checks(None)
+
+    assert item.view is view
+    assert item.parent is container
+    assert base.view is None
+    assert base.parent is None
+    assert calls == ['container']
