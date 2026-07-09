@@ -58,6 +58,26 @@ __all__ = (
 V = TypeVar('V', bound='BaseView', covariant=True)
 
 
+def _validate_checkbox_group_min_values(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+
+    value = int(value)
+    if not 0 <= value <= 10:
+        raise ValueError('min_values must be between 0 and 10')
+    return value
+
+
+def _validate_checkbox_group_max_values(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+
+    value = int(value)
+    if not 1 <= value <= 10:
+        raise ValueError('max_values must be between 1 and 10')
+    return value
+
+
 class CheckboxGroup(Item[V]):
     """Represents a checkbox group component within a modal that can only be used in :class:`Label`.
 
@@ -105,6 +125,12 @@ class CheckboxGroup(Item[V]):
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
+
+        if options is not MISSING and len(options) > 10:
+            raise ValueError('maximum number of options already provided (10)')
+
+        min_values = _validate_checkbox_group_min_values(min_values)
+        max_values = _validate_checkbox_group_max_values(max_values)
 
         self._underlying: CheckboxGroupComponent = CheckboxGroupComponent._raw_construct(
             id=id,
@@ -158,6 +184,8 @@ class CheckboxGroup(Item[V]):
     def options(self, value: List[CheckboxGroupOption]) -> None:
         if not isinstance(value, list) or not all(isinstance(obj, CheckboxGroupOption) for obj in value):
             raise TypeError('options must be a list of CheckboxGroupOption')
+        if len(value) > 10:
+            raise ValueError('maximum number of options already provided (10)')
         self._underlying.options = value
 
     @property
@@ -167,7 +195,7 @@ class CheckboxGroup(Item[V]):
 
     @min_values.setter
     def min_values(self, value: int) -> None:
-        self._underlying.min_values = int(value)
+        self._underlying.min_values = _validate_checkbox_group_min_values(value)
 
     @property
     def max_values(self) -> int:
@@ -176,7 +204,7 @@ class CheckboxGroup(Item[V]):
 
     @max_values.setter
     def max_values(self, value: int) -> None:
-        self._underlying.max_values = int(value)
+        self._underlying.max_values = _validate_checkbox_group_max_values(value)
 
     def add_option(
         self,

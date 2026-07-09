@@ -52,6 +52,26 @@ __all__ = (
 V = TypeVar('V', bound='BaseView', covariant=True)
 
 
+def _validate_file_upload_min_values(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+
+    value = int(value)
+    if not 0 <= value <= 10:
+        raise ValueError('min_values must be between 0 and 10')
+    return value
+
+
+def _validate_file_upload_max_values(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+
+    value = int(value)
+    if not 1 <= value <= 10:
+        raise ValueError('max_values must be between 1 and 10')
+    return value
+
+
 class FileUpload(Item[V]):
     """Represents a file upload component within a modal.
 
@@ -96,6 +116,9 @@ class FileUpload(Item[V]):
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
+
+        min_values = _validate_file_upload_min_values(min_values)
+        max_values = _validate_file_upload_max_values(max_values)
 
         self._underlying: FileUploadComponent = FileUploadComponent._raw_construct(
             id=id,
@@ -145,7 +168,7 @@ class FileUpload(Item[V]):
 
     @min_values.setter
     def min_values(self, value: int) -> None:
-        self._underlying.min_values = int(value)
+        self._underlying.min_values = _validate_file_upload_min_values(value)
 
     @property
     def max_values(self) -> int:
@@ -154,7 +177,7 @@ class FileUpload(Item[V]):
 
     @max_values.setter
     def max_values(self, value: int) -> None:
-        self._underlying.max_values = int(value)
+        self._underlying.max_values = _validate_file_upload_max_values(value)
 
     @property
     def required(self) -> bool:

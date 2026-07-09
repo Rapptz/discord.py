@@ -100,3 +100,125 @@ async def test_modal_setters():
 
     modal.timeout = 120
     assert modal.timeout == 120
+
+
+def test_checkbox_group_rejects_too_many_initial_options():
+    options = [discord.CheckboxGroupOption(label=str(i), value=str(i)) for i in range(11)]
+
+    with pytest.raises(ValueError):
+        discord.ui.CheckboxGroup(options=options)
+
+
+def test_checkbox_group_rejects_too_many_assigned_options():
+    group = discord.ui.CheckboxGroup()
+    options = [discord.CheckboxGroupOption(label=str(i), value=str(i)) for i in range(11)]
+
+    with pytest.raises(ValueError):
+        group.options = options
+
+
+def test_radio_group_rejects_too_many_initial_options():
+    options = [discord.RadioGroupOption(label=str(i), value=str(i)) for i in range(11)]
+
+    with pytest.raises(ValueError):
+        discord.ui.RadioGroup(options=options)
+
+
+def test_radio_group_rejects_too_many_assigned_options():
+    group = discord.ui.RadioGroup()
+    options = [discord.RadioGroupOption(label=str(i), value=str(i)) for i in range(11)]
+
+    with pytest.raises(ValueError):
+        group.options = options
+
+
+def test_radio_group_rejects_too_few_initial_options():
+    options = [discord.RadioGroupOption(label='One', value='one')]
+
+    with pytest.raises(ValueError, match='radio group must have at least 2 options'):
+        discord.ui.RadioGroup(options=options)
+
+
+def test_radio_group_rejects_too_few_assigned_options():
+    group = discord.ui.RadioGroup()
+    options = [discord.RadioGroupOption(label='One', value='one')]
+
+    with pytest.raises(ValueError, match='radio group must have at least 2 options'):
+        group.options = options
+
+
+@pytest.mark.parametrize(
+    ('kwargs', 'message'),
+    [
+        ({'min_values': -1}, 'min_values must be between 0 and 10'),
+        ({'min_values': 11}, 'min_values must be between 0 and 10'),
+        ({'max_values': 0}, 'max_values must be between 1 and 10'),
+        ({'max_values': 11}, 'max_values must be between 1 and 10'),
+    ],
+)
+def test_checkbox_group_rejects_out_of_range_value_counts(kwargs, message):
+    with pytest.raises(ValueError, match=message):
+        discord.ui.CheckboxGroup(**kwargs)
+
+
+def test_checkbox_group_rejects_out_of_range_assigned_value_counts():
+    group = discord.ui.CheckboxGroup()
+
+    with pytest.raises(ValueError, match='min_values must be between 0 and 10'):
+        group.min_values = -1
+
+    with pytest.raises(ValueError, match='max_values must be between 1 and 10'):
+        group.max_values = 11
+
+
+@pytest.mark.parametrize(
+    ('kwargs', 'message'),
+    [
+        ({'min_values': -1}, 'min_values must be between 0 and 10'),
+        ({'min_values': 11}, 'min_values must be between 0 and 10'),
+        ({'max_values': 0}, 'max_values must be between 1 and 10'),
+        ({'max_values': 11}, 'max_values must be between 1 and 10'),
+    ],
+)
+def test_file_upload_rejects_out_of_range_value_counts(kwargs, message):
+    with pytest.raises(ValueError, match=message):
+        discord.ui.FileUpload(**kwargs)
+
+
+def test_file_upload_rejects_out_of_range_assigned_value_counts():
+    upload = discord.ui.FileUpload()
+
+    with pytest.raises(ValueError, match='min_values must be between 0 and 10'):
+        upload.min_values = -1
+
+    with pytest.raises(ValueError, match='max_values must be between 1 and 10'):
+        upload.max_values = 11
+
+
+@pytest.mark.parametrize(
+    ('kwargs', 'message'),
+    [
+        ({'min_length': -1}, 'min_length must be between 0 and 4000'),
+        ({'min_length': 4001}, 'min_length must be between 0 and 4000'),
+        ({'max_length': 0}, 'max_length must be between 1 and 4000'),
+        ({'max_length': 4001}, 'max_length must be between 1 and 4000'),
+        ({'min_length': 10, 'max_length': 1}, 'min_length cannot be greater than max_length'),
+    ],
+)
+def test_text_input_rejects_out_of_range_lengths(kwargs, message):
+    with pytest.raises(ValueError, match=message):
+        discord.ui.TextInput(**kwargs)
+
+
+def test_text_input_rejects_out_of_range_assigned_lengths():
+    input = discord.ui.TextInput()
+
+    with pytest.raises(ValueError, match='min_length must be between 0 and 4000'):
+        input.min_length = -1
+
+    with pytest.raises(ValueError, match='max_length must be between 1 and 4000'):
+        input.max_length = 4001
+
+    input.max_length = 5
+    with pytest.raises(ValueError, match='min_length cannot be greater than max_length'):
+        input.min_length = 6

@@ -53,6 +53,14 @@ __all__ = (
 V = TypeVar('V', bound='BaseView', covariant=True)
 
 
+def _validate_radio_group_options(options: List[RadioGroupOption]) -> None:
+    if len(options) == 1:
+        raise ValueError('radio group must have at least 2 options')
+
+    if len(options) > 10:
+        raise ValueError('maximum number of options already provided (10)')
+
+
 class RadioGroup(Item[V]):
     """Represents a radio group component within a modal that can only be used in :class:`Label`.
 
@@ -92,6 +100,9 @@ class RadioGroup(Item[V]):
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
+
+        if options is not MISSING:
+            _validate_radio_group_options(options)
 
         self._underlying: RadioGroupComponent = RadioGroupComponent._raw_construct(
             id=id,
@@ -143,6 +154,8 @@ class RadioGroup(Item[V]):
     def options(self, value: List[RadioGroupOption]) -> None:
         if not isinstance(value, list) or not all(isinstance(obj, RadioGroupOption) for obj in value):
             raise TypeError('options must be a list of RadioGroupOption')
+
+        _validate_radio_group_options(value)
 
         self._underlying.options = value
 

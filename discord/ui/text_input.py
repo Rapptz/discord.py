@@ -50,6 +50,31 @@ __all__ = (
 V = TypeVar('V', bound='BaseView', covariant=True)
 
 
+def _validate_text_input_min_length(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+
+    value = int(value)
+    if not 0 <= value <= 4000:
+        raise ValueError('min_length must be between 0 and 4000')
+    return value
+
+
+def _validate_text_input_max_length(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+
+    value = int(value)
+    if not 1 <= value <= 4000:
+        raise ValueError('max_length must be between 1 and 4000')
+    return value
+
+
+def _validate_text_input_length_bounds(min_length: Optional[int], max_length: Optional[int]) -> None:
+    if min_length is not None and max_length is not None and min_length > max_length:
+        raise ValueError('min_length cannot be greater than max_length')
+
+
 class TextInput(Item[V]):
     """Represents a UI text input.
 
@@ -134,6 +159,10 @@ class TextInput(Item[V]):
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
 
+        min_length = _validate_text_input_min_length(min_length)
+        max_length = _validate_text_input_max_length(max_length)
+        _validate_text_input_length_bounds(min_length, max_length)
+
         self._underlying = TextInputComponent._raw_construct(
             label=label,
             style=style,
@@ -217,6 +246,8 @@ class TextInput(Item[V]):
 
     @min_length.setter
     def min_length(self, value: Optional[int]) -> None:
+        value = _validate_text_input_min_length(value)
+        _validate_text_input_length_bounds(value, self.max_length)
         self._underlying.min_length = value
 
     @property
@@ -226,6 +257,8 @@ class TextInput(Item[V]):
 
     @max_length.setter
     def max_length(self, value: Optional[int]) -> None:
+        value = _validate_text_input_max_length(value)
+        _validate_text_input_length_bounds(self.min_length, value)
         self._underlying.max_length = value
 
     @property

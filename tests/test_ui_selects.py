@@ -37,3 +37,75 @@ async def test_add_option():
 
     with pytest.raises(ValueError):
         select.add_option(label="26", value="26")
+
+
+def test_select_rejects_too_many_initial_options():
+    options = [discord.SelectOption(label=str(i), value=str(i)) for i in range(26)]
+
+    with pytest.raises(ValueError):
+        discord.ui.Select(options=options)
+
+
+def test_select_rejects_too_many_assigned_options():
+    select = discord.ui.Select()
+    options = [discord.SelectOption(label=str(i), value=str(i)) for i in range(26)]
+
+    with pytest.raises(ValueError):
+        select.options = options
+
+
+@pytest.mark.parametrize(
+    ('kwargs', 'message'),
+    [
+        ({'min_values': -1}, 'min_values must be between 0 and 25'),
+        ({'min_values': 26}, 'min_values must be between 0 and 25'),
+        ({'max_values': 0}, 'max_values must be between 1 and 25'),
+        ({'max_values': 26}, 'max_values must be between 1 and 25'),
+    ],
+)
+def test_select_rejects_out_of_range_value_counts(kwargs, message):
+    with pytest.raises(ValueError, match=message):
+        discord.ui.Select(**kwargs)
+
+
+def test_select_rejects_out_of_range_assigned_value_counts():
+    select = discord.ui.Select()
+
+    with pytest.raises(ValueError, match='min_values must be between 0 and 25'):
+        select.min_values = -1
+
+    with pytest.raises(ValueError, match='max_values must be between 1 and 25'):
+        select.max_values = 26
+
+
+def test_select_rejects_too_many_initial_default_values():
+    values = [discord.Object(i) for i in range(2)]
+
+    with pytest.raises(ValueError, match='default_values must be between min_values and max_values'):
+        discord.ui.UserSelect(max_values=1, default_values=values)
+
+
+def test_select_rejects_too_few_initial_default_values():
+    values = [discord.Object(1)]
+
+    with pytest.raises(ValueError, match='default_values must be between min_values and max_values'):
+        discord.ui.RoleSelect(min_values=2, default_values=values)
+
+
+def test_select_rejects_out_of_range_assigned_default_values():
+    select = discord.ui.UserSelect(max_values=1)
+
+    with pytest.raises(ValueError, match='default_values must be between min_values and max_values'):
+        select.default_values = [discord.Object(1), discord.Object(2)]
+
+
+def test_select_rejects_value_count_changes_incompatible_with_defaults():
+    select = discord.ui.UserSelect(max_values=2, default_values=[discord.Object(1), discord.Object(2)])
+
+    with pytest.raises(ValueError, match='default_values must be between min_values and max_values'):
+        select.max_values = 1
+
+    select = discord.ui.RoleSelect(min_values=1, default_values=[discord.Object(1)])
+
+    with pytest.raises(ValueError, match='default_values must be between min_values and max_values'):
+        select.min_values = 2

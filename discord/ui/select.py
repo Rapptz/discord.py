@@ -187,6 +187,25 @@ def _handle_select_defaults(
     return values
 
 
+def _validate_select_min_values(value: Optional[int]) -> int:
+    value = 1 if value is None else int(value)
+    if not 0 <= value <= 25:
+        raise ValueError('min_values must be between 0 and 25')
+    return value
+
+
+def _validate_select_max_values(value: Optional[int]) -> int:
+    value = 1 if value is None else int(value)
+    if not 1 <= value <= 25:
+        raise ValueError('max_values must be between 1 and 25')
+    return value
+
+
+def _validate_default_values_count(default_values: Sequence[Any], min_values: int, max_values: int) -> None:
+    if default_values and not min_values <= len(default_values) <= max_values:
+        raise ValueError('default_values must be between min_values and max_values')
+
+
 class BaseSelect(Item[V]):
     """The base Select model that all other Select models inherit from.
 
@@ -252,6 +271,12 @@ class BaseSelect(Item[V]):
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
 
+        if options is not MISSING and len(options) > 25:
+            raise ValueError('maximum number of options already provided (25)')
+
+        min_values = _validate_select_min_values(min_values)
+        max_values = _validate_select_max_values(max_values)
+
         self._underlying = SelectMenu._raw_construct(
             type=type,
             custom_id=custom_id,
@@ -265,6 +290,7 @@ class BaseSelect(Item[V]):
             default_values=[] if default_values is MISSING else default_values,
             id=id,
         )
+        _validate_default_values_count(self._underlying.default_values, min_values, max_values)
 
         self.row = row
         self._values: List[PossibleValue] = []
@@ -323,7 +349,9 @@ class BaseSelect(Item[V]):
 
     @min_values.setter
     def min_values(self, value: int) -> None:
-        self._underlying.min_values = int(value)
+        value = _validate_select_min_values(value)
+        _validate_default_values_count(self._underlying.default_values, value, self.max_values)
+        self._underlying.min_values = value
 
     @property
     def max_values(self) -> int:
@@ -332,7 +360,9 @@ class BaseSelect(Item[V]):
 
     @max_values.setter
     def max_values(self, value: int) -> None:
-        self._underlying.max_values = int(value)
+        value = _validate_select_max_values(value)
+        _validate_default_values_count(self._underlying.default_values, self.min_values, value)
+        self._underlying.max_values = value
 
     @property
     def disabled(self) -> bool:
@@ -507,6 +537,9 @@ class Select(BaseSelect[V]):
     def options(self, value: List[SelectOption]) -> None:
         if not isinstance(value, list) or not all(isinstance(obj, SelectOption) for obj in value):
             raise TypeError('options must be a list of SelectOption')
+
+        if len(value) > 25:
+            raise ValueError('maximum number of options already provided (25)')
 
         self._underlying.options = value
 
@@ -685,7 +718,9 @@ class UserSelect(BaseSelect[V]):
 
     @default_values.setter
     def default_values(self, value: Sequence[ValidDefaultValues]) -> None:
-        self._underlying.default_values = _handle_select_defaults(value, self.type)
+        default_values = _handle_select_defaults(value, self.type)
+        _validate_default_values_count(default_values, self.min_values, self.max_values)
+        self._underlying.default_values = default_values
 
 
 class RoleSelect(BaseSelect[V]):
@@ -785,7 +820,9 @@ class RoleSelect(BaseSelect[V]):
 
     @default_values.setter
     def default_values(self, value: Sequence[ValidDefaultValues]) -> None:
-        self._underlying.default_values = _handle_select_defaults(value, self.type)
+        default_values = _handle_select_defaults(value, self.type)
+        _validate_default_values_count(default_values, self.min_values, self.max_values)
+        self._underlying.default_values = default_values
 
 
 class MentionableSelect(BaseSelect[V]):
@@ -897,7 +934,9 @@ class MentionableSelect(BaseSelect[V]):
 
     @default_values.setter
     def default_values(self, value: Sequence[ValidDefaultValues]) -> None:
-        self._underlying.default_values = _handle_select_defaults(value, self.type)
+        default_values = _handle_select_defaults(value, self.type)
+        _validate_default_values_count(default_values, self.min_values, self.max_values)
+        self._underlying.default_values = default_values
 
 
 class ChannelSelect(BaseSelect[V]):
@@ -1018,7 +1057,9 @@ class ChannelSelect(BaseSelect[V]):
 
     @default_values.setter
     def default_values(self, value: Sequence[ValidDefaultValues]) -> None:
-        self._underlying.default_values = _handle_select_defaults(value, self.type)
+        default_values = _handle_select_defaults(value, self.type)
+        _validate_default_values_count(default_values, self.min_values, self.max_values)
+        self._underlying.default_values = default_values
 
 
 @overload
