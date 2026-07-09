@@ -3984,7 +3984,7 @@ of :class:`enum.Enum`.
 
 .. class:: SubscriptionStatus
 
-    Represents the status of an subscription.
+    Represents the status of a subscription.
 
     .. versionadded:: 2.5
 
