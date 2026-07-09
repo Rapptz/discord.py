@@ -173,8 +173,7 @@ class KeepAliveHandler(threading.Thread):
 
             data = self.get_payload()
             _log.debug(self.msg, self.shard_id, data['d'])
-            coro = self.ws.send_heartbeat(data)
-            f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+            f = asyncio.run_coroutine_threadsafe(self._send_heartbeat(data), loop=self.ws.loop)
             try:
                 # block until sending is complete
                 total = 0
@@ -195,8 +194,6 @@ class KeepAliveHandler(threading.Thread):
 
             except Exception:
                 self.stop()
-            else:
-                self._last_send = time.perf_counter()
 
     def get_payload(self) -> Dict[str, Any]:
         return {
@@ -213,6 +210,10 @@ class KeepAliveHandler(threading.Thread):
     def beat(self) -> Dict[str, Any]:
         self._last_send = time.perf_counter()
         return self.get_payload()
+
+    async def _send_heartbeat(self, data: Any) -> None:
+        self._last_send = time.perf_counter()
+        await self.ws.send_heartbeat(data)
 
     def ack(self) -> None:
         ack_time = time.perf_counter()
