@@ -2556,7 +2556,7 @@ class Message(PartialMessage, Hashable):
     def clean_content(self) -> str:
         """:class:`str`: A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
-        into the way the client shows it. e.g. ``<#id>`` will transform
+        into the way the client shows them. e.g. ``<#id>`` will transform
         into ``#name``.
 
         This will also transform @everyone and @here mentions into
