@@ -58,20 +58,14 @@ __all__ = (
 V = TypeVar('V', bound='BaseView', covariant=True)
 
 
-def _validate_checkbox_group_min_values(value: Optional[int]) -> Optional[int]:
-    if value is None:
-        return None
-
+def _validate_checkbox_group_min_values(value: int) -> int:
     value = int(value)
     if not 0 <= value <= 10:
         raise ValueError('min_values must be between 0 and 10')
     return value
 
 
-def _validate_checkbox_group_max_values(value: Optional[int]) -> Optional[int]:
-    if value is None:
-        return None
-
+def _validate_checkbox_group_max_values(value: int) -> int:
     value = int(value)
     if not 1 <= value <= 10:
         raise ValueError('max_values must be between 1 and 10')
@@ -129,8 +123,10 @@ class CheckboxGroup(Item[V]):
         if options is not MISSING and len(options) > 10:
             raise ValueError('maximum number of options already provided (10)')
 
-        min_values = _validate_checkbox_group_min_values(min_values)
-        max_values = _validate_checkbox_group_max_values(max_values)
+        if min_values is not None:
+            min_values = _validate_checkbox_group_min_values(min_values)
+        if max_values is not None:
+            max_values = _validate_checkbox_group_max_values(max_values)
 
         self._underlying: CheckboxGroupComponent = CheckboxGroupComponent._raw_construct(
             id=id,
