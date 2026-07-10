@@ -297,27 +297,24 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
 
 
 def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, Union[str, locale_str]]) -> None:
-    rename_map: Dict[str, Union[str, locale_str]] = {}
-
-    # original name to renamed name
+    rename_map: Dict[str, str] = {}
 
     for name in params.keys():
         new_name = renames.pop(name, MISSING)
 
         if new_name is MISSING:
-            rename_map[name] = name
-            continue
-
-        if new_name in rename_map.values():
-            raise ValueError(f'{new_name} is already used')
-
-        if isinstance(new_name, str):
-            new_name = validate_name(new_name)
+            display_name = name
+        elif isinstance(new_name, str):
+            display_name = validate_name(new_name)
         else:
-            validate_name(new_name.message)
+            display_name = validate_name(new_name.message)
 
-        rename_map[name] = new_name
-        params[name]._rename = new_name
+        if display_name in rename_map:
+            raise ValueError(f'{display_name} is already used')
+
+        rename_map[display_name] = name
+        if new_name is not MISSING:
+            params[name]._rename = new_name
 
     if renames:
         first = next(iter(renames))
