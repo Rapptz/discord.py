@@ -206,6 +206,10 @@ class Item(Generic[V]):
     def _update_view(self, view) -> None:
         self._view = view
 
+    def _detach_view(self) -> None:
+        self._update_view(None)
+        self._parent = None
+
     def copy(self) -> Self:
         return copy.deepcopy(self)
 

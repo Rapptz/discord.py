@@ -197,6 +197,9 @@ class Container(Item[V]):
     def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
         child_index = self._children.index(base)
         self._children[child_index] = new  # type: ignore
+        base._detach_view()
+        new._update_view(self.view)
+        new._parent = self
 
     @property
     def children(self) -> List[Item[V]]:
@@ -336,6 +339,7 @@ class Container(Item[V]):
         else:
             if self._view:
                 self._view._add_count(-item._total_count)
+            item._detach_view()
         return self
 
     def find_item(self, id: int, /) -> Optional[Item[V]]:
@@ -367,5 +371,7 @@ class Container(Item[V]):
 
         if self._view:
             self._view._add_count(-len(tuple(self.walk_children())))
+        for item in self._children:
+            item._detach_view()
         self._children.clear()
         return self
