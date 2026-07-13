@@ -1123,6 +1123,72 @@ class CommandTree(Generic[ClientT]):
 
         return [AppCommand(data=d, state=self._state) for d in data]
 
+    async def sync_command(
+        self, command: Union[AppCommand, Command, ContextMenu, Group], *, guild: Optional[Snowflake] = None
+    ) -> AppCommand:
+        """|coro|
+
+        Syncs a single application command to Discord.
+
+        .. note ::
+            This is not recommended for use in most cases, use :meth:`.sync` instead.
+
+        .. versionadded:: 2.6
+
+        Parameters
+        -----------
+        command: Union[:class:`AppCommand`, :class:`Command`, :class:`ContextMenu`, :class:`Group`]
+            The application command to sync.
+            If this is an :class:`AppCommand`, it will call its :meth:`AppCommand.sync` method.
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to sync the command in. If not provided, the command is synced globally.
+            This is not applicable for :class:`AppCommand` instances, as they are already guild-
+            specific.
+
+        Raises
+        -------
+        HTTPException
+            Syncing the commands failed.
+        CommandSyncFailure
+            Syncing the commands failed due to a user related error, typically because
+            the command has invalid data. This is equivalent to an HTTP status code of
+            400.
+        Forbidden
+            The client does not have the ``applications.commands`` scope in the guild.
+        MissingApplicationID
+            The client does not have an application ID.
+        TranslationError
+            An error occurred while translating the commands.
+
+        Returns
+        --------
+        :class:`AppCommand`
+            The application command that got synced.
+        """
+        if isinstance(command, AppCommand):
+            return await command.sync()
+
+        if self.client.application_id is None:
+            raise MissingApplicationID
+
+        translator = self.translator
+        if translator:
+            payload = await command.get_translated_payload(self, translator)
+        else:
+            payload = command.to_dict(self)
+
+        try:
+            if guild is None:
+                data = await self._http.upsert_global_command(self.client.application_id, payload=payload)  # type: ignore
+            else:
+                data = await self._http.upsert_guild_command(self.client.application_id, guild.id, payload=payload)  # type: ignore
+        except HTTPException as e:
+            if e.status == 400 and e.code == 50035:
+                raise CommandSyncFailure(e, [command]) from None
+            raise
+
+        return AppCommand(data=data, state=self._state)
+
     async def _dispatch_error(self, interaction: Interaction[ClientT], error: AppCommandError, /) -> None:
         command = interaction.command
         interaction.command_failed = True

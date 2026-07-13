@@ -2308,7 +2308,7 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         guild_id: Snowflake,
-        payload: Dict[str, Any],
+        payload: command.ApplicationCommand,
     ) -> Response[command.ApplicationCommand]:
         r = Route(
             'POST',
