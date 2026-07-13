@@ -572,7 +572,7 @@ class HTTPClient:
             'compress': compress,
         }
 
-        return await self.__session.ws_connect(url, **kwargs)
+        return await self.__session.ws_connect(url, **kwargs)  # pyright: ignore[reportReturnType]
 
     def _try_clear_expired_ratelimits(self) -> None:
         if len(self._buckets) < 256:
