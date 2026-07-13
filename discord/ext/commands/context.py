@@ -48,10 +48,11 @@ if TYPE_CHECKING:
     from discord.file import File
     from discord.mentions import AllowedMentions
     from discord.sticker import GuildSticker, StickerItem
-    from discord.message import MessageReference, PartialMessage, SharedClientTheme
+    from discord.message import MessageReference, PartialMessage
     from discord.ui.view import BaseView, View, LayoutView
     from discord.types.interactions import ApplicationCommandInteractionData
     from discord.poll import Poll
+    from discord.shared_client_theme import SharedClientTheme
 
     from .cog import Cog
     from .core import Command

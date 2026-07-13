@@ -87,7 +87,7 @@ if TYPE_CHECKING:
     from .member import Member
     from .channel import CategoryChannel
     from .embeds import Embed
-    from .message import Message, MessageReference, PartialMessage, SharedClientTheme
+    from .message import Message, MessageReference, PartialMessage
     from .channel import (
         TextChannel,
         DMChannel,
@@ -113,6 +113,7 @@ if TYPE_CHECKING:
         SnowflakeList,
     )
     from .permissions import _PermissionOverwriteKwargs
+    from .shared_client_theme import SharedClientTheme
 
     PartialMessageableChannel = Union[TextChannel, VoiceChannel, StageChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]

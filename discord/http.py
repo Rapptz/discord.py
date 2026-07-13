@@ -66,8 +66,9 @@ if TYPE_CHECKING:
 
     from .ui.view import BaseView
     from .embeds import Embed
-    from .message import Attachment, SharedClientTheme
+    from .message import Attachment
     from .poll import Poll
+    from .shared_client_theme import SharedClientTheme
 
     from .types import (
         appinfo,
