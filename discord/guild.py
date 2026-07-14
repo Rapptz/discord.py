@@ -82,7 +82,7 @@ from .user import User
 from .invite import Invite
 from .widget import Widget
 from .asset import Asset
-from .flags import SystemChannelFlags
+from .flags import ChannelFlags, SystemChannelFlags
 from .integrations import Integration, PartialIntegration, _integration_factory
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
@@ -1411,6 +1411,7 @@ class Guild(Hashable):
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
+        spoiler: bool = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
         default_auto_archive_duration: int = MISSING,
         default_thread_slowmode_delay: int = MISSING,
@@ -1478,6 +1479,8 @@ class Guild(Hashable):
             The maximum value possible is ``21600``.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         news: :class:`bool`
             Whether to create the text channel as a news channel.
 
@@ -1522,6 +1525,9 @@ class Guild(Hashable):
         if nsfw is not MISSING:
             options['nsfw'] = nsfw
 
+        if spoiler is not MISSING:
+            options['flags'] = ChannelFlags(spoiler=spoiler).value
+
         if default_auto_archive_duration is not MISSING:
             options['default_auto_archive_duration'] = default_auto_archive_duration
 
@@ -1555,6 +1561,7 @@ class Guild(Hashable):
         video_quality_mode: VideoQualityMode = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
         nsfw: bool = MISSING,
+        spoiler: bool = MISSING,
     ) -> VoiceChannel:
         """|coro|
 
@@ -1596,6 +1603,8 @@ class Guild(Hashable):
             To mark the channel as NSFW or not.
 
             .. versionadded:: 2.6
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1633,6 +1642,9 @@ class Guild(Hashable):
 
         if nsfw is not MISSING:
             options['nsfw'] = nsfw
+
+        if spoiler is not MISSING:
+            options['flags'] = ChannelFlags(spoiler=spoiler).value
 
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.voice, category=category, reason=reason, **options
@@ -1810,6 +1822,7 @@ class Guild(Hashable):
         category: Optional[CategoryChannel] = None,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
+        spoiler: bool = MISSING,
         media: bool = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
         reason: Optional[str] = None,
@@ -1850,6 +1863,8 @@ class Guild(Hashable):
             at 0. e.g. the top channel is position 0.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for users in this channel, in seconds.
             The maximum possible value is ``21600``.
@@ -1912,6 +1927,9 @@ class Guild(Hashable):
 
         if nsfw is not MISSING:
             options['nsfw'] = nsfw
+
+        if spoiler is not MISSING:
+            options['flags'] = ChannelFlags(spoiler=spoiler).value
 
         if default_auto_archive_duration is not MISSING:
             options['default_auto_archive_duration'] = default_auto_archive_duration

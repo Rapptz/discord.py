@@ -1778,6 +1778,14 @@ class ChannelFlags(BaseFlags):
         """
         return 1 << 15
 
+    @flag_value
+    def spoiler(self):
+        """:class:`bool`: Returns ``True`` if the channel requires members to opt in before viewing its contents.
+
+        .. versionadded:: 2.8
+        """
+        return 1 << 21
+
 
 class ArrayFlags(BaseFlags):
     @classmethod
