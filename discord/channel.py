@@ -1153,13 +1153,6 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         """
         return self.nsfw
 
-    def is_spoiler(self) -> bool:
-        """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
-
-        .. versionadded:: 2.8
-        """
-        return self.flags.spoiler
-
     @property
     def members(self) -> List[Member]:
         """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
@@ -1576,6 +1569,13 @@ class VoiceChannel(VocalGuildChannel):
     def type(self) -> Literal[ChannelType.voice]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
+
+    def is_spoiler(self) -> bool:
+        """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
+
+        .. versionadded:: 2.8
+        """
+        return self.flags.spoiler
 
     @overload
     async def edit(self) -> None: ...

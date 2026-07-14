@@ -431,7 +431,7 @@ class GuildChannel:
 
     @property
     def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this channel.
+        """:class:`~discord.ChannelFlags`: The flags associated with this channel.
 
         .. versionadded:: 2.1
 
