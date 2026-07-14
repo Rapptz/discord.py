@@ -66,7 +66,7 @@ from .errors import ClientException
 from .stage_instance import StageInstance
 from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
-from .flags import ChannelFlags, MessageFlags
+from .flags import MessageFlags
 from .http import handle_message_parameters
 from .object import Object
 from .soundboard import BaseSoundboardSound, SoundboardDefaultSound
@@ -384,7 +384,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
         self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
-        self._flags: int = data.get('flags', getattr(self, '_flags', 0))
+        self._flags: int = data.get('flags', 0)
         self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
@@ -444,14 +444,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def is_news(self) -> bool:
         """:class:`bool`: Checks if the channel is a news channel."""
         return self._type == ChannelType.news.value
-
-    @property
-    def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this channel.
-
-        .. versionadded:: 2.8
-        """
-        return ChannelFlags._from_value(self._flags)
 
     @property
     def last_message(self) -> Optional[Message]:
@@ -1147,7 +1139,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self.bitrate: int = data['bitrate']
         self.user_limit: int = data['user_limit']
-        self._flags: int = data.get('flags', getattr(self, '_flags', 0))
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -1167,14 +1159,6 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         .. versionadded:: 2.8
         """
         return self.flags.spoiler
-
-    @property
-    def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this channel.
-
-        .. versionadded:: 2.8
-        """
-        return ChannelFlags._from_value(self._flags)
 
     @property
     def members(self) -> List[Member]:
@@ -2109,7 +2093,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
 
-    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id')
+    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id', '_flags')
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: CategoryChannelPayload):
         self._state: ConnectionState = state
@@ -2125,6 +2109,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
         self.nsfw: bool = data.get('nsfw', False)
         self.position: int = data['position']
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -2560,7 +2545,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         if default_sort_order is not None:
             self.default_sort_order = try_enum(ForumOrderType, default_sort_order)
 
-        self._flags: int = data.get('flags', getattr(self, '_flags', 0))
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -2625,14 +2610,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def threads(self) -> List[Thread]:
         """List[:class:`Thread`]: Returns all the threads that you can see."""
         return [thread for thread in self.guild._threads.values() if thread.parent_id == self.id]
-
-    @property
-    def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this forum.
-
-        .. versionadded:: 2.1
-        """
-        return ChannelFlags._from_value(self._flags)
 
     @property
     def available_tags(self) -> Sequence[ForumTag]:

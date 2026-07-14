@@ -62,7 +62,7 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
-from .flags import InviteFlags
+from .flags import ChannelFlags, InviteFlags
 import warnings
 
 __all__ = (
@@ -423,10 +423,22 @@ class GuildChannel:
     category_id: Optional[int]
     _state: ConnectionState
     _overwrites: List[_Overwrites]
+    _flags: int
 
     if TYPE_CHECKING:
 
         def __init__(self, *, state: ConnectionState, guild: Guild, data: GuildChannelPayload): ...
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`ChannelFlags`: The flags associated with this channel.
+
+        .. versionadded:: 2.1
+
+        .. versionchanged:: 2.8
+            This is now available on all guild channels.
+        """
+        return ChannelFlags._from_value(self._flags)
 
     def __str__(self) -> str:
         return self.name
