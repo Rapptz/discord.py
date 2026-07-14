@@ -142,7 +142,7 @@ if TYPE_CHECKING:
         spoiler: bool
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
 
-    class _CreateStageChannelOptions(_CreateVoiceChannelOptions, total=False):
+    class _CreateStageChannelOptions(_BaseCreateChannelOptions, total=False):
         bitrate: int
         user_limit: int
         rtc_region: Optional[str]
