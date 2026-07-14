@@ -99,7 +99,7 @@ class SharedClientTheme:
             colours=[Colour(int(colour, 16)) for colour in data.get('colors', [])],
             gradient_angle=data.get('gradient_angle', 0),
             intensity=data.get('base_mix', 0),
-            theme=try_enum(BaseTheme, data.get('base_theme', 'dark')),
+            theme=try_enum(BaseTheme, data.get('base_theme', BaseTheme.dark.value)),
         )
 
     def to_dict(self) -> SharedClientThemePayload:
