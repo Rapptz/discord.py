@@ -67,5 +67,4 @@ async def test_text_channel_edit_sets_spoiler_flag():
     assert state.http.options == {'flags': (1 << 4) | (1 << 21)}
     assert edited is not None
     assert edited.flags.spoiler is True
-    assert edited.spoiler is True
     assert edited.is_spoiler() is True

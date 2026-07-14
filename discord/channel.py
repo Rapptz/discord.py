@@ -434,20 +434,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw
 
-    @property
-    def spoiler(self) -> bool:
-        """:class:`bool`: Whether members must opt in before viewing the channel's contents.
-
-        .. versionadded:: 2.8
-        """
-        return self.flags.spoiler
-
     def is_spoiler(self) -> bool:
         """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
 
         .. versionadded:: 2.8
         """
-        return self.spoiler
+        return self.flags.spoiler
 
     def is_news(self) -> bool:
         """:class:`bool`: Checks if the channel is a news channel."""
@@ -1169,20 +1161,12 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         """
         return self.nsfw
 
-    @property
-    def spoiler(self) -> bool:
-        """:class:`bool`: Whether members must opt in before viewing the channel's contents.
-
-        .. versionadded:: 2.8
-        """
-        return self.flags.spoiler
-
     def is_spoiler(self) -> bool:
         """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
 
         .. versionadded:: 2.8
         """
-        return self.spoiler
+        return self.flags.spoiler
 
     @property
     def flags(self) -> ChannelFlags:
@@ -2679,20 +2663,12 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         """:class:`bool`: Checks if the forum is NSFW."""
         return self.nsfw
 
-    @property
-    def spoiler(self) -> bool:
-        """:class:`bool`: Whether members must opt in before viewing the forum's contents.
-
-        .. versionadded:: 2.8
-        """
-        return self.flags.spoiler
-
     def is_spoiler(self) -> bool:
         """:class:`bool`: Checks if members must opt in before viewing the forum's contents.
 
         .. versionadded:: 2.8
         """
-        return self.spoiler
+        return self.flags.spoiler
 
     def is_media(self) -> bool:
         """:class:`bool`: Checks if the channel is a media channel.
