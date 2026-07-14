@@ -1,6 +1,6 @@
 import pytest
 
-from discord.channel import TextChannel
+from discord.channel import StageChannel, TextChannel
 from discord.flags import ChannelFlags
 
 
@@ -58,6 +58,50 @@ async def test_text_channel_edit_sets_spoiler_flag():
             'name': 'spoilers',
             'position': 0,
             'permission_overwrites': [],
+            'flags': 1 << 4,
+        },
+    )
+
+    edited = await channel.edit(spoiler=True)
+
+    assert state.http.options == {'flags': (1 << 4) | (1 << 21)}
+    assert edited is not None
+    assert edited.flags.spoiler is True
+    assert edited.is_spoiler() is True
+
+
+class _StageHTTP(_HTTP):
+    async def edit_channel(self, channel_id, *, reason, **options):
+        self.channel_id = channel_id
+        self.reason = reason
+        self.options = options
+        return {
+            'id': str(channel_id),
+            'type': 13,
+            'name': 'spoilers',
+            'position': 0,
+            'permission_overwrites': [],
+            'bitrate': 64000,
+            'user_limit': 0,
+            'flags': options['flags'],
+        }
+
+
+@pytest.mark.asyncio
+async def test_stage_channel_edit_sets_spoiler_flag():
+    state = _State()
+    state.http = _StageHTTP()
+    channel = StageChannel(
+        state=state,
+        guild=_Guild(),
+        data={
+            'id': '1',
+            'type': 13,
+            'name': 'spoilers',
+            'position': 0,
+            'permission_overwrites': [],
+            'bitrate': 64000,
+            'user_limit': 0,
             'flags': 1 << 4,
         },
     )

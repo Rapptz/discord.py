@@ -1668,6 +1668,7 @@ class Guild(Hashable):
         video_quality_mode: VideoQualityMode = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
         nsfw: bool = MISSING,
+        spoiler: bool = MISSING,
     ) -> StageChannel:
         """|coro|
 
@@ -1715,6 +1716,8 @@ class Guild(Hashable):
             To mark the channel as NSFW or not.
 
             .. versionadded:: 2.6
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1753,6 +1756,9 @@ class Guild(Hashable):
 
         if nsfw is not MISSING:
             options['nsfw'] = nsfw
+
+        if spoiler is not MISSING:
+            options['flags'] = ChannelFlags(spoiler=spoiler).value
 
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.stage_voice, category=category, reason=reason, **options

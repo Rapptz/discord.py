@@ -142,7 +142,7 @@ if TYPE_CHECKING:
         spoiler: bool
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
 
-    class _CreateStageChannelOptions(_BaseCreateChannelOptions, total=False):
+    class _CreateStageChannelOptions(_CreateVoiceChannelOptions, total=False):
         bitrate: int
         user_limit: int
         rtc_region: Optional[str]
@@ -1153,6 +1153,13 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         """
         return self.nsfw
 
+    def is_spoiler(self) -> bool:
+        """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
+
+        .. versionadded:: 2.8
+        """
+        return self.flags.spoiler
+
     @property
     def members(self) -> List[Member]:
         """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
@@ -1570,13 +1577,6 @@ class VoiceChannel(VocalGuildChannel):
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
 
-    def is_spoiler(self) -> bool:
-        """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
-
-        .. versionadded:: 2.8
-        """
-        return self.flags.spoiler
-
     @overload
     async def edit(self) -> None: ...
 
@@ -1963,6 +1963,7 @@ class StageChannel(VocalGuildChannel):
         *,
         name: str = ...,
         nsfw: bool = ...,
+        spoiler: bool = ...,
         bitrate: int = ...,
         user_limit: int = ...,
         position: int = ...,
@@ -2005,6 +2006,8 @@ class StageChannel(VocalGuildChannel):
             The new channel's position.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         user_limit: :class:`int`
             The new channel's user limit.
         sync_permissions: :class:`bool`
@@ -2044,6 +2047,15 @@ class StageChannel(VocalGuildChannel):
             The newly edited stage channel. If the edit was only positional
             then ``None`` is returned instead.
         """
+
+        try:
+            spoiler = options.pop('spoiler')
+        except KeyError:
+            pass
+        else:
+            flags = self.flags
+            flags.spoiler = spoiler
+            options['flags'] = flags.value
 
         payload = await self._edit(options, reason=reason)
         if payload is not None:
