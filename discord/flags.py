@@ -40,12 +40,48 @@ from typing import (
     Type,
     TypeVar,
     overload,
+    TypedDict,
 )
 
 from .enums import UserFlags
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
+
+    class _IntentsFlagsKwargs(TypedDict, total=False):
+        guilds: bool
+        members: bool
+        moderation: bool
+        bans: bool
+        emojis: bool
+        emojis_and_stickers: bool
+        expressions: bool
+        integrations: bool
+        webhooks: bool
+        invites: bool
+        voice_states: bool
+        presences: bool
+        messages: bool
+        guild_messages: bool
+        dm_messages: bool
+        reactions: bool
+        guild_reactions: bool
+        dm_reactions: bool
+        typing: bool
+        guild_typing: bool
+        dm_typing: bool
+        message_content: bool
+        guild_scheduled_events: bool
+        auto_moderation: bool
+        auto_moderation_configuration: bool
+        auto_moderation_execution: bool
+        polls: bool
+        guild_polls: bool
+        dm_polls: bool
+
+    class _MemberCacheFlagsKwargs(TypedDict, total=False):
+        voice: bool
+        joined: bool
 
 
 __all__ = (
@@ -63,6 +99,8 @@ __all__ = (
     'RoleFlags',
     'AppInstallationType',
     'SKUFlags',
+    'EmbedFlags',
+    'InviteFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -74,12 +112,10 @@ class flag_value:
         self.__doc__: Optional[str] = func.__doc__
 
     @overload
-    def __get__(self, instance: None, owner: Type[BF]) -> Self:
-        ...
+    def __get__(self, instance: None, owner: Type[BF]) -> Self: ...
 
     @overload
-    def __get__(self, instance: BF, owner: Type[BF]) -> bool:
-        ...
+    def __get__(self, instance: BF, owner: Type[BF]) -> bool: ...
 
     def __get__(self, instance: Optional[BF], owner: Type[BF]) -> Any:
         if instance is None:
@@ -335,6 +371,15 @@ class SystemChannelFlags(BaseFlags):
         """
         return 32
 
+    @flag_value
+    def emoji_added(self):
+        """:class:`bool`: Returns ``True`` if the system channel is used for
+        emoji added notifications.
+
+        .. versionadded:: 2.7
+        """
+        return 256
+
 
 @fill_with_flags()
 class MessageFlags(BaseFlags):
@@ -497,6 +542,16 @@ class MessageFlags(BaseFlags):
         .. versionadded:: 2.5
         """
         return 16384
+
+    @flag_value
+    def components_v2(self):
+        """:class:`bool`: Returns ``True`` if the message has Discord's v2 components.
+
+        Does not allow sending any ``content``, ``embed``, ``embeds``, ``stickers``, or ``poll``.
+
+        .. versionadded:: 2.6
+        """
+        return 32768
 
 
 @fill_with_flags()
@@ -753,12 +808,12 @@ class Intents(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, value: int = 0, **kwargs: bool) -> None:
+    def __init__(self, value: int = 0, **kwargs: Unpack[_IntentsFlagsKwargs]) -> None:
         self.value: int = value
-        for key, value in kwargs.items():
+        for key, kwvalue in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError(f'{key!r} is not a valid flag name.')
-            setattr(self, key, value)
+            setattr(self, key, kwvalue)
 
     @classmethod
     def all(cls: Type[Intents]) -> Intents:
@@ -1414,7 +1469,7 @@ class MemberCacheFlags(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, **kwargs: bool):
+    def __init__(self, **kwargs: Unpack[_MemberCacheFlagsKwargs]) -> None:
         bits = max(self.VALID_FLAGS.values()).bit_length()
         self.value: int = (1 << bits) - 1
         for key, value in kwargs.items():
@@ -2093,6 +2148,15 @@ class MemberFlags(BaseFlags):
         return 1 << 7
 
     @flag_value
+    def automod_quarantined_guild_tag(self):
+        """:class:`bool`: Returns ``True`` if the member's guild tag has been
+        blocked by AutoMod.
+
+        .. versionadded:: 2.6
+        """
+        return 1 << 10
+
+    @flag_value
     def dm_settings_upsell_acknowledged(self):
         """:class:`bool`: Returns ``True`` if the member has dismissed the DM settings upsell.
 
@@ -2172,6 +2236,30 @@ class AttachmentFlags(BaseFlags):
     def remix(self):
         """:class:`bool`: Returns ``True`` if the attachment has been edited using the remix feature."""
         return 1 << 2
+
+    @flag_value
+    def spoiler(self):
+        """:class:`bool`: Returns ``True`` if the attachment was marked as a spoiler.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 3
+
+    @flag_value
+    def contains_explicit_media(self):
+        """:class:`bool`: Returns ``True`` if the attachment was flagged as sensitive content.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 4
+
+    @flag_value
+    def animated(self):
+        """:class:`bool`: Returns ``True`` if the attachment is an animated image.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 5
 
 
 @fill_with_flags()
@@ -2308,3 +2396,124 @@ class SKUFlags(BaseFlags):
     def user_subscription(self):
         """:class:`bool`: Returns ``True`` if the SKU is a user subscription."""
         return 1 << 8
+
+
+@fill_with_flags()
+class EmbedFlags(BaseFlags):
+    r"""Wraps up the Discord Embed flags
+
+    .. versionadded:: 2.5
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two EmbedFlags are equal.
+
+        .. describe:: x != y
+
+            Checks if two EmbedFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns an EmbedFlags instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns an EmbedFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns an EmbedFlags instance with all flags inverted from x.
+
+        .. describe:: hash(x)
+
+            Returns the flag's hash.
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    Attributes
+    ----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def contains_explicit_media(self):
+        """:class:`bool`: Returns ``True`` if the embed was flagged as sensitive content."""
+        return 1 << 4
+
+    @flag_value
+    def content_inventory_entry(self):
+        """:class:`bool`: Returns ``True`` if the embed is a reply to an activity card, and is no
+        longer displayed.
+        """
+        return 1 << 5
+
+
+@fill_with_flags()
+class InviteFlags(BaseFlags):
+    r"""Wraps up the Discord Invite flags
+
+    .. versionadded:: 2.6
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two InviteFlags are equal.
+
+        .. describe:: x != y
+
+            Checks if two InviteFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a InviteFlags instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a InviteFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns a InviteFlags instance with all flags inverted from x.
+
+        .. describe:: hash(x)
+
+            Returns the flag's hash.
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    Attributes
+    ----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def guest(self):
+        """:class:`bool`: Returns ``True`` if this is a guest invite for a voice channel."""
+        return 1 << 0

@@ -48,6 +48,7 @@ __all__ = (
     'PrivilegedIntentsRequired',
     'InteractionResponded',
     'MissingApplicationID',
+    'FFmpegProcessError',
 )
 
 APP_ID_NOT_FOUND = (
@@ -69,6 +70,15 @@ class ClientException(DiscordException):
     """Exception that's raised when an operation in the :class:`Client` fails.
 
     These are usually for exceptions that happened due to user input.
+    """
+
+    pass
+
+
+class FFmpegProcessError(ClientException):
+    """Exception that's raised when an FFmpeg process fails.
+
+    .. versionadded:: 2.7
     """
 
     pass
@@ -261,7 +271,7 @@ class PrivilegedIntentsRequired(ClientException):
         msg = (
             'Shard ID %s is requesting privileged intents that have not been explicitly enabled in the '
             'developer portal. It is recommended to go to https://discord.com/developers/applications/ '
-            'and explicitly enable the privileged intents within your application\'s page. If this is not '
+            "and explicitly enable the privileged intents within your application's page. If this is not "
             'possible, then consider disabling the privileged intents instead.'
         )
         super().__init__(msg % shard_id)

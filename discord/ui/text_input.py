@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Literal, Optional, Tuple, TypeVar
 
 from ..components import TextInput as TextInputComponent
 from ..enums import ComponentType, TextStyle
-from ..utils import MISSING
+from ..utils import MISSING, deprecated
 from .item import Item
 
 if TYPE_CHECKING:
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from ..types.components import TextInput as TextInputPayload
     from ..types.interactions import ModalSubmitTextInputInteractionData as ModalSubmitTextInputInteractionDataPayload
-    from .view import View
+    from .view import BaseView
     from ..interactions import Interaction
 
 
@@ -47,11 +47,13 @@ __all__ = (
 )
 # fmt: on
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='BaseView', covariant=True)
 
 
 class TextInput(Item[V]):
     """Represents a UI text input.
+
+    This a top-level layout component that can only be used in :class:`Label`.
 
     .. container:: operations
 
@@ -63,9 +65,15 @@ class TextInput(Item[V]):
 
     Parameters
     ------------
-    label: :class:`str`
+    label: Optional[:class:`str`]
         The label to display above the text input.
         Can only be up to 45 characters.
+
+        .. deprecated:: 2.6
+            This parameter is deprecated, use :class:`discord.ui.Label` instead.
+
+        .. versionchanged:: 2.6
+            This parameter is now optional and defaults to ``None``.
     custom_id: :class:`str`
         The ID of the text input that gets received during an interaction.
         If not given then one is generated for you.
@@ -92,18 +100,23 @@ class TextInput(Item[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
         'label',
         'placeholder',
         'required',
+        'id',
     )
 
     def __init__(
         self,
         *,
-        label: str,
+        label: Optional[str] = None,
         style: TextStyle = TextStyle.short,
         custom_id: str = MISSING,
         placeholder: Optional[str] = None,
@@ -112,6 +125,7 @@ class TextInput(Item[V]):
         min_length: Optional[int] = None,
         max_length: Optional[int] = None,
         row: Optional[int] = None,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__()
         self._value: Optional[str] = default
@@ -129,11 +143,21 @@ class TextInput(Item[V]):
             required=required,
             min_length=min_length,
             max_length=max_length,
+            id=id,
         )
         self.row = row
 
     def __str__(self) -> str:
         return self.value
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this text input."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
 
     @property
     def custom_id(self) -> str:
@@ -158,12 +182,14 @@ class TextInput(Item[V]):
         return self._value or ''
 
     @property
-    def label(self) -> str:
+    @deprecated('discord.ui.Label')
+    def label(self) -> Optional[str]:
         """:class:`str`: The label of the text input."""
         return self._underlying.label
 
     @label.setter
-    def label(self, value: str) -> None:
+    @deprecated('discord.ui.Label')
+    def label(self, value: Optional[str]) -> None:
         self._underlying.label = value
 
     @property
@@ -241,6 +267,7 @@ class TextInput(Item[V]):
             min_length=component.min_length,
             max_length=component.max_length,
             row=None,
+            id=component.id,
         )
 
     @property

@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import threading
@@ -39,7 +40,7 @@ import io
 from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from .enums import SpeakingState
-from .errors import ClientException
+from .errors import ClientException, FFmpegProcessError
 from .opus import Encoder as OpusEncoder, OPUS_SILENCE
 from .oggparse import OggStream
 from .utils import MISSING
@@ -163,7 +164,7 @@ class FFmpegAudio(AudioSource):
         stderr: Optional[IO[bytes]] = subprocess_kwargs.pop('stderr', None)
 
         if stderr == subprocess.PIPE:
-            warnings.warn("Passing subprocess.PIPE does nothing", DeprecationWarning, stacklevel=3)
+            warnings.warn('Passing subprocess.PIPE does nothing', DeprecationWarning, stacklevel=3)
             stderr = None
 
         piping_stderr = False
@@ -185,6 +186,8 @@ class FFmpegAudio(AudioSource):
         self._stderr: Optional[IO[bytes]] = None
         self._pipe_writer_thread: Optional[threading.Thread] = None
         self._pipe_reader_thread: Optional[threading.Thread] = None
+        self._current_error: Optional[Exception] = None
+        self._stopped: bool = False
 
         if piping_stdin:
             n = f'popen-stdin-writer:pid-{self._process.pid}'
@@ -211,25 +214,72 @@ class FFmpegAudio(AudioSource):
         else:
             return process
 
+    def _check_process_returncode(self) -> None:
+        """Set _current_error if FFmpeg exited with a non-zero code."""
+        if self._process is MISSING:
+            return
+
+        ret = self._process.poll()
+        if ret is None:
+            return  # still running
+
+        if self._stopped:
+            return  # intentionally stopped
+
+        if ret != 0 and self._current_error is None:
+            # Only set error once, on first detection
+            # read stderr if available
+            stderr_text = None
+            if self._stderr:
+                try:
+                    stderr_text = self._stderr.read(8192).decode(errors='ignore')
+                except Exception:
+                    stderr_text = '<failed to read stderr>'
+
+            stderr_info = stderr_text if stderr_text else '<no stderr>'
+            self._current_error = FFmpegProcessError(f'FFmpeg exited with code {ret}. Stderr: {stderr_info}')
+
     def _kill_process(self) -> None:
+        # check if FFmpeg process failed
+        self._check_process_returncode()
+
         # this function gets called in __del__ so instance attributes might not even exist
         proc = getattr(self, '_process', MISSING)
+        # Only proceed if proc is a subprocess.Popen instance
         if proc is MISSING:
             return
 
-        _log.debug('Preparing to terminate ffmpeg process %s.', proc.pid)
+        pid = getattr(proc, 'pid', 'unknown')
+        _log.debug('Preparing to terminate ffmpeg process %s.', pid)
 
         try:
             proc.kill()
         except Exception:
-            _log.exception('Ignoring error attempting to kill ffmpeg process %s', proc.pid)
+            _log.exception('Ignoring error attempting to kill ffmpeg process %s', pid)
 
-        if proc.poll() is None:
-            _log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
-            proc.communicate()
-            _log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
+        try:
+            still_running = proc.poll() is None
+        except Exception:
+            _log.exception('Error checking poll() on ffmpeg process %s', pid)
+            still_running = False
+
+        if still_running:
+            _log.info('ffmpeg process %s has not terminated. Waiting to terminate...', pid)
+            try:
+                proc.communicate()
+            except Exception:
+                pass
+            _log.info(
+                'ffmpeg process %s should have terminated with a return code of %s.',
+                pid,
+                getattr(proc, 'returncode', 'unknown'),
+            )
         else:
-            _log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
+            _log.info(
+                'ffmpeg process %s successfully terminated with return code of %s.',
+                pid,
+                getattr(proc, 'returncode', 'unknown'),
+            )
 
     def _pipe_writer(self, source: io.BufferedIOBase) -> None:
         while self._process:
@@ -266,6 +316,7 @@ class FFmpegAudio(AudioSource):
                 return
 
     def cleanup(self) -> None:
+        self._stopped = True
         self._kill_process()
         self._process = self._stdout = self._stdin = self._stderr = MISSING
 
@@ -347,6 +398,8 @@ class FFmpegPCMAudio(FFmpegAudio):
     def read(self) -> bytes:
         ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
         if len(ret) != OpusEncoder.FRAME_SIZE:
+            # Check for FFmpeg process failure when read returns incomplete data
+            self._check_process_returncode()
             return b''
         return ret
 
@@ -573,7 +626,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         if isinstance(method, str):
             probefunc = getattr(cls, '_probe_codec_' + method, None)
             if probefunc is None:
-                raise AttributeError(f"Invalid probe method {method!r}")
+                raise AttributeError(f'Invalid probe method {method!r}')
 
             if probefunc is cls._probe_codec_native:
                 fallback = cls._probe_codec_fallback
@@ -603,9 +656,9 @@ class FFmpegOpusAudio(FFmpegAudio):
             except BaseException:
                 _log.exception("Fallback probe using '%s' failed", executable)
             else:
-                _log.debug("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
+                _log.debug('Fallback probe found codec=%s, bitrate=%s', codec, bitrate)
         else:
-            _log.debug("Probe found codec=%s, bitrate=%s", codec, bitrate)
+            _log.debug('Probe found codec=%s, bitrate=%s', codec, bitrate)
 
         return codec, bitrate
 
@@ -634,18 +687,22 @@ class FFmpegOpusAudio(FFmpegAudio):
         output = out.decode('utf8')
         codec = bitrate = None
 
-        codec_match = re.search(r"Stream #0.*?Audio: (\w+)", output)
+        codec_match = re.search(r'Stream #0.*?Audio: (\w+)', output)
         if codec_match:
             codec = codec_match.group(1)
 
-        br_match = re.search(r"(\d+) [kK]b/s", output)
+        br_match = re.search(r'(\d+) [kK]b/s', output)
         if br_match:
             bitrate = max(int(br_match.group(1)), 512)
 
         return codec, bitrate
 
     def read(self) -> bytes:
-        return next(self._packet_iter, b'')
+        data = next(self._packet_iter, b'')
+        if not data:
+            # Check for FFmpeg process failure when read returns empty
+            self._check_process_returncode()
+        return data
 
     def is_opus(self) -> bool:
         return True
@@ -744,6 +801,11 @@ class AudioPlayer(threading.Thread):
             data = self.source.read()
 
             if not data:
+                # Check if the source has an error (e.g., from FFmpegAudio process failure)
+                if self._current_error is None:
+                    source_error = getattr(self.source, '_current_error', None)
+                    if source_error:
+                        self._current_error = source_error
                 self.stop()
                 break
 
@@ -825,7 +887,7 @@ class AudioPlayer(threading.Thread):
         try:
             asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
         except Exception:
-            _log.exception("Speaking call in player failed")
+            _log.exception('Speaking call in player failed')
 
     def send_silence(self, count: int = 5) -> None:
         try:

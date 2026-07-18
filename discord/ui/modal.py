@@ -33,13 +33,20 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
 from ..utils import MISSING, find
 from .._types import ClientT
 from .item import Item
-from .view import View
+from .view import BaseView
+from .select import BaseSelect
+from .text_input import TextInput
+from ..interactions import Namespace
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..interactions import Interaction
-    from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
+    from ..types.interactions import (
+        ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload,
+        ResolvedData as ResolvedDataPayload,
+    )
+    from ..app_commands.namespace import ResolveKey
 
 
 # fmt: off
@@ -52,7 +59,7 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 
-class Modal(View):
+class Modal(BaseView):
     """Represents a UI modal.
 
     This object must be inherited to create a modal popup window within discord.
@@ -68,11 +75,11 @@ class Modal(View):
         from discord import ui
 
         class Questionnaire(ui.Modal, title='Questionnaire Response'):
-            name = ui.TextInput(label='Name')
-            answer = ui.TextInput(label='Answer', style=discord.TextStyle.paragraph)
+            name = ui.Label(text='Name', component=ui.TextInput())
+            answer = ui.Label(text='Answer', component=ui.TextInput(style=discord.TextStyle.paragraph))
 
             async def on_submit(self, interaction: discord.Interaction):
-                await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
+                await interaction.response.send_message(f'Thanks for your response, {self.name.component.value}!', ephemeral=True)
 
     Parameters
     -----------
@@ -166,21 +173,41 @@ class Modal(View):
         """
         _log.error('Ignoring exception in modal %r:', self, exc_info=error)
 
-    def _refresh(self, interaction: Interaction, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(
+        self,
+        interaction: Interaction,
+        components: Sequence[ModalSubmitComponentInteractionDataPayload],
+        resolved: Dict[ResolveKey, Any],
+    ) -> None:
         for component in components:
             if component['type'] == 1:
-                self._refresh(interaction, component['components'])
+                self._refresh(interaction, component['components'], resolved)  # type: ignore
+            elif component['type'] == 18:
+                self._refresh(interaction, [component['component']], resolved)  # type: ignore
             else:
-                item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
-                if item is None:
-                    _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
+                custom_id = component.get('custom_id')
+                if custom_id is None:
                     continue
-                item._refresh_state(interaction, component)  # type: ignore
 
-    async def _scheduled_task(self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
+                item = find(
+                    lambda i: getattr(i, 'custom_id', None) == custom_id,
+                    self.walk_children(),
+                )
+                if item is None:
+                    _log.debug('Modal interaction referencing unknown item custom_id %s. Discarding', custom_id)
+                    continue
+
+                item._handle_submit(interaction, component, resolved)  # type: ignore
+
+    async def _scheduled_task(
+        self,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: Dict[ResolveKey, Any],
+    ):
         try:
             self._refresh_timeout()
-            self._refresh(interaction, components)
+            self._refresh(interaction, components, resolved)
 
             allow = await self.interaction_check(interaction)
             if not allow:
@@ -194,10 +221,42 @@ class Modal(View):
             # In the future, maybe this will require checking if we set an error response.
             self.stop()
 
+    def to_components(self) -> List[Dict[str, Any]]:
+        def key(item: Item) -> int:
+            return item._rendered_row or item.row or 0
+
+        children = sorted(self._children, key=key)
+        components: List[Dict[str, Any]] = []
+        for child in children:
+            if isinstance(child, (BaseSelect, TextInput)):
+                # Every implicit child wrapped in an ActionRow in a modal
+                # has a single child of width 5
+                # It's also deprecated to use ActionRow in modals
+                components.append(
+                    {
+                        'type': 1,
+                        'components': [child.to_component_dict()],
+                    }
+                )
+            else:
+                components.append(child.to_component_dict())
+
+        return components
+
     def _dispatch_submit(
-        self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]
-    ) -> None:
-        asyncio.create_task(self._scheduled_task(interaction, components), name=f'discord-ui-modal-dispatch-{self.id}')
+        self,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+        resolved: ResolvedDataPayload,
+    ) -> asyncio.Task[None]:
+        try:
+            namespace = Namespace._get_resolved_items(interaction, resolved)
+        except KeyError:
+            namespace = {}
+
+        return asyncio.create_task(
+            self._scheduled_task(interaction, components, namespace), name=f'discord-ui-modal-dispatch-{self.id}'
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         payload = {
@@ -207,3 +266,8 @@ class Modal(View):
         }
 
         return payload
+
+    def add_item(self, item: Item[Any]) -> Self:
+        if len(self._children) >= 5:
+            raise ValueError('maximum number of children exceeded (5)')
+        return super().add_item(item)

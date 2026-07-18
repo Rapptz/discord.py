@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-import asyncio
 import collections
 import collections.abc
 import inspect
@@ -53,7 +52,7 @@ from typing import (
 import discord
 from discord import app_commands
 from discord.app_commands.tree import _retrieve_guild_ids
-from discord.utils import MISSING, _is_submodule
+from discord.utils import MISSING, _iscoroutinefunction, _is_submodule
 
 from .core import GroupMixin
 from .view import StringView
@@ -64,7 +63,7 @@ from .cog import Cog
 from .hybrid import hybrid_command, hybrid_group, HybridCommand, HybridGroup
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
 
     import importlib.machinery
 
@@ -80,11 +79,22 @@ if TYPE_CHECKING:
         MaybeAwaitableFunc,
     )
     from .core import Command
-    from .hybrid import CommandCallback, ContextT, P
+    from .hybrid import CommandCallback, ContextT, P, _HybridCommandDecoratorKwargs, _HybridGroupDecoratorKwargs
+    from discord.client import _ClientOptions
+    from discord.shard import _AutoShardedClientOptions
 
     _Prefix = Union[Iterable[str], str]
     _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
+
+    class _BotOptions(_ClientOptions, total=False):
+        owner_id: Optional[int]
+        owner_ids: Optional[Collection[int]]
+        strip_after_prefix: bool
+        case_insensitive: bool
+
+    class _AutoShardedBotOptions(_AutoShardedClientOptions, _BotOptions): ...
+
 
 __all__ = (
     'when_mentioned',
@@ -169,10 +179,10 @@ class BotBase(GroupMixin[None]):
         allowed_contexts: app_commands.AppCommandContext = MISSING,
         allowed_installs: app_commands.AppInstallationType = MISSING,
         intents: discord.Intents,
-        **options: Any,
+        **options: Unpack[_BotOptions],
     ) -> None:
         super().__init__(intents=intents, **options)
-        self.command_prefix: PrefixType[BotT] = command_prefix
+        self.command_prefix: PrefixType[BotT] = command_prefix  # type: ignore
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
         self.__tree: app_commands.CommandTree[Self] = tree_cls(self)  # type: ignore
@@ -281,7 +291,7 @@ class BotBase(GroupMixin[None]):
         name: Union[str, app_commands.locale_str] = MISSING,
         with_app_command: bool = True,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_HybridCommandDecoratorKwargs],  # type: ignore # name, with_app_command
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridCommand[Any, P, T]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
         the internal command list via :meth:`add_command`.
@@ -293,8 +303,8 @@ class BotBase(GroupMixin[None]):
         """
 
         def decorator(func: CommandCallback[Any, ContextT, P, T]):
-            kwargs.setdefault('parent', self)
-            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
+            kwargs.setdefault('parent', self)  # type: ignore # parent is not for the user to set
+            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)  # type: ignore # name, with_app_command
             self.add_command(result)
             return result
 
@@ -305,7 +315,7 @@ class BotBase(GroupMixin[None]):
         name: Union[str, app_commands.locale_str] = MISSING,
         with_app_command: bool = True,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_HybridGroupDecoratorKwargs],  # type: ignore # name, with_app_command
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridGroup[Any, P, T]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`add_command`.
@@ -317,8 +327,8 @@ class BotBase(GroupMixin[None]):
         """
 
         def decorator(func: CommandCallback[Any, ContextT, P, T]):
-            kwargs.setdefault('parent', self)
-            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
+            kwargs.setdefault('parent', self)  # type: ignore # parent is not for the user to set
+            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)  # type: ignore # name, with_app_command
             self.add_command(result)
             return result
 
@@ -487,7 +497,7 @@ class BotBase(GroupMixin[None]):
         if len(data) == 0:
             return True
 
-        return await discord.utils.async_all(f(ctx) for f in data)
+        return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
 
     async def is_owner(self, user: User, /) -> bool:
         """|coro|
@@ -570,7 +580,7 @@ class BotBase(GroupMixin[None]):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
-        if not asyncio.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
@@ -607,7 +617,7 @@ class BotBase(GroupMixin[None]):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
-        if not asyncio.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
@@ -643,7 +653,7 @@ class BotBase(GroupMixin[None]):
         """
         name = func.__name__ if name is MISSING else name
 
-        if not asyncio.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('Listeners must be coroutines')
 
         if name in self.extra_events:
@@ -1221,8 +1231,8 @@ class BotBase(GroupMixin[None]):
                     raise
 
                 raise TypeError(
-                    "command_prefix must be plain string, iterable of strings, or callable "
-                    f"returning either of these, not {ret.__class__.__name__}"
+                    'command_prefix must be plain string, iterable of strings, or callable '
+                    f'returning either of these, not {ret.__class__.__name__}'
                 )
 
         return ret
@@ -1242,8 +1252,7 @@ class BotBase(GroupMixin[None]):
         /,
         *,
         cls: Type[ContextT],
-    ) -> ContextT:
-        ...
+    ) -> ContextT: ...
 
     async def get_context(
         self,
@@ -1320,15 +1329,15 @@ class BotBase(GroupMixin[None]):
             except TypeError:
                 if not isinstance(prefix, list):
                     raise TypeError(
-                        "get_prefix must return either a string or a list of string, " f"not {prefix.__class__.__name__}"
+                        f'get_prefix must return either a string or a list of string, not {prefix.__class__.__name__}'
                     )
 
                 # It's possible a bad command_prefix got us here.
                 for value in prefix:
                     if not isinstance(value, str):
                         raise TypeError(
-                            "Iterable command_prefix or list returned from get_prefix must "
-                            f"contain only strings, not {value.__class__.__name__}"
+                            'Iterable command_prefix or list returned from get_prefix must '
+                            f'contain only strings, not {value.__class__.__name__}'
                         )
 
                 # Getting here shouldn't happen
@@ -1527,4 +1536,17 @@ class AutoShardedBot(BotBase, discord.AutoShardedClient):
             .. versionadded:: 2.0
     """
 
-    pass
+    if TYPE_CHECKING:
+
+        def __init__(
+            self,
+            command_prefix: PrefixType[BotT],
+            *,
+            help_command: Optional[HelpCommand] = _default,
+            tree_cls: Type[app_commands.CommandTree[Any]] = app_commands.CommandTree,
+            description: Optional[str] = None,
+            allowed_contexts: app_commands.AppCommandContext = MISSING,
+            allowed_installs: app_commands.AppInstallationType = MISSING,
+            intents: discord.Intents,
+            **kwargs: Unpack[_AutoShardedBotOptions],
+        ) -> None: ...

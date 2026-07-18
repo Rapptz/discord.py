@@ -40,7 +40,7 @@ async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
     # If the conversion above fails for any reason, it will raise `commands.BadArgument`
     # so we handle this in this error handler:
     if isinstance(error, commands.BadArgument):
-        return await ctx.send('Couldn\'t find that user.')
+        return await ctx.send("Couldn't find that user.")
     # The default `on_command_error` will ignore errors from this command
     # because we made our own command-specific error handler,
     # so we need to log tracebacks ourselves.
@@ -83,8 +83,14 @@ class ChannelOrMemberConverter(commands.Converter):
         raise commands.BadArgument(f'No Member or TextChannel could be converted from "{argument}"')
 
 
+# Make it so the converter is friendly to type checkers
+# The first parameter of typing.Annotated is the type we tell the type checker
+# The second parameter is what converter the library uses
+ChannelOrMember = typing.Annotated[typing.Union[discord.Member, discord.TextChannel], ChannelOrMemberConverter]
+
+
 @bot.command()
-async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
+async def notify(ctx: commands.Context, target: ChannelOrMember):
     # This command signature utilises the custom converter written above
     # What will happen during command invocation is that the `target` above will be passed to
     # the `argument` parameter of the `ChannelOrMemberConverter.convert` method and
@@ -118,8 +124,8 @@ async def multiply(ctx: commands.Context, number: int, maybe: bool):
     # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#bool
 
     if maybe is True:
-        return await ctx.send(number * 2)
-    await ctx.send(number * 5)
+        return await ctx.send(str(number * 2))
+    await ctx.send(str(number * 5))
 
 
 bot.run('token')

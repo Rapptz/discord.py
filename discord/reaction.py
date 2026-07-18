@@ -102,7 +102,7 @@ class Reaction:
 
     def __init__(self, *, message: Message, data: ReactionPayload, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
         self.message: Message = message
-        self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_reaction_emoji(data['emoji'])
+        self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_emoji_from_partial_payload(data['emoji'])
         self.count: int = data.get('count', 1)
         self.me: bool = data['me']
         details = data.get('count_details', {})
@@ -169,7 +169,7 @@ class Reaction:
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function will now raise :exc:`ValueError` instead of
+            This function will now raise :exc:`TypeError` instead of
             ``InvalidArgument``.
 
         Raises

@@ -184,7 +184,7 @@ class WidgetMember(BaseUser):
         self.suppress: Optional[bool] = data.get('suppress', False)
 
         try:
-            game = data['game']
+            game = data['game']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             activity = None
         else:
@@ -195,7 +195,7 @@ class WidgetMember(BaseUser):
         self.connected_channel: Optional[WidgetChannel] = connected_channel
 
     def __repr__(self) -> str:
-        return f"<WidgetMember name={self.name!r} global_name={self.global_name!r}" f" bot={self.bot} nick={self.nick!r}>"
+        return f'<WidgetMember name={self.name!r} global_name={self.global_name!r} bot={self.bot} nick={self.nick!r}>'
 
     @property
     def display_name(self) -> str:
@@ -292,7 +292,7 @@ class Widget:
     @property
     def json_url(self) -> str:
         """:class:`str`: The JSON URL of the widget."""
-        return f"https://discord.com/api/guilds/{self.id}/widget.json"
+        return f'https://discord.com/api/guilds/{self.id}/widget.json'
 
     @property
     def invite_url(self) -> Optional[str]:

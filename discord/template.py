@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Optional, TYPE_CHECKING, List
-from .utils import parse_time, _bytes_to_base64_data, MISSING
+from .utils import parse_time, _bytes_to_base64_data, MISSING, deprecated
 from .guild import Guild
 
 # fmt: off
@@ -164,6 +164,7 @@ class Template:
             f' creator={self.creator!r} source_guild={self.source_guild!r} is_dirty={self.is_dirty}>'
         )
 
+    @deprecated()
     async def create_guild(self, name: str, icon: bytes = MISSING) -> Guild:
         """|coro|
 
@@ -177,6 +178,9 @@ class Template:
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
+
+        .. deprecated:: 2.6
+            This function is deprecated and will be removed in a future version.
 
         Parameters
         ----------

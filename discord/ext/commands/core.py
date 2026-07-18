@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -43,6 +44,7 @@ from typing import (
     TypeVar,
     Union,
     overload,
+    TypedDict,
 )
 import re
 
@@ -58,9 +60,38 @@ from .parameters import Parameter, Signature
 from discord.app_commands.commands import NUMPY_DOCSTRING_ARG_REGEX
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, Self
+    from typing_extensions import Concatenate, ParamSpec, Self, Unpack
 
     from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
+
+    from discord.permissions import _PermissionsKwargs
+
+    class _CommandDecoratorKwargs(TypedDict, total=False):
+        enabled: bool
+        help: Optional[str]
+        brief: Optional[str]
+        usage: Optional[str]
+        rest_is_raw: bool
+        aliases: Union[List[str], Tuple[str, ...]]
+        description: str
+        hidden: bool
+        checks: List[UserCheck[Context[Any]]]
+        cooldown: CooldownMapping[Context[Any]]
+        max_concurrency: MaxConcurrency
+        require_var_positional: bool
+        cooldown_after_parsing: bool
+        ignore_extra: bool
+        extras: Dict[Any, Any]
+
+    class _CommandKwargs(_CommandDecoratorKwargs, total=False):
+        name: str
+
+    class _GroupDecoratorKwargs(_CommandDecoratorKwargs, total=False):
+        invoke_without_command: bool
+        case_insensitive: bool
+
+    class _GroupKwargs(_GroupDecoratorKwargs, total=False):
+        name: str
 
 
 __all__ = (
@@ -368,6 +399,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         .. versionadded:: 2.0
     """
+
     __original_kwargs__: Dict[str, Any]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
@@ -393,9 +425,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             Callable[Concatenate[Context[Any], P], Coro[T]],
         ],
         /,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandKwargs],
     ) -> None:
-        if not asyncio.iscoroutinefunction(func):
+        if not discord.utils._iscoroutinefunction(func):
             raise TypeError('Callback must be a coroutine.')
 
         name = kwargs.get('name') or func.__name__
@@ -417,11 +449,11 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.brief: Optional[str] = kwargs.get('brief')
         self.usage: Optional[str] = kwargs.get('usage')
         self.rest_is_raw: bool = kwargs.get('rest_is_raw', False)
-        self.aliases: Union[List[str], Tuple[str]] = kwargs.get('aliases', [])
+        self.aliases: Union[List[str], Tuple[str, ...]] = kwargs.get('aliases', [])
         self.extras: Dict[Any, Any] = kwargs.get('extras', {})
 
         if not isinstance(self.aliases, (list, tuple)):
-            raise TypeError("Aliases of a command must be a list or a tuple of strings.")
+            raise TypeError('Aliases of a command must be a list or a tuple of strings.')
 
         self.description: str = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden: bool = kwargs.get('hidden', False)
@@ -444,7 +476,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         elif isinstance(cooldown, CooldownMapping):
             buckets: CooldownMapping[Context[Any]] = cooldown
         else:
-            raise TypeError("Cooldown must be an instance of CooldownMapping or None.")
+            raise TypeError('Cooldown must be an instance of CooldownMapping or None.')
         self._buckets: CooldownMapping[Context[Any]] = buckets
 
         try:
@@ -490,7 +522,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     @property
     def callback(
         self,
-    ) -> Union[Callable[Concatenate[CogT, Context[Any], P], Coro[T]], Callable[Concatenate[Context[Any], P], Coro[T]],]:
+    ) -> Union[
+        Callable[Concatenate[CogT, Context[Any], P], Coro[T]],
+        Callable[Concatenate[Context[Any], P], Coro[T]],
+    ]:
         return self._callback
 
     @callback.setter
@@ -556,7 +591,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except ValueError:
             pass
 
-    def update(self, **kwargs: Any) -> None:
+    def update(self, **kwargs: Unpack[_CommandKwargs]) -> None:
         """Updates :class:`Command` instance with updated attribute.
 
         This works similarly to the :func:`~discord.ext.commands.command` decorator in terms
@@ -1067,7 +1102,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             The coroutine passed is not actually a coroutine.
         """
 
-        if not asyncio.iscoroutinefunction(coro):
+        if not discord.utils._iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         self.on_error: Error[CogT, Any] = coro
@@ -1105,7 +1140,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
-        if not asyncio.iscoroutinefunction(coro):
+        if not discord.utils._iscoroutinefunction(coro):
             raise TypeError('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
@@ -1136,7 +1171,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
-        if not asyncio.iscoroutinefunction(coro):
+        if not discord.utils._iscoroutinefunction(coro):
             raise TypeError('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
@@ -1285,7 +1320,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 # since we have no checks, then we just return True.
                 return True
 
-            return await discord.utils.async_all(predicate(ctx) for predicate in predicates)
+            return await discord.utils.async_all(predicate(ctx) for predicate in predicates)  # type: ignore
         finally:
             ctx.command = original
 
@@ -1468,17 +1503,8 @@ class GroupMixin(Generic[CogT]):
         self: GroupMixin[CogT],
         name: str = ...,
         *args: Any,
-        **kwargs: Any,
-    ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
-        Command[CogT, P, T],
-    ]:
-        ...
+        **kwargs: Unpack[_CommandDecoratorKwargs],
+    ) -> _CogCommandDecorator[CogT]: ...
 
     @overload
     def command(
@@ -1486,24 +1512,15 @@ class GroupMixin(Generic[CogT]):
         name: str = ...,
         cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
-        **kwargs: Any,
-    ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
-        CommandT,
-    ]:
-        ...
+        **kwargs: Unpack[_CommandDecoratorKwargs],
+    ) -> _CogCommandDecoratorWithCls[CogT, CommandT]: ...
 
     def command(
         self,
         name: str = MISSING,
         cls: Type[Command[Any, ..., Any]] = MISSING,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandDecoratorKwargs],
     ) -> Any:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -1515,8 +1532,7 @@ class GroupMixin(Generic[CogT]):
         """
 
         def decorator(func):
-
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault('parent', self)  # type: ignore # the parent kwarg is not for users to set.
             result = command(name=name, cls=cls, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -1528,17 +1544,8 @@ class GroupMixin(Generic[CogT]):
         self: GroupMixin[CogT],
         name: str = ...,
         *args: Any,
-        **kwargs: Any,
-    ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
-        Group[CogT, P, T],
-    ]:
-        ...
+        **kwargs: Unpack[_GroupDecoratorKwargs],
+    ) -> _CogGroupDecorator[CogT]: ...
 
     @overload
     def group(
@@ -1546,24 +1553,15 @@ class GroupMixin(Generic[CogT]):
         name: str = ...,
         cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
-        **kwargs: Any,
-    ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
-        GroupT,
-    ]:
-        ...
+        **kwargs: Unpack[_GroupDecoratorKwargs],
+    ) -> _CogGroupDecoratorWithCls[CogT, GroupT]: ...
 
     def group(
         self,
         name: str = MISSING,
         cls: Type[Group[Any, ..., Any]] = MISSING,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_GroupDecoratorKwargs],
     ) -> Any:
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -1575,7 +1573,7 @@ class GroupMixin(Generic[CogT]):
         """
 
         def decorator(func):
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault('parent', self)  # type: ignore # the parent kwarg is not for users to set.
             result = group(name=name, cls=cls, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -1606,7 +1604,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         Defaults to ``False``.
     """
 
-    def __init__(self, *args: Any, **attrs: Any) -> None:
+    def __init__(self, *args: Any, **attrs: Unpack[_GroupKwargs]) -> None:
         self.invoke_without_command: bool = attrs.pop('invoke_without_command', False)
         super().__init__(*args, **attrs)
 
@@ -1702,58 +1700,96 @@ if TYPE_CHECKING:
 
     class _CommandDecorator:
         @overload
-        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Command[CogT, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Command[CogT, P, T]: ...
 
         @overload
-        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Command[None, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Command[None, P, T]: ...
 
-        def __call__(self, func: Callable[..., Coro[T]], /) -> Any:
-            ...
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
 
     class _GroupDecorator:
         @overload
-        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Group[CogT, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Group[CogT, P, T]: ...
 
         @overload
-        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Group[None, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Group[None, P, T]: ...
 
-        def __call__(self, func: Callable[..., Coro[T]], /) -> Any:
-            ...
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _CogCommandDecorator(Generic[CogT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Command[CogT, P, T]: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Command[CogT, P, T]: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _CogGroupDecorator(Generic[CogT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Group[CogT, P, T]: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Group[CogT, P, T]: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _CommandDecoratorWithCls(Generic[CommandT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> CommandT: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> CommandT: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _GroupDecoratorWithCls(Generic[GroupT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> GroupT: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> GroupT: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _CogCommandDecoratorWithCls(Generic[CogT, CommandT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> CommandT: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> CommandT: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
+
+    class _CogGroupDecoratorWithCls(Generic[CogT, GroupT]):
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> GroupT: ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> GroupT: ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
 
 
 @overload
 def command(
     name: str = ...,
-    **attrs: Any,
-) -> _CommandDecorator:
-    ...
+    **attrs: Unpack[_CommandDecoratorKwargs],
+) -> _CommandDecorator: ...
 
 
 @overload
 def command(
     name: str = ...,
     cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
-    **attrs: Any,
-) -> Callable[
-    [
-        Union[
-            Callable[Concatenate[ContextT, P], Coro[Any]],
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
-        ]
-    ],
-    CommandT,
-]:
-    ...
+    **attrs: Unpack[_CommandDecoratorKwargs],
+) -> _CommandDecoratorWithCls[CommandT]: ...
 
 
 def command(
     name: str = MISSING,
     cls: Type[Command[Any, ..., Any]] = MISSING,
-    **attrs: Any,
+    **attrs: Unpack[_CommandDecoratorKwargs],
 ) -> Any:
     """A decorator that transforms a function into a :class:`.Command`
     or if called with :func:`.group`, :class:`.Group`.
@@ -1798,32 +1834,22 @@ def command(
 @overload
 def group(
     name: str = ...,
-    **attrs: Any,
-) -> _GroupDecorator:
-    ...
+    **attrs: Unpack[_GroupDecoratorKwargs],
+) -> _GroupDecorator: ...
 
 
 @overload
 def group(
     name: str = ...,
     cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
-    **attrs: Any,
-) -> Callable[
-    [
-        Union[
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
-            Callable[Concatenate[ContextT, P], Coro[Any]],
-        ]
-    ],
-    GroupT,
-]:
-    ...
+    **attrs: Unpack[_GroupDecoratorKwargs],
+) -> _GroupDecoratorWithCls[GroupT]: ...
 
 
 def group(
     name: str = MISSING,
     cls: Type[Group[Any, ..., Any]] = MISSING,
-    **attrs: Any,
+    **attrs: Unpack[_GroupDecoratorKwargs],
 ) -> Any:
     """A decorator that transforms a function into a :class:`.Group`.
 
@@ -1925,7 +1951,7 @@ def check(predicate: UserCheck[ContextT], /) -> Check[ContextT]:
 
         return func
 
-    if inspect.iscoroutinefunction(predicate):
+    if discord.utils._iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 
@@ -2165,7 +2191,7 @@ def bot_has_any_role(*items: int) -> Callable[[T], T]:
     return check(predicate)
 
 
-def has_permissions(**perms: bool) -> Check[Any]:
+def has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
@@ -2197,7 +2223,7 @@ def has_permissions(**perms: bool) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         permissions = ctx.permissions
@@ -2212,7 +2238,7 @@ def has_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def bot_has_permissions(**perms: bool) -> Check[Any]:
+def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
 
@@ -2222,7 +2248,7 @@ def bot_has_permissions(**perms: bool) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         permissions = ctx.bot_permissions
@@ -2237,7 +2263,7 @@ def bot_has_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def has_guild_permissions(**perms: bool) -> Check[Any]:
+def has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions.
 
@@ -2249,7 +2275,7 @@ def has_guild_permissions(**perms: bool) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
@@ -2266,7 +2292,7 @@ def has_guild_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def bot_has_guild_permissions(**perms: bool) -> Check[Any]:
+def bot_has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
 
@@ -2275,7 +2301,7 @@ def bot_has_guild_permissions(**perms: bool) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
@@ -2349,7 +2375,7 @@ def guild_only() -> Check[Any]:
 
         return func
 
-    if inspect.iscoroutinefunction(predicate):
+    if discord.utils._iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 
@@ -2424,7 +2450,7 @@ def is_nsfw() -> Check[Any]:
 
         return func
 
-    if inspect.iscoroutinefunction(predicate):
+    if discord.utils._iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 
@@ -2515,7 +2541,7 @@ def dynamic_cooldown(
         The type of cooldown to have.
     """
     if not callable(cooldown):
-        raise TypeError("A callable must be provided")
+        raise TypeError('A callable must be provided')
 
     if type is BucketType.default:
         raise ValueError('BucketType.default cannot be used in dynamic cooldowns')

@@ -36,7 +36,10 @@ Documentation = "https://discordpy.readthedocs.io/en/latest/"
 dependencies = { file = "requirements.txt" }
 
 [project.optional-dependencies]
-voice = ["PyNaCl>=1.3.0,<1.6"]
+voice = [
+    "PyNaCl>=1.6.0,<1.7",
+    "davey>=0.1.0"
+]
 docs = [
     "sphinx==4.4.0",
     "sphinxcontrib_trio==1.1.2",
@@ -58,7 +61,7 @@ speed = [
     "aiodns>=1.1; sys_platform != 'win32'",
     "Brotli",
     "cchardet==2.1.7; python_version < '3.10'",
-    "zstandard>=0.23.0"
+    "zstandard>=0.23.0; python_version <= '3.13'"
 ]
 test = [
     "coverage[toml]",
@@ -70,7 +73,7 @@ test = [
     "tzdata; sys_platform == 'win32'",
 ]
 dev = [
-    "black==22.6",
+    "ruff==0.12",
     "typing_extensions>=4.3,<5",
 ]
 
@@ -86,9 +89,16 @@ packages = [
 ]
 include-package-data = true
 
-[tool.black]
+[tool.ruff]
 line-length = 125
-skip-string-normalization = true
+extend-exclude = ["docs", "tests"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.format]
+line-ending = "lf"
+quote-style = "single"
 
 [tool.coverage.run]
 omit = [
@@ -102,12 +112,6 @@ exclude_lines = [
     "pragma: no cover",
     "@overload",
 ]
-
-[tool.isort]
-profile = "black"
-combine_as_imports = true
-combine_star = true
-line_length = 125
 
 [tool.pyright]
 include = [

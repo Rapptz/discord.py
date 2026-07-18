@@ -50,6 +50,25 @@ if TYPE_CHECKING:
     from .context import Context
     from .parameters import Parameter
 
+try:
+    from annotationlib import call_annotate_function, get_annotate_from_class_namespace  # type: ignore
+
+    def get_annotations_from_namespace(namespace: Dict[str, Any]) -> Dict[str, Any]:
+        # In Python 3.14, classes no longer get `__annotations__` and instead a function
+        # under __annotate__ is used instead that that takes a format argument on how to
+        # receive those annotations.
+        # Format 1 is full value, Format 3 is value and ForwardRef for undefined ones
+        # So format 3 is the one we're typically used to
+        annotate = get_annotate_from_class_namespace(namespace)
+        if annotate is not None:
+            return call_annotate_function(annotate, 3)  # type: ignore
+        return namespace.get('__annotations__', {})
+
+except ImportError:
+
+    def get_annotations_from_namespace(namespace: Dict[str, Any]) -> Dict[str, Any]:
+        return namespace.get('__annotations__', {})
+
 
 @dataclass
 class Flag:
@@ -177,7 +196,7 @@ def validate_flag_name(name: str, forbidden: Set[str]) -> None:
 
 
 def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[str, Any]) -> Dict[str, Flag]:
-    annotations = namespace.get('__annotations__', {})
+    annotations = get_annotations_from_namespace(namespace)
     case_insensitive = namespace['__commands_flag_case_insensitive__']
     flags: Dict[str, Flag] = {}
     cache: Dict[str, Any] = {}
@@ -197,7 +216,7 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
 
         if flag.positional:
             if positional is not None:
-                raise TypeError(f"{flag.name!r} positional flag conflicts with {positional.name!r} flag.")
+                raise TypeError(f'{flag.name!r} positional flag conflicts with {positional.name!r} flag.')
             positional = flag
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)
@@ -443,7 +462,7 @@ async def convert_flag(ctx: Context[BotT], argument: str, flag: Flag, annotation
             return await convert_flag(ctx, argument, flag, annotation)
         elif origin is Union and type(None) in annotation.__args__:
             # typing.Optional[x]
-            annotation = Union[tuple(arg for arg in annotation.__args__ if arg is not type(None))]  # type: ignore
+            annotation = Union[tuple(arg for arg in annotation.__args__ if arg is not type(None))]
             return await run_converters(ctx, annotation, argument, param)
         elif origin is dict:
             # typing.Dict[K, V] -> typing.Tuple[K, V]

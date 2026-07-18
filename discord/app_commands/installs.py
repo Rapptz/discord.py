@@ -57,6 +57,9 @@ class AppInstallationType:
         self._guild: Optional[bool] = guild
         self._user: Optional[bool] = user
 
+    def __repr__(self):
+        return f'<AppInstallationType guild={self.guild!r} user={self.user!r}>'
+
     @property
     def guild(self) -> bool:
         """:class:`bool`: Whether the integration is a guild install."""
@@ -141,6 +144,9 @@ class AppCommandContext:
         self._guild: Optional[bool] = guild
         self._dm_channel: Optional[bool] = dm_channel
         self._private_channel: Optional[bool] = private_channel
+
+    def __repr__(self) -> str:
+        return f'<AppCommandContext guild={self.guild!r} dm_channel={self.dm_channel!r} private_channel={self.private_channel!r}>'
 
     @property
     def guild(self) -> bool:

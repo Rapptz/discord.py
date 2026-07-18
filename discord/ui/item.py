@@ -24,7 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+import copy
+from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Union, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
 from .._types import ClientT
@@ -36,13 +37,37 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..enums import ComponentType
-    from .view import View
+    from .view import BaseView
     from ..components import Component
+    from .action_row import ActionRow
+    from .container import Container
+    from .dynamic import DynamicItem
+    from ..app_commands.namespace import ResolveKey
 
 I = TypeVar('I', bound='Item[Any]')
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='BaseView', covariant=True)
+ContainerType = Union['BaseView', 'ActionRow', 'Container']
+C = TypeVar('C', bound=ContainerType, covariant=True)
 ItemCallbackType = Callable[[V, Interaction[Any], I], Coroutine[Any, Any, Any]]
+ContainedItemCallbackType = Callable[[C, Interaction[Any], I], Coroutine[Any, Any, Any]]
+
+
+class _ItemCallback:
+    __slots__ = ('parent', 'callback', 'item')
+
+    def __init__(self, callback: ContainedItemCallbackType[Any, Any], parent: Any, item: Item[Any]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
+        self.parent: Any = parent
+        self.item: Item[Any] = item
+
+    def __repr__(self) -> str:
+        return f'<ItemCallback callback={self.callback!r} parent={self.parent!r} item={self.item!r}>'
+
+    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
+        return self.callback(self.parent, interaction, self.item)
 
 
 class Item(Generic[V]):
@@ -53,11 +78,23 @@ class Item(Generic[V]):
     - :class:`discord.ui.Button`
     - :class:`discord.ui.Select`
     - :class:`discord.ui.TextInput`
+    - :class:`discord.ui.ActionRow`
+    - :class:`discord.ui.Container`
+    - :class:`discord.ui.File`
+    - :class:`discord.ui.MediaGallery`
+    - :class:`discord.ui.Section`
+    - :class:`discord.ui.Separator`
+    - :class:`discord.ui.TextDisplay`
+    - :class:`discord.ui.Thumbnail`
+    - :class:`discord.ui.Label`
+    - :class:`discord.ui.RadioGroup`
+    - :class:`discord.ui.CheckboxGroup`
+    - :class:`discord.ui.Checkbox`
 
     .. versionadded:: 2.0
     """
 
-    __item_repr_attributes__: Tuple[str, ...] = ('row',)
+    __item_repr_attributes__: Tuple[str, ...] = ('row', 'id')
 
     def __init__(self):
         self._view: Optional[V] = None
@@ -70,6 +107,8 @@ class Item(Generic[V]):
         # actually affect the intended purpose of this check because from_component is
         # only called upon edit and we're mainly interested during initial creation time.
         self._provided_custom_id: bool = False
+        self._id: Optional[int] = None
+        self._parent: Optional[Item] = None
 
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
@@ -77,8 +116,14 @@ class Item(Generic[V]):
     def _refresh_component(self, component: Component) -> None:
         return None
 
+    def _handle_submit(self, interaction: Interaction, data: Dict[str, Any], resolved: Dict[ResolveKey, Any]) -> None:
+        return self._refresh_state(interaction, data)
+
     def _refresh_state(self, interaction: Interaction, data: Dict[str, Any]) -> None:
         return None
+
+    def _is_v2(self) -> bool:
+        return False
 
     @classmethod
     def from_component(cls: Type[I], component: Component) -> I:
@@ -92,7 +137,12 @@ class Item(Generic[V]):
         return False
 
     def is_persistent(self) -> bool:
-        return self._provided_custom_id
+        if self.is_dispatchable():
+            return self._provided_custom_id
+        return True
+
+    def _swap_item(self, base: Item, new: DynamicItem, custom_id: str) -> None:
+        raise ValueError
 
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__item_repr_attributes__)
@@ -104,6 +154,10 @@ class Item(Generic[V]):
 
     @row.setter
     def row(self, value: Optional[int]) -> None:
+        if self._is_v2():
+            # row is ignored on v2 components
+            return
+
         if value is None:
             self._row = None
         elif 5 > value >= 0:
@@ -116,9 +170,51 @@ class Item(Generic[V]):
         return 1
 
     @property
+    def _total_count(self) -> int:
+        return 1
+
+    @property
     def view(self) -> Optional[V]:
-        """Optional[:class:`View`]: The underlying view for this item."""
+        """Optional[Union[:class:`View`, :class:`LayoutView`]]: The underlying view for this item."""
         return self._view
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this component."""
+        return self._id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._id = value
+
+    @property
+    def parent(self) -> Optional[Item[V]]:
+        """Optional[:class:`Item`]: This item's parent, if applicable. Only available on items with children.
+
+        .. versionadded:: 2.6
+        """
+        return self._parent
+
+    async def _run_checks(self, interaction: Interaction[ClientT]) -> bool:
+        can_run = await self.interaction_check(interaction)
+
+        if can_run and self._parent:
+            can_run = await self._parent._run_checks(interaction)
+
+        return can_run
+
+    def _update_view(self, view) -> None:
+        self._view = view
+
+    def _detach_view(self) -> None:
+        self._update_view(None)
+        self._parent = None
+
+    def copy(self) -> Self:
+        return copy.deepcopy(self)
+
+    def _has_children(self) -> bool:
+        return False
 
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
         """|coro|
@@ -148,7 +244,8 @@ class Item(Generic[V]):
         .. note::
 
             If an exception occurs within the body then the check
-            is considered a failure and :meth:`discord.ui.View.on_error` is called.
+            is considered a failure and :meth:`View.on_error`
+            (or :meth:`LayoutView.on_error`) is called.
 
             For :class:`~discord.ui.DynamicItem` this does not call the ``on_error``
             handler.

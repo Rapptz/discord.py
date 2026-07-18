@@ -50,8 +50,8 @@ if TYPE_CHECKING:
     ValidStaticFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png']
     ValidAssetFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png', 'gif']
 
-VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
-VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+VALID_STATIC_FORMATS = frozenset({'jpeg', 'jpg', 'webp', 'png'})
+VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {'gif'}
 
 
 MISSING = utils.MISSING
@@ -241,7 +241,7 @@ class Asset(AssetMixin):
         format = 'gif' if animated else 'png'
         return cls(
             state,
-            url=f"{cls.BASE}/guilds/{guild_id}/users/{member_id}/avatars/{avatar}.{format}?size=1024",
+            url=f'{cls.BASE}/guilds/{guild_id}/users/{member_id}/avatars/{avatar}.{format}?size=1024',
             key=avatar,
             animated=animated,
         )
@@ -252,7 +252,7 @@ class Asset(AssetMixin):
         format = 'gif' if animated else 'png'
         return cls(
             state,
-            url=f"{cls.BASE}/guilds/{guild_id}/users/{member_id}/banners/{banner}.{format}?size=1024",
+            url=f'{cls.BASE}/guilds/{guild_id}/users/{member_id}/banners/{banner}.{format}?size=1024',
             key=banner,
             animated=animated,
         )
@@ -343,6 +343,25 @@ class Asset(AssetMixin):
             state,
             url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=512',
             key=banner_hash,
+            animated=animated,
+        )
+
+    @classmethod
+    def _from_primary_guild(cls, state: _State, guild_id: int, icon_hash: str) -> Self:
+        return cls(
+            state,
+            url=f'{cls.BASE}/guild-tag-badges/{guild_id}/{icon_hash}.png?size=64',
+            key=icon_hash,
+            animated=False,
+        )
+
+    @classmethod
+    def _from_user_collectible(cls, state: _State, asset: str, animated: bool = False) -> Self:
+        name = 'static.png' if not animated else 'asset.webm'
+        return cls(
+            state,
+            url=f'{cls.BASE}/assets/collectibles/{asset}{name}',
+            key=asset,
             animated=animated,
         )
 

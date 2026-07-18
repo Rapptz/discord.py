@@ -28,7 +28,7 @@ import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
 from .asset import Asset
-from .enums import ActivityType, try_enum
+from .enums import ActivityType, StatusDisplayType, try_enum
 from .colour import Colour
 from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
@@ -180,8 +180,10 @@ class Activity(BaseActivity):
 
         - ``large_image``: A string representing the ID for the large image asset.
         - ``large_text``: A string representing the text when hovering over the large image asset.
+        - ``large_url``: A string representing the URL of the large image asset.
         - ``small_image``: A string representing the ID for the small image asset.
         - ``small_text``: A string representing the text when hovering over the small image asset.
+        - ``small_url``: A string representing the URL of the small image asset.
 
     party: :class:`dict`
         A dictionary representing the activity party. It contains the following optional keys:
@@ -195,6 +197,19 @@ class Activity(BaseActivity):
 
     emoji: Optional[:class:`PartialEmoji`]
         The emoji that belongs to this activity.
+    details_url: Optional[:class:`str`]
+        A URL that is linked to when clicking on the details text of the activity.
+
+        .. versionadded:: 2.6
+    state_url: Optional[:class:`str`]
+        A URL that is linked to when clicking on the state text of the activity.
+
+        .. versionadded:: 2.6
+    status_display_type: Optional[:class:`StatusDisplayType`]
+        Determines which field from the user's status text is displayed
+        in the members list.
+
+        .. versionadded:: 2.6
     """
 
     __slots__ = (
@@ -213,6 +228,9 @@ class Activity(BaseActivity):
         'application_id',
         'emoji',
         'buttons',
+        'state_url',
+        'details_url',
+        'status_display_type',
     )
 
     def __init__(self, **kwargs: Any) -> None:
@@ -238,6 +256,18 @@ class Activity(BaseActivity):
 
         emoji = kwargs.pop('emoji', None)
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
+
+        self.state_url: Optional[str] = kwargs.pop('state_url', None)
+        self.details_url: Optional[str] = kwargs.pop('details_url', None)
+
+        status_display_type = kwargs.pop('status_display_type', None)
+        self.status_display_type: Optional[StatusDisplayType] = (
+            status_display_type
+            if isinstance(status_display_type, StatusDisplayType)
+            else try_enum(StatusDisplayType, status_display_type)
+            if status_display_type is not None
+            else None
+        )
 
     def __repr__(self) -> str:
         attrs = (
@@ -267,13 +297,15 @@ class Activity(BaseActivity):
         ret['type'] = int(self.type)
         if self.emoji:
             ret['emoji'] = self.emoji.to_dict()
+        if self.status_display_type:
+            ret['status_display_type'] = int(self.status_display_type.value)
         return ret
 
     @property
     def start(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC, if applicable."""
         try:
-            timestamp = self.timestamps['start'] / 1000
+            timestamp = self.timestamps['start'] / 1000  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -283,7 +315,7 @@ class Activity(BaseActivity):
     def end(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: When the user will stop doing this activity in UTC, if applicable."""
         try:
-            timestamp = self.timestamps['end'] / 1000
+            timestamp = self.timestamps['end'] / 1000  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -293,7 +325,7 @@ class Activity(BaseActivity):
     def large_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity, if applicable."""
         try:
-            large_image = self.assets['large_image']
+            large_image = self.assets['large_image']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -303,7 +335,7 @@ class Activity(BaseActivity):
     def small_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity, if applicable."""
         try:
-            small_image = self.assets['small_image']
+            small_image = self.assets['small_image']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -418,7 +450,7 @@ class Game(BaseActivity):
         return str(self.name)
 
     def __repr__(self) -> str:
-        return f'<Game name={self.name!r}>'
+        return f'<Game name={self.name!r} platform={self.platform!r}>'
 
     def to_dict(self) -> Dict[str, Any]:
         timestamps: Dict[str, Any] = {}
@@ -514,7 +546,7 @@ class Streaming(BaseActivity):
         return str(self.name)
 
     def __repr__(self) -> str:
-        return f'<Streaming name={self.name!r}>'
+        return f'<Streaming name={self.name!r} platform={self.platform!r}>'
 
     @property
     def twitch_name(self) -> Optional[str]:
@@ -525,7 +557,7 @@ class Streaming(BaseActivity):
         """
 
         try:
-            name = self.assets['large_image']
+            name = self.assets['large_image']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             return None
         else:
@@ -829,13 +861,11 @@ ActivityTypes = Union[Activity, Game, CustomActivity, Streaming, Spotify]
 
 
 @overload
-def create_activity(data: ActivityPayload, state: ConnectionState) -> ActivityTypes:
-    ...
+def create_activity(data: ActivityPayload, state: ConnectionState) -> ActivityTypes: ...
 
 
 @overload
-def create_activity(data: None, state: ConnectionState) -> None:
-    ...
+def create_activity(data: None, state: ConnectionState) -> None: ...
 
 
 def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> Optional[ActivityTypes]:

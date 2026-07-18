@@ -439,7 +439,7 @@ How can I disable all items on timeout?
 
 This requires three steps.
 
-1. Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :meth:`Interaction.original_response`.
+1. Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :attr:`InteractionCallbackResponse.resource`.
 2. Inside :meth:`~ui.View.on_timeout`, loop over all items inside the view and mark them disabled.
 3. Edit the message we retrieved in step 1 with the newly modified view.
 
@@ -467,7 +467,7 @@ Putting it all together, we can do this in a text command:
         # Step 1
         view.message = await ctx.send('Press me!', view=view)
 
-Application commands do not return a message when you respond with :meth:`InteractionResponse.send_message`, therefore in order to reliably do this we should retrieve the message using :meth:`Interaction.original_response`.
+Application commands, when you respond with :meth:`InteractionResponse.send_message`, return an instance of :class:`InteractionCallbackResponse` which contains the message you sent. This is the message you should attach to the view.
 
 Putting it all together, using the previous view definition:
 
@@ -477,10 +477,13 @@ Putting it all together, using the previous view definition:
     async def more_timeout_example(interaction):
         """Another example to showcase disabling buttons on timing out"""
         view = MyView()
-        await interaction.response.send_message('Press me!', view=view)
+        callback = await interaction.response.send_message('Press me!', view=view)
 
         # Step 1
-        view.message = await interaction.original_response()
+        resource = callback.resource
+        # making sure it's an interaction response message
+        if isinstance(resource, discord.InteractionMessage):
+            view.message = resource
 
 
 Application Commands
@@ -497,3 +500,82 @@ My bot's commands are not showing up!
    ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot``.
    Alternatively, if you use :func:`utils.oauth_url`, you can call the function as such:
    ``oauth_url(<other options>, scopes=("bot", "applications.commands"))``.
+
+How do I restrict a command to a specific guild?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To restrict an application command to one or more guilds, you must register it as a **guild command** instead of a 
+global command. Guild commands are only available in the specified guild(s).
+
+The most straightforward way is to use the :meth:`~app_commands.guilds` decorator on your command or GroupCog.
+
+``123456789012345678`` should be replaced with the actual guild ID you want to restrict the command to.
+
+.. code-block:: python3
+
+    @app_commands.command()  # or @tree.command()
+    @app_commands.guilds(123456789012345678)  # or @app_commands.guilds(discord.Object(123456789012345678))
+    async def ping(interaction: Interaction):
+        await interaction.response.send_message("Pong!")
+
+    # or GroupCog (applies to all subcommands):
+
+    @app_commands.guilds(123456789012345678)
+    class MyGroup(commands.GroupCog):
+        @app_commands.command()
+        async def pong(self, interaction: Interaction):
+            await interaction.response.send_message("Ping!")
+
+After that, you must :meth:`~app_commands.CommandTree.sync` the command tree for each guild:
+
+.. code-block:: python3
+
+    await tree.sync(guild=discord.Object(123456789012345678))
+
+Other methods to restrict commands to specific guilds include:
+
+- Using the ``guild`` or ``guilds`` argument in the :meth:`~app_commands.CommandTree.command` decorator:
+
+    .. code-block:: python3
+
+        @tree.command(guild=discord.Object(123456789012345678))
+        async def ping(interaction: Interaction):
+            await interaction.response.send_message("Pong!")
+
+- Adding commands with :meth:`~app_commands.CommandTree.add_command` and specifying ``guild`` or ``guilds``:
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        async def ping(interaction: Interaction):
+            await interaction.response.send_message("Pong!")
+
+        tree.add_command(ping, guild=discord.Object(123456789012345678))
+
+    .. warning::
+
+        Do not combine this method with the :meth:`~app_commands.CommandTree.command` decorator,
+        as it will cause duplicate commands.
+
+- Using ``guild`` or ``guilds`` in :meth:`~ext.commands.Bot.add_cog`:
+
+    This is mainly for :class:`~ext.commands.GroupCog`, but also works for cogs with application commands.
+    Note: This does not work with hybrid app commands (:issue:`9366`).
+
+    .. code-block:: python3
+
+        class MyCog(commands.Cog):
+            @app_commands.command()
+            async def ping(self, interaction: Interaction):
+                await interaction.response.send_message("Pong!")
+
+        async def setup(bot: commands.Bot) -> None:
+            await bot.add_cog(MyCog(...), guild=discord.Object(123456789012345678))
+
+- Using :meth:`~app_commands.CommandTree.copy_global_to`:
+
+    This copies all global commands to a specific guild. This is mainly for development purposes.
+
+    .. code-block:: python3
+
+        tree.copy_global_to(guild=discord.Object(123456789012345678))

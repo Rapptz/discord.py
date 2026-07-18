@@ -69,6 +69,14 @@ if TYPE_CHECKING:
     WebsocketHook = Optional[Callable[[DiscordVoiceWebSocket, Dict[str, Any]], Coroutine[Any, Any, Any]]]
     SocketReaderCallback = Callable[[bytes], Any]
 
+has_dave: bool
+
+try:
+    import davey  # type: ignore
+
+    has_dave = True
+except ImportError:
+    has_dave = False
 
 __all__ = ('VoiceConnectionState',)
 
@@ -148,7 +156,7 @@ class SocketReader(threading.Thread):
                 readable, _, _ = select.select([self.state.socket], [], [], 30)
             except (ValueError, TypeError, OSError) as e:
                 _log.debug(
-                    "Select error handling socket in reader, this should be safe to ignore: %s: %s", e.__class__.__name__, e
+                    'Select error handling socket in reader, this should be safe to ignore: %s: %s', e.__class__.__name__, e
                 )
                 # The socket is either closed or doesn't exist at the moment
                 continue
@@ -208,6 +216,10 @@ class VoiceConnectionState:
         self.mode: SupportedModes = MISSING
         self.socket: socket.socket = MISSING
         self.ws: DiscordVoiceWebSocket = MISSING
+        self.dave_session: Optional[davey.DaveSession] = None
+        self.dave_protocol_version: int = 0
+        self.dave_pending_transitions: Dict[int, int] = {}
+        self.dave_downgraded: bool = False
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
         self._expecting_disconnect: bool = False
@@ -251,6 +263,64 @@ class VoiceConnectionState:
     @property
     def self_voice_state(self) -> Optional[VoiceState]:
         return self.guild.me.voice
+
+    @property
+    def max_dave_protocol_version(self) -> int:
+        return davey.DAVE_PROTOCOL_VERSION if has_dave else 0
+
+    @property
+    def can_encrypt(self) -> bool:
+        return self.dave_protocol_version != 0 and self.dave_session != None and self.dave_session.ready
+
+    async def reinit_dave_session(self) -> None:
+        if self.dave_protocol_version > 0:
+            if not has_dave:
+                raise RuntimeError('davey library needed in order to use E2EE voice')
+            if self.dave_session is not None:
+                self.dave_session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+            else:
+                self.dave_session = davey.DaveSession(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+
+            if self.dave_session is not None:
+                await self.voice_client.ws.send_binary(
+                    DiscordVoiceWebSocket.MLS_KEY_PACKAGE, self.dave_session.get_serialized_key_package()
+                )
+        elif self.dave_session:
+            self.dave_session.reset()
+            self.dave_session.set_passthrough_mode(True, 10)
+        pass
+
+    async def _recover_from_invalid_commit(self, transition_id: int) -> None:
+        payload = {
+            'op': DiscordVoiceWebSocket.MLS_INVALID_COMMIT_WELCOME,
+            'd': {
+                'transition_id': transition_id,
+            },
+        }
+
+        await self.voice_client.ws.send_as_json(payload)
+        await self.reinit_dave_session()
+
+    async def _execute_transition(self, transition_id: int) -> None:
+        _log.debug('Executing transition id %d', transition_id)
+        if transition_id not in self.dave_pending_transitions:
+            _log.warning("Received execute transition, but we don't have a pending transition for id %d", transition_id)
+            return
+
+        old_version = self.dave_protocol_version
+        self.dave_protocol_version = self.dave_pending_transitions.pop(transition_id)
+
+        if old_version != self.dave_protocol_version and self.dave_protocol_version == 0:
+            self.dave_downgraded = True
+            _log.debug('DAVE Session downgraded')
+        elif transition_id > 0 and self.dave_downgraded:
+            self.dave_downgraded = False
+            if self.dave_session:
+                self.dave_session.set_passthrough_mode(True, 10)
+            _log.debug('DAVE Session upgraded')
+
+        # In the future, the session should be signaled too, but for now theres just v1
+        _log.debug('Transition id %d executed', transition_id)
 
     async def voice_state_update(self, data: GuildVoiceStatePayload) -> None:
         channel_id = data['channel_id']
@@ -321,7 +391,7 @@ class VoiceConnectionState:
             )
             return
 
-        self.endpoint, _, _ = endpoint.rpartition(':')
+        self.endpoint = endpoint
         if self.endpoint.startswith('wss://'):
             # Just in case, strip it off since we're going to add it later
             self.endpoint = self.endpoint[6:]
@@ -344,7 +414,7 @@ class VoiceConnectionState:
 
         elif self.state is not ConnectionFlowState.disconnected:
             # eventual consistency
-            if previous_token == self.token and previous_server_id == self.server_id and previous_token == self.token:
+            if previous_token == self.token and previous_server_id == self.server_id and previous_endpoint == self.endpoint:
                 return
 
             _log.debug('Unexpected server update event, attempting to handle')
@@ -574,7 +644,10 @@ class VoiceConnectionState:
         self._disconnected.clear()
 
     async def _connect_websocket(self, resume: bool) -> DiscordVoiceWebSocket:
-        ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook)
+        seq_ack = -1
+        if self.ws is not MISSING:
+            seq_ack = self.ws.seq_ack
+        ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook, seq_ack=seq_ack)
         self.state = ConnectionFlowState.websocket_connected
         return ws
 
@@ -603,15 +676,17 @@ class VoiceConnectionState:
                     # The following close codes are undocumented so I will document them here.
                     # 1000 - normal closure (obviously)
                     # 4014 - we were externally disconnected (voice channel deleted, we were moved, etc)
-                    # 4015 - voice server has crashed
-                    if exc.code in (1000, 4015):
+                    # 4015 - voice server has crashed, we should resume
+                    # 4021 - rate limited, we should not reconnect
+                    # 4022 - call terminated, similar to 4014
+                    if exc.code == 1000:
                         # Don't call disconnect a second time if the websocket closed from a disconnect call
                         if not self._expecting_disconnect:
                             _log.info('Disconnecting from voice normally, close code %d.', exc.code)
                             await self.disconnect()
                         break
 
-                    if exc.code == 4014:
+                    if exc.code in (4014, 4022):
                         # We were disconnected by discord
                         # This condition is a race between the main ws event and the voice ws closing
                         if self._disconnected.is_set():
@@ -629,6 +704,31 @@ class VoiceConnectionState:
                                 await self.disconnect()
                             break
                         else:
+                            continue
+
+                    if exc.code == 4021:
+                        _log.warning('We are being ratelimited while trying to connect to voice. Disconnecting...')
+                        if self.state is not ConnectionFlowState.disconnected:
+                            await self.disconnect()
+                        break
+
+                    if exc.code == 4015:
+                        _log.info('Disconnected from voice, attempting a resume...')
+                        try:
+                            await self._connect(
+                                reconnect=reconnect,
+                                timeout=self.timeout,
+                                self_deaf=(self.self_voice_state or self).self_deaf,
+                                self_mute=(self.self_voice_state or self).self_mute,
+                                resume=True,
+                            )
+                        except asyncio.TimeoutError:
+                            _log.info('Could not resume the voice connection... Disconnecting...')
+                            if self.state is not ConnectionFlowState.disconnected:
+                                await self.disconnect()
+                            break
+                        else:
+                            _log.info('Successfully resumed voice connection')
                             continue
 
                     _log.debug('Not handling close code %s (%s)', exc.code, exc.reason or 'no reason')

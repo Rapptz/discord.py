@@ -42,6 +42,7 @@ from typing import (
     Iterable,
     Sequence,
     Mapping,
+    TypedDict,
 )
 
 import discord.utils
@@ -50,7 +51,7 @@ from .core import Group, Command, get_signature_parameters
 from .errors import CommandError
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
 
     import discord.abc
 
@@ -58,12 +59,37 @@ if TYPE_CHECKING:
     from .context import Context
     from .cog import Cog
     from .parameters import Parameter
+    from .core import _CommandKwargs
 
     from ._types import (
         UserCheck,
         BotT,
         _Bot,
     )
+
+    class _HelpCommandOptions(TypedDict, total=False):
+        show_hidden: bool
+        verify_checks: Optional[bool]
+        command_attrs: _CommandKwargs
+
+    class _BaseHelpCommandOptions(_HelpCommandOptions, total=False):
+        sort_commands: bool
+        dm_help: Optional[bool]
+        dm_help_threshold: int
+        no_category: str
+        paginator: Paginator
+        commands_heading: str
+
+    class _DefaultHelpCommandOptions(_BaseHelpCommandOptions, total=False):
+        width: int
+        indent: int
+        arguments_heading: str
+        default_argument_description: str
+        show_parameter_descriptions: bool
+
+    class _MinimalHelpCommandOptions(_BaseHelpCommandOptions, total=False):
+        aliases_heading: str
+
 
 __all__ = (
     'Paginator',
@@ -224,7 +250,7 @@ def _not_overridden(f: FuncT) -> FuncT:
 
 
 class _HelpCommandImpl(Command):
-    def __init__(self, inject: HelpCommand, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, inject: HelpCommand, *args: Any, **kwargs: Unpack[_CommandKwargs]) -> None:
         super().__init__(inject.command_callback, *args, **kwargs)
         self._original: HelpCommand = inject
         self._injected: HelpCommand = inject
@@ -299,7 +325,7 @@ class _HelpCommandImpl(Command):
 
     def update(self, **kwargs: Any) -> None:
         cog = self.cog
-        self.__init__(self._original, **dict(self.__original_kwargs__, **kwargs))
+        self.__init__(self._original, **dict(self.__original_kwargs__, **kwargs))  # type: ignore
         self.cog = cog
 
 
@@ -366,10 +392,9 @@ class HelpCommand:
         self.__original_args__ = deepcopy(args)
         return self
 
-    def __init__(self, **options: Any) -> None:
+    def __init__(self, **options: Unpack[_HelpCommandOptions]) -> None:
         self.show_hidden: bool = options.pop('show_hidden', False)
-        self.verify_checks: bool = options.pop('verify_checks', True)
-        self.command_attrs: Dict[str, Any]
+        self.verify_checks: Optional[bool] = options.pop('verify_checks', True)
         self.command_attrs = attrs = options.pop('command_attrs', {})
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
@@ -1041,21 +1066,23 @@ class DefaultHelpCommand(HelpCommand):
         The paginator used to paginate the help command output.
     """
 
-    def __init__(self, **options: Any) -> None:
+    def __init__(self, **options: Unpack[_DefaultHelpCommandOptions]) -> None:
         self.width: int = options.pop('width', 80)
         self.indent: int = options.pop('indent', 2)
         self.sort_commands: bool = options.pop('sort_commands', True)
-        self.dm_help: bool = options.pop('dm_help', False)
+        self.dm_help: Optional[bool] = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.arguments_heading: str = options.pop('arguments_heading', "Arguments:")
+        self.arguments_heading: str = options.pop('arguments_heading', 'Arguments:')
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
         self.default_argument_description: str = options.pop('default_argument_description', 'No description given')
         self.no_category: str = options.pop('no_category', 'No Category')
-        self.paginator: Paginator = options.pop('paginator', None)
         self.show_parameter_descriptions: bool = options.pop('show_parameter_descriptions', True)
 
-        if self.paginator is None:
+        paginator = options.pop('paginator', None)
+        if paginator is None:
             self.paginator: Paginator = Paginator()
+        else:
+            self.paginator: Paginator = paginator
 
         super().__init__(**options)
 
@@ -1334,17 +1361,19 @@ class MinimalHelpCommand(HelpCommand):
         The paginator used to paginate the help command output.
     """
 
-    def __init__(self, **options: Any) -> None:
+    def __init__(self, **options: Unpack[_MinimalHelpCommandOptions]) -> None:
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.commands_heading: str = options.pop('commands_heading', 'Commands')
-        self.dm_help: bool = options.pop('dm_help', False)
+        self.dm_help: Optional[bool] = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
         self.aliases_heading: str = options.pop('aliases_heading', 'Aliases:')
         self.no_category: str = options.pop('no_category', 'No Category')
-        self.paginator: Paginator = options.pop('paginator', None)
 
-        if self.paginator is None:
+        paginator = options.pop('paginator', None)
+        if paginator is None:
             self.paginator: Paginator = Paginator(suffix=None, prefix=None)
+        else:
+            self.paginator: Paginator = paginator
 
         super().__init__(**options)
 

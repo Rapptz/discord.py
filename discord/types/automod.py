@@ -33,8 +33,7 @@ AutoModerationRuleEventType = Literal[1]
 AutoModerationTriggerPresets = Literal[1, 2, 3]
 
 
-class Empty(TypedDict):
-    ...
+class Empty(TypedDict): ...
 
 
 class _AutoModerationActionMetadataAlert(TypedDict):

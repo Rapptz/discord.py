@@ -21,13 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import inspect
 import discord
 import logging
 from discord import app_commands
-from discord.utils import maybe_coroutine, _to_kebab_case
+from discord.utils import maybe_coroutine, _iscoroutinefunction, _to_kebab_case
 
 from typing import (
     Any,
@@ -46,7 +47,7 @@ from typing import (
     Union,
 )
 
-from ._types import _BaseCommand, BotT
+from ._types import _BaseCommand, BotT, MaybeCoro
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -56,6 +57,7 @@ if TYPE_CHECKING:
     from .bot import BotBase
     from .context import Context
     from .core import Command
+
 
 __all__ = (
     'CogMeta',
@@ -231,7 +233,7 @@ class CogMeta(type):
                     if elem.startswith(('cog_', 'bot_')):
                         raise TypeError(no_bot_cog.format(base, elem))
                     cog_app_commands[elem] = value
-                elif inspect.iscoroutinefunction(value):
+                elif _iscoroutinefunction(value):
                     try:
                         getattr(value, '__cog_listener__')
                     except AttributeError:
@@ -520,7 +522,7 @@ class Cog(metaclass=CogMeta):
             actual = func
             if isinstance(actual, staticmethod):
                 actual = actual.__func__
-            if not inspect.iscoroutinefunction(actual):
+            if not _iscoroutinefunction(actual):
                 raise TypeError('Listener function must be a coroutine function.')
             actual.__cog_listener__ = True
             to_assign = name or actual.__name__
@@ -581,7 +583,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    def bot_check_once(self, ctx: Context[BotT]) -> bool:
+    def bot_check_once(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
 
@@ -591,7 +593,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def bot_check(self, ctx: Context[BotT]) -> bool:
+    def bot_check(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :meth:`.Bot.check`
         check.
 
@@ -601,7 +603,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_check(self, ctx: Context[BotT]) -> bool:
+    def cog_check(self, ctx: Context[BotT]) -> MaybeCoro[bool]:
         """A special method that registers as a :func:`~discord.ext.commands.check`
         for every command and subcommand in this cog.
 
@@ -611,7 +613,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def interaction_check(self, interaction: discord.Interaction[ClientT], /) -> bool:
+    def interaction_check(self, interaction: discord.Interaction[ClientT], /) -> MaybeCoro[bool]:
         """A special method that registers as a :func:`discord.app_commands.check`
         for every app command and subcommand in this cog.
 
@@ -644,7 +646,9 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
+    async def cog_app_command_error(
+        self, interaction: discord.Interaction[ClientT], error: app_commands.AppCommandError
+    ) -> None:
         """|coro|
 
         A special method that is called whenever an error within

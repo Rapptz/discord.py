@@ -1,6 +1,7 @@
 from setuptools import setup
 import re
 
+
 def derive_version() -> str:
     version = ''
     with open('discord/__init__.py') as f:

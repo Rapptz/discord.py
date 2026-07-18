@@ -4,6 +4,9 @@ import discord
 
 
 class MyClient(discord.Client):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -35,6 +38,9 @@ class MyClient(discord.Client):
         if role is None:
             # Make sure the role still exists and is valid.
             return
+
+        # Tell the type checker that RawReactionActionEvent.member is not none during REACTION_ADD
+        assert payload.member is not None
 
         try:
             # Finally, add the role.

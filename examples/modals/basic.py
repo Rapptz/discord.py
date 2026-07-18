@@ -9,6 +9,9 @@ TEST_GUILD = discord.Object(0)
 
 
 class MyClient(discord.Client):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
     def __init__(self) -> None:
         # Just default intents and a `discord.Client` instance
         # We don't need a `commands.Bot` instance because we are not
@@ -67,7 +70,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
 client = MyClient()
 
 
-@client.tree.command(guild=TEST_GUILD, description="Submit feedback")
+@client.tree.command(guild=TEST_GUILD, description='Submit feedback')
 async def feedback(interaction: discord.Interaction):
     # Send the modal with an instance of our `Feedback` class
     # Since modals require an interaction, they cannot be done as a response to a text command.

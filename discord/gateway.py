@@ -44,6 +44,11 @@ from .activity import BaseActivity
 from .enums import SpeakingState
 from .errors import ConnectionClosed
 
+try:
+    import davey  # type: ignore
+except ImportError:
+    pass
+
 _log = logging.getLogger(__name__)
 
 __all__ = (
@@ -141,7 +146,7 @@ class KeepAliveHandler(threading.Thread):
         self.shard_id: Optional[int] = shard_id
         self.msg: str = 'Keeping shard ID %s websocket alive with sequence %s.'
         self.block_msg: str = 'Shard ID %s heartbeat blocked for more than %s seconds.'
-        self.behind_msg: str = 'Can\'t keep up, shard ID %s websocket is %.1fs behind.'
+        self.behind_msg: str = "Can't keep up, shard ID %s websocket is %.1fs behind."
         self._stop_ev: threading.Event = threading.Event()
         self._last_ack: float = time.perf_counter()
         self._last_send: float = time.perf_counter()
@@ -152,7 +157,7 @@ class KeepAliveHandler(threading.Thread):
     def run(self) -> None:
         while not self._stop_ev.wait(self.interval):
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
-                _log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
+                _log.warning('Shard ID %s has stopped responding to the gateway. Closing and restarting.', self.shard_id)
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
@@ -160,14 +165,15 @@ class KeepAliveHandler(threading.Thread):
                     f.result()
                 except Exception:
                     _log.exception('An error occurred while stopping the gateway. Ignoring.')
+                except BaseException as exc:
+                    _log.debug('A BaseException was raised while stopping the gateway', exc_info=exc)
                 finally:
                     self.stop()
-                    return
+                return
 
             data = self.get_payload()
             _log.debug(self.msg, self.shard_id, data['d'])
-            coro = self.ws.send_heartbeat(data)
-            f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+            f = asyncio.run_coroutine_threadsafe(self._send_heartbeat(data), loop=self.ws.loop)
             try:
                 # block until sending is complete
                 total = 0
@@ -188,8 +194,6 @@ class KeepAliveHandler(threading.Thread):
 
             except Exception:
                 self.stop()
-            else:
-                self._last_send = time.perf_counter()
 
     def get_payload(self) -> Dict[str, Any]:
         return {
@@ -203,6 +207,14 @@ class KeepAliveHandler(threading.Thread):
     def tick(self) -> None:
         self._last_recv = time.perf_counter()
 
+    def beat(self) -> Dict[str, Any]:
+        self._last_send = time.perf_counter()
+        return self.get_payload()
+
+    async def _send_heartbeat(self, data: Any) -> None:
+        self._last_send = time.perf_counter()
+        await self.ws.send_heartbeat(data)
+
     def ack(self) -> None:
         ack_time = time.perf_counter()
         self._last_ack = ack_time
@@ -212,6 +224,9 @@ class KeepAliveHandler(threading.Thread):
 
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
+    if TYPE_CHECKING:
+        ws: DiscordVoiceWebSocket
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         name: str = kwargs.pop('name', f'voice-keep-alive-handler:{id(self):#x}')
         super().__init__(*args, name=name, **kwargs)
@@ -223,7 +238,10 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
     def get_payload(self) -> Dict[str, Any]:
         return {
             'op': self.ws.HEARTBEAT,
-            'd': int(time.time() * 1000),
+            'd': {
+                't': int(time.time() * 1000),
+                'seq_ack': self.ws.seq_ack,
+            },
         }
 
     def ack(self) -> None:
@@ -528,7 +546,7 @@ class DiscordWebSocket:
 
             if op == self.HEARTBEAT:
                 if self._keep_alive:
-                    beat = self._keep_alive.get_payload()
+                    beat = self._keep_alive.beat()
                     await self.send_as_json(beat)
                 return
 
@@ -637,6 +655,7 @@ class DiscordWebSocket:
                 self._keep_alive.stop()
                 self._keep_alive = None
 
+            await self.socket.close(code=4000)
             if isinstance(e, asyncio.TimeoutError):
                 _log.debug('Timed out receiving packet. Attempting a reconnect.')
                 raise ReconnectWebSocket(self.shard_id) from None
@@ -804,18 +823,30 @@ class DiscordVoiceWebSocket:
         _max_heartbeat_timeout: float
 
     # fmt: off
-    IDENTIFY            = 0
-    SELECT_PROTOCOL     = 1
-    READY               = 2
-    HEARTBEAT           = 3
-    SESSION_DESCRIPTION = 4
-    SPEAKING            = 5
-    HEARTBEAT_ACK       = 6
-    RESUME              = 7
-    HELLO               = 8
-    RESUMED             = 9
-    CLIENT_CONNECT      = 12
-    CLIENT_DISCONNECT   = 13
+    IDENTIFY                       = 0
+    SELECT_PROTOCOL                = 1
+    READY                          = 2
+    HEARTBEAT                      = 3
+    SESSION_DESCRIPTION            = 4
+    SPEAKING                       = 5
+    HEARTBEAT_ACK                  = 6
+    RESUME                         = 7
+    HELLO                          = 8
+    RESUMED                        = 9
+    CLIENTS_CONNECT                = 11
+    CLIENT_CONNECT                 = 12
+    CLIENT_DISCONNECT              = 13
+    DAVE_PREPARE_TRANSITION        = 21
+    DAVE_EXECUTE_TRANSITION        = 22
+    DAVE_TRANSITION_READY          = 23
+    DAVE_PREPARE_EPOCH             = 24
+    MLS_EXTERNAL_SENDER            = 25
+    MLS_KEY_PACKAGE                = 26
+    MLS_PROPOSALS                  = 27
+    MLS_COMMIT_WELCOME             = 28
+    MLS_ANNOUNCE_COMMIT_TRANSITION = 29
+    MLS_WELCOME                    = 30
+    MLS_INVALID_COMMIT_WELCOME     = 31
     # fmt: on
 
     def __init__(
@@ -830,8 +861,10 @@ class DiscordVoiceWebSocket:
         self._keep_alive: Optional[VoiceKeepAliveHandler] = None
         self._close_code: Optional[int] = None
         self.secret_key: Optional[List[int]] = None
+        # defaulting to -1
+        self.seq_ack: int = -1
         if hook:
-            self._hook = hook
+            self._hook = hook  # type: ignore
 
     async def _hook(self, *args: Any) -> None:
         pass
@@ -839,6 +872,10 @@ class DiscordVoiceWebSocket:
     async def send_as_json(self, data: Any) -> None:
         _log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils._to_json(data))
+
+    async def send_binary(self, opcode: int, data: bytes) -> None:
+        _log.debug('Sending voice websocket binary frame: opcode=%s size=%d', opcode, len(data))
+        await self.ws.send_bytes(bytes([opcode]) + data)
 
     send_heartbeat = send_as_json
 
@@ -850,6 +887,7 @@ class DiscordVoiceWebSocket:
                 'token': state.token,
                 'server_id': str(state.server_id),
                 'session_id': state.session_id,
+                'seq_ack': self.seq_ack,
             },
         }
         await self.send_as_json(payload)
@@ -863,6 +901,7 @@ class DiscordVoiceWebSocket:
                 'user_id': str(state.user.id),
                 'session_id': state.session_id,
                 'token': state.token,
+                'max_dave_protocol_version': state.max_dave_protocol_version,
             },
         }
         await self.send_as_json(payload)
@@ -874,14 +913,16 @@ class DiscordVoiceWebSocket:
         *,
         resume: bool = False,
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
+        seq_ack: int = -1,
     ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
-        gateway = f'wss://{state.endpoint}/?v=4'
+        gateway = f'wss://{state.endpoint}/?v=8'
         client = state.voice_client
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
         ws = cls(socket, loop=client.loop, hook=hook)
         ws.gateway = gateway
+        ws.seq_ack = seq_ack
         ws._connection = state
         ws._max_heartbeat_timeout = 60.0
         ws.thread_id = threading.get_ident()
@@ -893,7 +934,7 @@ class DiscordVoiceWebSocket:
 
         return ws
 
-    async def select_protocol(self, ip: str, port: int, mode: int) -> None:
+    async def select_protocol(self, ip: str, port: int, mode: str) -> None:
         payload = {
             'op': self.SELECT_PROTOCOL,
             'd': {
@@ -930,10 +971,21 @@ class DiscordVoiceWebSocket:
 
         await self.send_as_json(payload)
 
+    async def send_transition_ready(self, transition_id: int):
+        payload = {
+            'op': DiscordVoiceWebSocket.DAVE_TRANSITION_READY,
+            'd': {
+                'transition_id': transition_id,
+            },
+        }
+
+        await self.send_as_json(payload)
+
     async def received_message(self, msg: Dict[str, Any]) -> None:
         _log.debug('Voice websocket frame received: %s', msg)
         op = msg['op']
         data = msg['d']  # According to Discord this key is always given
+        self.seq_ack = msg.get('seq', self.seq_ack)  # this key could not be given
 
         if op == self.READY:
             await self.initial_connection(data)
@@ -945,12 +997,84 @@ class DiscordVoiceWebSocket:
         elif op == self.SESSION_DESCRIPTION:
             self._connection.mode = data['mode']
             await self.load_secret_key(data)
+            self._connection.dave_protocol_version = data['dave_protocol_version']
+            if data['dave_protocol_version'] > 0:
+                await self._connection.reinit_dave_session()
         elif op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
+        elif self._connection.dave_session:
+            state = self._connection
+            if op == self.DAVE_PREPARE_TRANSITION:
+                _log.debug(
+                    'Preparing for DAVE transition id %d for protocol version %d',
+                    data['transition_id'],
+                    data['protocol_version'],
+                )
+                state.dave_pending_transitions[data['transition_id']] = data['protocol_version']
+                if data['transition_id'] == 0:
+                    await state._execute_transition(data['transition_id'])
+                else:
+                    if data['protocol_version'] == 0 and state.dave_session:
+                        state.dave_session.set_passthrough_mode(True, 120)
+
+                    await self.send_transition_ready(data['transition_id'])
+            elif op == self.DAVE_EXECUTE_TRANSITION:
+                _log.debug('Executing DAVE transition id %d', data['transition_id'])
+                await state._execute_transition(data['transition_id'])
+            elif op == self.DAVE_PREPARE_EPOCH:
+                _log.debug('Preparing for DAVE epoch %d', data['epoch'])
+                # When the epoch ID is equal to 1, this message indicates that a new MLS group is to be created for the given protocol version.
+                if data['epoch'] == 1:
+                    state.dave_protocol_version = data['protocol_version']
+                    await state.reinit_dave_session()
 
         await self._hook(self, msg)
+
+    async def received_binary_message(self, msg: bytes) -> None:
+        self.seq_ack = struct.unpack_from('>H', msg, 0)[0]
+        op = msg[2]
+        _log.debug('Voice websocket binary frame received: %d bytes; seq=%s op=%s', len(msg), self.seq_ack, op)
+        state = self._connection
+
+        if state.dave_session is None:
+            return
+
+        if op == self.MLS_EXTERNAL_SENDER:
+            state.dave_session.set_external_sender(msg[3:])
+            _log.debug('Set MLS external sender')
+        elif op == self.MLS_PROPOSALS:
+            optype = msg[3]
+            result = state.dave_session.process_proposals(
+                davey.ProposalsOperationType.append if optype == 0 else davey.ProposalsOperationType.revoke, msg[4:]
+            )
+            if isinstance(result, davey.CommitWelcome):
+                await self.send_binary(
+                    DiscordVoiceWebSocket.MLS_COMMIT_WELCOME,
+                    result.commit + result.welcome if result.welcome else result.commit,
+                )
+            _log.debug('MLS proposals processed')
+        elif op == self.MLS_ANNOUNCE_COMMIT_TRANSITION:
+            transition_id = struct.unpack_from('>H', msg, 3)[0]
+            try:
+                state.dave_session.process_commit(msg[5:])
+                if transition_id != 0:
+                    state.dave_pending_transitions[transition_id] = state.dave_protocol_version
+                    await self.send_transition_ready(transition_id)
+                _log.debug('MLS commit processed for transition id %d', transition_id)
+            except Exception:
+                await state._recover_from_invalid_commit(transition_id)
+        elif op == self.MLS_WELCOME:
+            transition_id = struct.unpack_from('>H', msg, 3)[0]
+            try:
+                state.dave_session.process_welcome(msg[5:])
+                if transition_id != 0:
+                    state.dave_pending_transitions[transition_id] = state.dave_protocol_version
+                    await self.send_transition_ready(transition_id)
+                _log.debug('MLS welcome processed for transition id %d', transition_id)
+            except Exception:
+                await state._recover_from_invalid_commit(transition_id)
 
     async def initial_connection(self, data: Dict[str, Any]) -> None:
         state = self._connection
@@ -1031,6 +1155,8 @@ class DiscordVoiceWebSocket:
         msg = await asyncio.wait_for(self.ws.receive(), timeout=30.0)
         if msg.type is aiohttp.WSMsgType.TEXT:
             await self.received_message(utils._from_json(msg.data))
+        elif msg.type is aiohttp.WSMsgType.BINARY:
+            await self.received_binary_message(msg.data)
         elif msg.type is aiohttp.WSMsgType.ERROR:
             _log.debug('Received voice %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None) from msg.data

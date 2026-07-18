@@ -22,7 +22,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-
 from __future__ import annotations
 
 from typing import AsyncIterator, Optional, TYPE_CHECKING
@@ -117,7 +116,7 @@ class SKU:
         Raises
         -------
         NotFound
-            An subscription with this ID does not exist.
+            A subscription with this ID does not exist.
         HTTPException
             Fetching the subscription failed.
 

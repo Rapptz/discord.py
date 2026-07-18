@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional
+from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional, TypedDict, Generic, TypeVar
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
@@ -33,7 +33,74 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
+
+    BoolOrNoneT = TypeVar('BoolOrNoneT', bound=Optional[bool])
+
+    class _BasePermissionsKwargs(Generic[BoolOrNoneT], TypedDict, total=False):
+        create_instant_invite: BoolOrNoneT
+        kick_members: BoolOrNoneT
+        ban_members: BoolOrNoneT
+        administrator: BoolOrNoneT
+        manage_channels: BoolOrNoneT
+        manage_guild: BoolOrNoneT
+        add_reactions: BoolOrNoneT
+        view_audit_log: BoolOrNoneT
+        priority_speaker: BoolOrNoneT
+        stream: BoolOrNoneT
+        read_messages: BoolOrNoneT
+        view_channel: BoolOrNoneT
+        send_messages: BoolOrNoneT
+        send_tts_messages: BoolOrNoneT
+        manage_messages: BoolOrNoneT
+        embed_links: BoolOrNoneT
+        attach_files: BoolOrNoneT
+        read_message_history: BoolOrNoneT
+        mention_everyone: BoolOrNoneT
+        external_emojis: BoolOrNoneT
+        use_external_emojis: BoolOrNoneT
+        view_guild_insights: BoolOrNoneT
+        connect: BoolOrNoneT
+        speak: BoolOrNoneT
+        mute_members: BoolOrNoneT
+        deafen_members: BoolOrNoneT
+        move_members: BoolOrNoneT
+        use_voice_activation: BoolOrNoneT
+        change_nickname: BoolOrNoneT
+        manage_nicknames: BoolOrNoneT
+        manage_roles: BoolOrNoneT
+        manage_permissions: BoolOrNoneT
+        manage_webhooks: BoolOrNoneT
+        manage_expressions: BoolOrNoneT
+        manage_emojis: BoolOrNoneT
+        manage_emojis_and_stickers: BoolOrNoneT
+        use_application_commands: BoolOrNoneT
+        request_to_speak: BoolOrNoneT
+        manage_events: BoolOrNoneT
+        manage_threads: BoolOrNoneT
+        create_public_threads: BoolOrNoneT
+        create_private_threads: BoolOrNoneT
+        send_messages_in_threads: BoolOrNoneT
+        external_stickers: BoolOrNoneT
+        use_external_stickers: BoolOrNoneT
+        use_embedded_activities: BoolOrNoneT
+        moderate_members: BoolOrNoneT
+        use_soundboard: BoolOrNoneT
+        use_external_sounds: BoolOrNoneT
+        send_voice_messages: BoolOrNoneT
+        set_voice_channel_status: BoolOrNoneT
+        create_expressions: BoolOrNoneT
+        create_events: BoolOrNoneT
+        send_polls: BoolOrNoneT
+        create_polls: BoolOrNoneT
+        use_external_apps: BoolOrNoneT
+        pin_messages: BoolOrNoneT
+        bypass_slowmode: BoolOrNoneT
+
+    class _PermissionsKwargs(_BasePermissionsKwargs[bool]): ...
+
+    class _PermissionOverwriteKwargs(_BasePermissionsKwargs[Optional[bool]]): ...
+
 
 # A permission alias works like a regular flag but is marked
 # So the PermissionOverwrite knows to work with it
@@ -135,32 +202,32 @@ class Permissions(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, permissions: int = 0, **kwargs: bool):
+    def __init__(self, permissions: int = 0, **kwargs: Unpack[_PermissionsKwargs]):
         if not isinstance(permissions, int):
             raise TypeError(f'Expected int parameter, received {permissions.__class__.__name__} instead.')
 
         self.value = permissions
-        for key, value in kwargs.items():
+        for key, kwvalue in kwargs.items():
             try:
                 flag = self.VALID_FLAGS[key]
             except KeyError:
                 raise TypeError(f'{key!r} is not a valid permission name.') from None
             else:
-                self._set_flag(flag, value)
+                self._set_flag(flag, kwvalue)  # type: ignore # TypedDict annoyance where kwvalue is an object instead of bool
 
     def is_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or fewer permissions as other."""
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+            raise TypeError(f'cannot compare {self.__class__.__name__} with {other.__class__.__name__}')
 
     def is_superset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+            raise TypeError(f'cannot compare {self.__class__.__name__} with {other.__class__.__name__}')
 
     def is_strict_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if the permissions on other are a strict subset of those on self."""
@@ -187,7 +254,7 @@ class Permissions(BaseFlags):
         permissions set to ``True``.
         """
         # Some of these are 0 because we don't want to set unnecessary bits
-        return cls(0b0000_0000_0000_0110_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
+        return cls(0b0000_0000_0001_1111_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -202,10 +269,12 @@ class Permissions(BaseFlags):
         base.read_messages = True
         base.send_tts_messages = False
         base.manage_messages = False
+        base.pin_messages = True
         base.create_private_threads = False
         base.create_public_threads = False
         base.manage_threads = False
         base.send_messages_in_threads = False
+        base.bypass_slowmode = False
         return base
 
     @classmethod
@@ -259,8 +328,11 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.4
             Added :attr:`send_polls`, :attr:`send_voice_messages`, attr:`use_external_sounds`,
             :attr:`use_embedded_activities`, and :attr:`use_external_apps` permissions.
+
+        .. versionchanged:: 2.7
+            Added :attr:`pin_messages` and :attr:`bypass_slowmode` permissions.
         """
-        return cls(0b0000_0000_0000_0110_0110_0100_1111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
+        return cls(0b0000_0000_0001_1110_0110_0100_1111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
@@ -308,14 +380,21 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.4
             Added :attr:`send_polls` and :attr:`use_external_apps` permissions.
+
+        .. versionchanged:: 2.7
+            Added :attr:`pin_messages` and :attr:`bypass_slowmode` permissions.
         """
-        return cls(0b0000_0000_0000_0110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
+        return cls(0b0000_0000_0001_1110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
 
     @classmethod
     def voice(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
-        "Voice" permissions from the official Discord UI set to ``True``."""
-        return cls(0b0000_0000_0000_0000_0010_0100_1000_0000_0000_0011_1111_0000_0000_0011_0000_0000)
+        "Voice" permissions from the official Discord UI set to ``True``.
+
+        .. versionchanged:: 2.7
+            Added :attr:`set_voice_channel_status` permission.
+        """
+        return cls(0b0000_0000_0000_0001_0010_0100_1000_0000_0000_0011_1111_0000_0000_0011_0000_0000)
 
     @classmethod
     def stage(cls) -> Self:
@@ -364,6 +443,16 @@ class Permissions(BaseFlags):
         return cls(0b0000_0000_0000_0000_0000_0001_0000_0100_0111_0000_0000_0000_0010_0000_0011_1110)
 
     @classmethod
+    def apps(cls) -> Self:
+        """A factory method that creates a :class:`Permissions` with all
+        "Apps" permissions from the official Discord UI set to ``True``.
+
+
+        .. versionadded:: 2.6
+        """
+        return cls(0b0000_0000_0000_0100_0000_0000_1000_0000_1000_0000_0000_0000_0000_0000_0000_0000)
+
+    @classmethod
     def events(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Events" permissions from the official Discord UI set to ``True``.
@@ -381,7 +470,7 @@ class Permissions(BaseFlags):
         """
         return cls(1 << 3)
 
-    def update(self, **kwargs: bool) -> None:
+    def update(self, **kwargs: Unpack[_PermissionsKwargs]) -> None:
         r"""Bulk updates this permission object.
 
         Allows you to set multiple attributes by using keyword
@@ -396,7 +485,7 @@ class Permissions(BaseFlags):
         for key, value in kwargs.items():
             flag = self.VALID_FLAGS.get(key)
             if flag is not None:
-                self._set_flag(flag, value)
+                self._set_flag(flag, value)  # type: ignore
 
     def handle_overwrite(self, allow: int, deny: int) -> None:
         # Basically this is what's happening here.
@@ -493,7 +582,7 @@ class Permissions(BaseFlags):
 
     @flag_value
     def manage_messages(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can delete or pin messages in a text channel.
+        """:class:`bool`: Returns ``True`` if a user can delete messages in a text channel.
 
         .. note::
 
@@ -761,6 +850,14 @@ class Permissions(BaseFlags):
         return 1 << 46
 
     @flag_value
+    def set_voice_channel_status(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can set voice channel status.
+
+        .. versionadded:: 2.7
+        """
+        return 1 << 48
+
+    @flag_value
     def send_polls(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can send poll messages.
 
@@ -783,6 +880,22 @@ class Permissions(BaseFlags):
         .. versionadded:: 2.4
         """
         return 1 << 50
+
+    @flag_value
+    def pin_messages(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can pin messages.
+
+        .. versionadded:: 2.7
+        """
+        return 1 << 51
+
+    @flag_value
+    def bypass_slowmode(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can bypass slowmode.
+
+        .. versionadded:: 2.7
+        """
+        return 1 << 52
 
 
 def _augment_from_permissions(cls):
@@ -902,13 +1015,16 @@ class PermissionOverwrite:
         use_soundboard: Optional[bool]
         use_external_sounds: Optional[bool]
         send_voice_messages: Optional[bool]
+        set_voice_channel_status: Optional[bool]
         create_expressions: Optional[bool]
         create_events: Optional[bool]
         send_polls: Optional[bool]
         create_polls: Optional[bool]
         use_external_apps: Optional[bool]
+        pin_messages: Optional[bool]
+        bypass_slowmode: Optional[bool]
 
-    def __init__(self, **kwargs: Optional[bool]):
+    def __init__(self, **kwargs: Unpack[_PermissionOverwriteKwargs]) -> None:
         self._values: Dict[str, Optional[bool]] = {}
 
         for key, value in kwargs.items():
@@ -970,7 +1086,7 @@ class PermissionOverwrite:
         """
         return len(self._values) == 0
 
-    def update(self, **kwargs: Optional[bool]) -> None:
+    def update(self, **kwargs: Unpack[_PermissionOverwriteKwargs]) -> None:
         r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword

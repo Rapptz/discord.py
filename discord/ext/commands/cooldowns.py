@@ -242,10 +242,10 @@ class MaxConcurrency:
         self.wait: bool = wait
 
         if number <= 0:
-            raise ValueError('max_concurrency \'number\' cannot be less than 1')
+            raise ValueError("max_concurrency 'number' cannot be less than 1")
 
         if not isinstance(per, BucketType):
-            raise TypeError(f'max_concurrency \'per\' must be of type BucketType not {type(per)!r}')
+            raise TypeError(f"max_concurrency 'per' must be of type BucketType not {type(per)!r}")
 
     def copy(self) -> Self:
         return self.__class__(self.number, per=self.per, wait=self.wait)

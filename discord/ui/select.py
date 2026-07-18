@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 from typing import (
     Any,
@@ -38,14 +39,14 @@ from typing import (
     Sequence,
 )
 from contextvars import ContextVar
-import inspect
+import copy
 import os
 
-from .item import Item, ItemCallbackType
+from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..utils import MISSING, _human_join
+from ..utils import MISSING, _human_join, _iscoroutinefunction
 from ..components import (
     SelectOption,
     SelectMenu,
@@ -69,13 +70,15 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias, TypeGuard
+    from typing_extensions import TypeAlias, TypeGuard, Self
 
-    from .view import View
+    from .view import BaseView
+    from .action_row import ActionRow
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
     from ..interactions import Interaction
+    from ..app_commands.namespace import ResolveKey
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
@@ -100,14 +103,15 @@ if TYPE_CHECKING:
         Thread,
     ]
 
-V = TypeVar('V', bound='View', covariant=True)
+S = TypeVar('S', bound='Union[BaseView, ActionRow]', covariant=True)
+V = TypeVar('V', bound='BaseView', covariant=True)
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
 SelectT = TypeVar('SelectT', bound='Select[Any]')
 UserSelectT = TypeVar('UserSelectT', bound='UserSelect[Any]')
 RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect[Any]')
 ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect[Any]')
 MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect[Any]')
-SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[V, BaseSelectT]], BaseSelectT]
+SelectCallbackDecorator: TypeAlias = Callable[['ItemCallbackType[S, BaseSelectT]'], BaseSelectT]
 DefaultSelectComponentTypes = Literal[
     ComponentType.user_select,
     ComponentType.role_select,
@@ -215,6 +219,7 @@ class BaseSelect(Item[V]):
         'min_values',
         'max_values',
         'disabled',
+        'id',
     )
     __component_attributes__: Tuple[str, ...] = (
         'custom_id',
@@ -222,6 +227,7 @@ class BaseSelect(Item[V]):
         'min_values',
         'max_values',
         'disabled',
+        'id',
     )
 
     def __init__(
@@ -234,9 +240,11 @@ class BaseSelect(Item[V]):
         min_values: Optional[int] = None,
         max_values: Optional[int] = None,
         disabled: bool = False,
+        required: bool = True,
         options: List[SelectOption] = MISSING,
         channel_types: List[ChannelType] = MISSING,
         default_values: Sequence[SelectDefaultValue] = MISSING,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
@@ -251,13 +259,32 @@ class BaseSelect(Item[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             channel_types=[] if channel_types is MISSING else channel_types,
             options=[] if options is MISSING else options,
             default_values=[] if default_values is MISSING else default_values,
+            id=id,
         )
 
         self.row = row
         self._values: List[PossibleValue] = []
+
+    def copy(self) -> Self:
+        new = copy.copy(self)
+        if isinstance(new.callback, _ItemCallback):
+            new.callback.item = new
+        new._parent = self._parent
+        new._update_view(self.view)
+        return new
+
+    @property
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this select."""
+        return self._underlying.id
+
+    @id.setter
+    def id(self, value: Optional[int]) -> None:
+        self._underlying.id = value
 
     @property
     def values(self) -> List[PossibleValue]:
@@ -317,6 +344,18 @@ class BaseSelect(Item[V]):
         self._underlying.disabled = bool(value)
 
     @property
+    def required(self) -> bool:
+        """:class:`bool`: Whether the select is required or not. Only supported in modals.
+
+        .. versionadded:: 2.6
+        """
+        return self._underlying.required
+
+    @required.setter
+    def required(self, value: bool) -> None:
+        self._underlying.required = bool(value)
+
+    @property
     def width(self) -> int:
         return 5
 
@@ -326,14 +365,34 @@ class BaseSelect(Item[V]):
     def _refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def _refresh_state(self, interaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
+    def _handle_submit(
+        self, interaction: Interaction, data: SelectMessageComponentInteractionData, resolved: Dict[ResolveKey, Any]
+    ) -> None:
+        payload: List[PossibleValue]
+        values = selected_values.get({})
+        string_values = data.get('values', [])
+        payload = [v for k, v in resolved.items() if k.id in string_values]
+        if not payload:
+            payload = list(string_values)
+
+        self._values = values[self.custom_id] = payload
+        selected_values.set(values)
+
+    def _refresh_state(
+        self,
+        interaction: Interaction,
+        data: SelectMessageComponentInteractionData,
+    ) -> None:
         values = selected_values.get({})
         payload: List[PossibleValue]
         try:
-            resolved = Namespace._get_resolved_items(interaction, data['resolved'])
+            resolved = Namespace._get_resolved_items(
+                interaction,
+                data['resolved'],  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            )
             payload = list(resolved.values())
         except KeyError:
-            payload = data.get("values", [])  # type: ignore
+            payload = list(data.get('values', []))
 
         self._values = values[self.custom_id] = payload
         selected_values.set(values)
@@ -381,12 +440,24 @@ class Select(BaseSelect[V]):
         Can only contain up to 25 items.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __component_attributes__ = BaseSelect.__component_attributes__ + ('options',)
@@ -400,7 +471,9 @@ class Select(BaseSelect[V]):
         max_values: int = 1,
         options: List[SelectOption] = MISSING,
         disabled: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -409,8 +482,10 @@ class Select(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             options=options,
             row=row,
+            id=id,
         )
 
     @property
@@ -430,10 +505,8 @@ class Select(BaseSelect[V]):
 
     @options.setter
     def options(self, value: List[SelectOption]) -> None:
-        if not isinstance(value, list):
+        if not isinstance(value, list) or not all(isinstance(obj, SelectOption) for obj in value):
             raise TypeError('options must be a list of SelectOption')
-        if not all(isinstance(obj, SelectOption) for obj in value):
-            raise TypeError('all list items must subclass SelectOption')
 
         self._underlying.options = value
 
@@ -500,7 +573,7 @@ class Select(BaseSelect[V]):
         """
 
         if len(self._underlying.options) >= 25:
-            raise ValueError('maximum number of options already provided')
+            raise ValueError('maximum number of options already provided (25)')
 
         self._underlying.options.append(option)
 
@@ -531,6 +604,10 @@ class UserSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -542,6 +619,14 @@ class UserSelect(BaseSelect[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
@@ -554,8 +639,10 @@ class UserSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -564,8 +651,10 @@ class UserSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
+            id=id,
         )
 
     @property
@@ -623,6 +712,10 @@ class RoleSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the roles that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -634,6 +727,14 @@ class RoleSelect(BaseSelect[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
@@ -646,8 +747,10 @@ class RoleSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -656,8 +759,10 @@ class RoleSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
+            id=id,
         )
 
     @property
@@ -710,6 +815,10 @@ class MentionableSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users/roles that should be selected by default.
         if :class:`.Object` is passed, then the type must be specified in the constructor.
@@ -722,6 +831,14 @@ class MentionableSelect(BaseSelect[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
@@ -734,8 +851,10 @@ class MentionableSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -744,8 +863,10 @@ class MentionableSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             default_values=_handle_select_defaults(default_values, self.type),
+            id=id,
         )
 
     @property
@@ -805,6 +926,10 @@ class ChannelSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    required: :class:`bool`
+        Whether the select is required. Only applicable within modals.
+
+        .. versionadded:: 2.6
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the channels that should be selected by default.
         Number of items must be in range of ``min_values`` and ``max_values``.
@@ -816,6 +941,14 @@ class ChannelSelect(BaseSelect[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __component_attributes__ = BaseSelect.__component_attributes__ + (
@@ -832,8 +965,10 @@ class ChannelSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -842,9 +977,11 @@ class ChannelSelect(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
+            required=required,
             row=row,
             channel_types=channel_types,
             default_values=_handle_select_defaults(default_values, self.type),
+            id=id,
         )
 
     @property
@@ -896,8 +1033,8 @@ def select(
     max_values: int = ...,
     disabled: bool = ...,
     row: Optional[int] = ...,
-) -> SelectCallbackDecorator[V, SelectT]:
-    ...
+    id: Optional[int] = ...,
+) -> SelectCallbackDecorator[S, SelectT]: ...
 
 
 @overload
@@ -913,8 +1050,8 @@ def select(
     disabled: bool = ...,
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
-) -> SelectCallbackDecorator[V, UserSelectT]:
-    ...
+    id: Optional[int] = ...,
+) -> SelectCallbackDecorator[S, UserSelectT]: ...
 
 
 @overload
@@ -930,8 +1067,8 @@ def select(
     disabled: bool = ...,
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
-) -> SelectCallbackDecorator[V, RoleSelectT]:
-    ...
+    id: Optional[int] = ...,
+) -> SelectCallbackDecorator[S, RoleSelectT]: ...
 
 
 @overload
@@ -947,8 +1084,8 @@ def select(
     disabled: bool = ...,
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
-) -> SelectCallbackDecorator[V, ChannelSelectT]:
-    ...
+    id: Optional[int] = ...,
+) -> SelectCallbackDecorator[S, ChannelSelectT]: ...
 
 
 @overload
@@ -964,8 +1101,8 @@ def select(
     disabled: bool = ...,
     default_values: Sequence[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
-) -> SelectCallbackDecorator[V, MentionableSelectT]:
-    ...
+    id: Optional[int] = ...,
+) -> SelectCallbackDecorator[S, MentionableSelectT]: ...
 
 
 def select(
@@ -980,7 +1117,8 @@ def select(
     disabled: bool = False,
     default_values: Sequence[ValidDefaultValues] = MISSING,
     row: Optional[int] = None,
-) -> SelectCallbackDecorator[V, BaseSelectT]:
+    id: Optional[int] = None,
+) -> SelectCallbackDecorator[S, BaseSelectT]:
     """A decorator that attaches a select menu to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -1038,6 +1176,10 @@ def select(
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+
+        .. note::
+
+            This parameter is ignored when used in a :class:`ActionRow` or v2 component.
     min_values: :class:`int`
         The minimum number of items that must be chosen for this select menu.
         Defaults to 1 and must be between 0 and 25.
@@ -1059,10 +1201,14 @@ def select(
         Number of items must be in range of ``min_values`` and ``max_values``.
 
         .. versionadded:: 2.4
+    id: Optional[:class:`int`]
+        The ID of the component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
-    def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
-        if not inspect.iscoroutinefunction(func):
+    def decorator(func: ItemCallbackType[S, BaseSelectT]) -> ItemCallbackType[S, BaseSelectT]:
+        if not _iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
         callback_cls = getattr(cls, '__origin__', cls)
         if not issubclass(callback_cls, BaseSelect):
@@ -1077,6 +1223,7 @@ def select(
             'min_values': min_values,
             'max_values': max_values,
             'disabled': disabled,
+            'id': id,
         }
         if issubclass(callback_cls, Select):
             func.__discord_ui_model_kwargs__['options'] = options

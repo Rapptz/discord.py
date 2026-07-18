@@ -24,24 +24,40 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union, Optional
 from typing_extensions import NotRequired
 
-from .channel import ChannelTypeWithoutThread, ThreadMetadata, GuildChannel, InteractionDMChannel, GroupDMChannel
+from .channel import (
+    ChannelTypeWithoutThread,
+    GuildChannel,
+    InteractionDMChannel,
+    GroupDMChannel,
+)
 from .sku import Entitlement
-from .threads import ThreadType
+from .threads import ThreadType, ThreadMetadata
 from .member import Member
 from .message import Attachment
 from .role import Role
 from .snowflake import Snowflake
 from .user import User
 from .guild import GuildFeature
+from .components import ComponentBase
 
 if TYPE_CHECKING:
     from .message import Message
 
 
 InteractionType = Literal[1, 2, 3, 4, 5]
+InteractionResponseType = Literal[
+    1,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+]
 InteractionContextType = Literal[0, 1, 2]
 InteractionInstallationType = Literal[0, 1]
 
@@ -54,12 +70,28 @@ class _BasePartialChannel(TypedDict):
 
 class PartialChannel(_BasePartialChannel):
     type: ChannelTypeWithoutThread
+    topic: NotRequired[str]
+    position: int
+    nsfw: bool
+    flags: int
+    rate_limit_per_user: int
+    parent_id: Optional[Snowflake]
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: NotRequired[str]
 
 
 class PartialThread(_BasePartialChannel):
     type: ThreadType
     thread_metadata: ThreadMetadata
     parent_id: Snowflake
+    applied_tags: NotRequired[List[Snowflake]]
+    owner_id: Snowflake
+    message_count: int
+    member_count: int
+    rate_limit_per_user: int
+    last_message_id: NotRequired[Optional[Snowflake]]
+    flags: NotRequired[int]
+    total_message_sent: int
 
 
 class ResolvedData(TypedDict, total=False):
@@ -178,26 +210,81 @@ class SelectMessageComponentInteractionData(_BaseMessageComponentInteractionData
 MessageComponentInteractionData = Union[ButtonMessageComponentInteractionData, SelectMessageComponentInteractionData]
 
 
-class ModalSubmitTextInputInteractionData(TypedDict):
+class ModalSubmitTextInputInteractionData(ComponentBase):
     type: Literal[4]
     custom_id: str
     value: str
 
 
-ModalSubmitComponentItemInteractionData = ModalSubmitTextInputInteractionData
+class ModalSubmitSelectInteractionData(ComponentBase):
+    type: Literal[3, 5, 6, 7, 8]
+    custom_id: str
+    values: List[str]
+
+
+class ModalSubmitFileUploadInteractionData(ComponentBase):
+    type: Literal[19]
+    custom_id: str
+    values: List[str]
+
+
+class ModalSubmitRadioGroupInteractionData(ComponentBase):
+    type: Literal[21]
+    custom_id: str
+    id: int
+    value: Optional[str]
+
+
+class ModalSubmitCheckboxGroupInteractionData(ComponentBase):
+    type: Literal[22]
+    custom_id: str
+    id: int
+    values: List[str]
+
+
+class ModalSubmitCheckboxInteractionData(ComponentBase):
+    type: Literal[23]
+    custom_id: str
+    id: int
+    value: bool
+
+
+ModalSubmitLabelComponentItemInteractionData = Union[
+    ModalSubmitSelectInteractionData,
+    ModalSubmitTextInputInteractionData,
+    ModalSubmitFileUploadInteractionData,
+    ModalSubmitRadioGroupInteractionData,
+    ModalSubmitCheckboxGroupInteractionData,
+    ModalSubmitCheckboxInteractionData,
+]
 
 
 class ModalSubmitActionRowInteractionData(TypedDict):
     type: Literal[1]
-    components: List[ModalSubmitComponentItemInteractionData]
+    components: List[ModalSubmitTextInputInteractionData]
 
 
-ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData]
+class ModalSubmitTextDisplayInteractionData(ComponentBase):
+    type: Literal[10]
+    content: str
+
+
+class ModalSubmitLabelInteractionData(ComponentBase):
+    type: Literal[18]
+    component: ModalSubmitLabelComponentItemInteractionData
+
+
+ModalSubmitComponentInteractionData = Union[
+    ModalSubmitActionRowInteractionData,
+    ModalSubmitTextDisplayInteractionData,
+    ModalSubmitLabelInteractionData,
+]
 
 
 class ModalSubmitInteractionData(TypedDict):
     custom_id: str
     components: List[ModalSubmitComponentInteractionData]
+    resolved: NotRequired[ResolvedData]
 
 
 InteractionData = Union[
@@ -223,6 +310,7 @@ class _BaseInteraction(TypedDict):
     entitlements: NotRequired[List[Entitlement]]
     authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
     context: NotRequired[InteractionContextType]
+    attachment_size_limit: int
 
 
 class PingInteraction(_BaseInteraction):
@@ -244,7 +332,12 @@ class ModalSubmitInteraction(_BaseInteraction):
     data: ModalSubmitInteractionData
 
 
-Interaction = Union[PingInteraction, ApplicationCommandInteraction, MessageComponentInteraction, ModalSubmitInteraction]
+Interaction = Union[
+    PingInteraction,
+    ApplicationCommandInteraction,
+    MessageComponentInteraction,
+    ModalSubmitInteraction,
+]
 
 
 class MessageInteraction(TypedDict):
@@ -292,7 +385,8 @@ class MessageComponentMessageInteractionMetadata(_MessageInteractionMetadata):
 class ModalSubmitMessageInteractionMetadata(_MessageInteractionMetadata):
     type: Literal[5]
     triggering_interaction_metadata: Union[
-        ApplicationCommandMessageInteractionMetadata, MessageComponentMessageInteractionMetadata
+        ApplicationCommandMessageInteractionMetadata,
+        MessageComponentMessageInteractionMetadata,
     ]
 
 
@@ -301,3 +395,27 @@ MessageInteractionMetadata = Union[
     MessageComponentMessageInteractionMetadata,
     ModalSubmitMessageInteractionMetadata,
 ]
+
+
+class InteractionCallbackResponse(TypedDict):
+    id: Snowflake
+    type: InteractionType
+    activity_instance_id: NotRequired[str]
+    response_message_id: NotRequired[Snowflake]
+    response_message_loading: NotRequired[bool]
+    response_message_ephemeral: NotRequired[bool]
+
+
+class InteractionCallbackActivity(TypedDict):
+    id: str
+
+
+class InteractionCallbackResource(TypedDict):
+    type: InteractionResponseType
+    activity_instance: NotRequired[InteractionCallbackActivity]
+    message: NotRequired[Message]
+
+
+class InteractionCallback(TypedDict):
+    interaction: InteractionCallbackResponse
+    resource: NotRequired[InteractionCallbackResource]

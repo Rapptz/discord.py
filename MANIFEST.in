@@ -1,5 +1,5 @@
 include README.rst
 include LICENSE
 include requirements.txt
-include discord/bin/*.dll
+include discord/bin/*
 include discord/py.typed

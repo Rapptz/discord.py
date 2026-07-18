@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, overload, TYPE_CHECKING
 
 from .asset import Asset
 from .permissions import Permissions
@@ -222,6 +222,8 @@ class Role(Hashable):
         'tags',
         '_flags',
         '_state',
+        '_secondary_colour',
+        '_tertiary_colour',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: RolePayload):
@@ -273,10 +275,11 @@ class Role(Hashable):
         return not r
 
     def _update(self, data: RolePayload):
+        colors = data.get('colors', {})
         self.name: str = data['name']
         self._permissions: int = int(data.get('permissions', 0))
         self.position: int = data.get('position', 0)
-        self._colour: int = data.get('color', 0)
+        self._colour: int = colors.get('primary_color', 0)
         self.hoist: bool = data.get('hoist', False)
         self._icon: Optional[str] = data.get('icon')
         self.unicode_emoji: Optional[str] = data.get('unicode_emoji')
@@ -284,9 +287,11 @@ class Role(Hashable):
         self.mentionable: bool = data.get('mentionable', False)
         self.tags: Optional[RoleTags]
         self._flags: int = data.get('flags', 0)
+        self._secondary_colour = colors.get('secondary_color', None)
+        self._tertiary_colour = colors.get('tertiary_color', None)
 
         try:
-            self.tags = RoleTags(data['tags'])
+            self.tags = RoleTags(data['tags'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.tags = None
 
@@ -324,18 +329,50 @@ class Role(Hashable):
         return not self.is_default() and not self.managed and (me.top_role > self or me.id == self.guild.owner_id)
 
     @property
+    def secondary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's secondary colour.
+
+        .. versionadded:: 2.6
+        """
+        return Colour(self._secondary_colour) if self._secondary_colour is not None else None
+
+    @property
+    def secondary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Alias for :attr:`secondary_colour`.
+
+        .. versionadded:: 2.6
+        """
+        return self.secondary_colour
+
+    @property
+    def tertiary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's tertiary colour.
+
+        .. versionadded:: 2.6
+        """
+        return Colour(self._tertiary_colour) if self._tertiary_colour is not None else None
+
+    @property
+    def tertiary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Alias for :attr:`tertiary_colour`.
+
+        .. versionadded:: 2.6
+        """
+        return self.tertiary_colour
+
+    @property
     def permissions(self) -> Permissions:
         """:class:`Permissions`: Returns the role's permissions."""
         return Permissions(self._permissions)
 
     @property
     def colour(self) -> Colour:
-        """:class:`Colour`: Returns the role colour. An alias exists under ``color``."""
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``color``."""
         return Colour(self._colour)
 
     @property
     def color(self) -> Colour:
-        """:class:`Colour`: Returns the role color. An alias exists under ``colour``."""
+        """:class:`Colour`: Returns the role's primary colour. An alias exists under ``colour``."""
         return self.colour
 
     @property
@@ -392,10 +429,10 @@ class Role(Hashable):
 
     async def _move(self, position: int, reason: Optional[str]) -> None:
         if position <= 0:
-            raise ValueError("Cannot move role to position 0 or below")
+            raise ValueError('Cannot move role to position 0 or below')
 
         if self.is_default():
-            raise ValueError("Cannot move default role")
+            raise ValueError('Cannot move default role')
 
         if self.position == position:
             return  # Save discord the extra request.
@@ -410,7 +447,7 @@ class Role(Hashable):
         else:
             roles.append(self.id)
 
-        payload: List[RolePositionUpdate] = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
+        payload: List[RolePositionUpdate] = [{'id': z[0], 'position': z[1]} for z in zip(roles, change_range)]
         await http.move_role_position(self.guild.id, payload, reason=reason)
 
     async def edit(
@@ -425,6 +462,10 @@ class Role(Hashable):
         mentionable: bool = MISSING,
         position: int = MISSING,
         reason: Optional[str] = MISSING,
+        secondary_color: Optional[Union[Colour, int]] = MISSING,
+        tertiary_color: Optional[Union[Colour, int]] = MISSING,
+        secondary_colour: Optional[Union[Colour, int]] = MISSING,
+        tertiary_colour: Optional[Union[Colour, int]] = MISSING,
     ) -> Optional[Role]:
         """|coro|
 
@@ -447,6 +488,9 @@ class Role(Hashable):
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
 
+        .. versionchanged:: 2.6
+            The ``colour`` and ``color`` parameters now set the role's primary color.
+
         Parameters
         -----------
         name: :class:`str`
@@ -455,6 +499,15 @@ class Role(Hashable):
             The new permissions to change to.
         colour: Union[:class:`Colour`, :class:`int`]
             The new colour to change to. (aliased to color as well)
+        secondary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
+            The new secondary colour for the role.
+
+            .. versionadded:: 2.6
+        tertiary_colour: Optional[Union[:class:`Colour`, :class:`int`]]
+            The new tertiary colour for the role. Can only be used for the holographic role preset,
+            which is ``(11127295, 16759788, 16761760)``
+
+            .. versionadded:: 2.6
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
         display_icon: Optional[Union[:class:`bytes`, :class:`str`]]
@@ -490,14 +543,17 @@ class Role(Hashable):
             await self._move(position, reason=reason)
 
         payload: Dict[str, Any] = {}
+
+        colours: Dict[str, Any] = {}
+
         if color is not MISSING:
             colour = color
 
         if colour is not MISSING:
             if isinstance(colour, int):
-                payload['color'] = colour
+                colours['primary_color'] = colour
             else:
-                payload['color'] = colour.value
+                colours['primary_color'] = colour.value
 
         if name is not MISSING:
             payload['name'] = name
@@ -519,8 +575,130 @@ class Role(Hashable):
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable
 
+        actual_secondary_colour = secondary_colour or secondary_color
+        actual_tertiary_colour = tertiary_colour or tertiary_color
+
+        if actual_secondary_colour is not MISSING:
+            if actual_secondary_colour is None:
+                colours['secondary_color'] = None
+            elif isinstance(actual_secondary_colour, int):
+                colours['secondary_color'] = actual_secondary_colour
+            else:
+                colours['secondary_color'] = actual_secondary_colour.value
+        if actual_tertiary_colour is not MISSING:
+            if actual_tertiary_colour is None:
+                colours['tertiary_color'] = None
+            elif isinstance(actual_tertiary_colour, int):
+                colours['tertiary_color'] = actual_tertiary_colour
+            else:
+                colours['tertiary_color'] = actual_tertiary_colour.value
+
+        if colours:
+            payload['colors'] = colours
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         return Role(guild=self.guild, data=data, state=self._state)
+
+    @overload
+    async def move(self, *, beginning: bool, offset: int = ..., reason: Optional[str] = ...): ...
+
+    @overload
+    async def move(self, *, end: bool, offset: int = ..., reason: Optional[str] = ...): ...
+
+    @overload
+    async def move(self, *, above: Role, offset: int = ..., reason: Optional[str] = ...): ...
+
+    @overload
+    async def move(self, *, below: Role, offset: int = ..., reason: Optional[str] = ...): ...
+
+    async def move(
+        self,
+        *,
+        beginning: bool = MISSING,
+        end: bool = MISSING,
+        above: Role = MISSING,
+        below: Role = MISSING,
+        offset: int = 0,
+        reason: Optional[str] = None,
+    ):
+        """|coro|
+
+        A rich interface to help move a role relative to other roles.
+
+        You must have :attr:`~discord.Permissions.manage_roles` to do this,
+        and you cannot move roles above the client's top role in the guild.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        -----------
+        beginning: :class:`bool`
+            Whether to move this at the beginning of the role list, above the default role.
+            This is mutually exclusive with `end`, `above`, and `below`.
+        end: :class:`bool`
+            Whether to move this at the end of the role list.
+            This is mutually exclusive with `beginning`, `above`, and `below`.
+        above: :class:`Role`
+            The role that should be above our current role.
+            This mutually exclusive with `beginning`, `end`, and `below`.
+        below: :class:`Role`
+            The role that should be below our current role.
+            This mutually exclusive with `beginning`, `end`, and `above`.
+        offset: :class:`int`
+            The number of roles to offset the move by. For example,
+            an offset of ``2`` with ``beginning=True`` would move
+            it 2 above the beginning. A positive number moves it above
+            while a negative number moves it below. Note that this
+            number is relative and computed after the ``beginning``,
+            ``end``, ``before``, and ``after`` parameters.
+        reason: Optional[:class:`str`]
+            The reason for editing this role. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You cannot move the role there, or lack permissions to do so.
+        HTTPException
+            Moving the role failed.
+        TypeError
+            A bad mix of arguments were passed.
+        ValueError
+            An invalid role was passed.
+
+        Returns
+        --------
+        List[:class:`Role`]
+            A list of all the roles in the guild.
+        """
+        if sum(bool(a) for a in (beginning, end, above, below)) > 1:
+            raise TypeError('Only one of [beginning, end, above, below] can be used.')
+
+        target = above or below
+        guild = self.guild
+        guild_roles = guild.roles
+
+        if target:
+            if target not in guild_roles:
+                raise ValueError('Target role is from a different guild')
+            if above == guild.default_role:
+                raise ValueError('Role cannot be moved below the default role')
+            if self == target:
+                raise ValueError('Target role cannot be itself')
+
+        roles = [r for r in guild_roles if r != self]
+        if beginning:
+            index = 1
+        elif end:
+            index = len(roles)
+        elif above in roles:
+            index = roles.index(above)
+        elif below in roles:
+            index = roles.index(below) + 1
+        else:
+            index = guild_roles.index(self)
+        roles.insert(max((index + offset), 1), self)
+
+        payload: List[RolePositionUpdate] = [{'id': role.id, 'position': idx} for idx, role in enumerate(roles)]
+        await self._state.http.move_role_position(guild.id, payload, reason=reason)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|

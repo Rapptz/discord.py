@@ -103,12 +103,15 @@ class Thread(Messageable, Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this thread. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~Permissions.bypass_slowmode` bypass slowmode.
     message_count: :class:`int`
         An approximate number of messages in this thread.
     member_count: :class:`int`
         An approximate number of members in this thread. This caps at 50.
+    total_message_sent: :class:`int`
+        The total number of messages sent, including deleted messages.
+
+        .. versionadded:: 2.6
     me: Optional[:class:`ThreadMember`]
         A thread member representing yourself, if you've joined the thread.
         This could not be available.
@@ -152,6 +155,7 @@ class Thread(Messageable, Hashable):
         'archiver_id',
         'auto_archive_duration',
         'archive_timestamp',
+        'total_message_sent',
         '_created_at',
         '_flags',
         '_applied_tags',
@@ -185,6 +189,7 @@ class Thread(Messageable, Hashable):
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.message_count: int = data['message_count']
         self.member_count: int = data['member_count']
+        self.total_message_sent: int = data.get('total_message_sent', 0)
         self._flags: int = data.get('flags', 0)
         # SnowflakeList is sorted, but this would not be proper for applied tags, where order actually matters.
         self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
@@ -192,7 +197,7 @@ class Thread(Messageable, Hashable):
 
         self.me: Optional[ThreadMember]
         try:
-            member = data['member']
+            member = data['member']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.me = None
         else:
@@ -272,12 +277,12 @@ class Thread(Messageable, Hashable):
         .. versionadded:: 2.1
         """
         tags = []
-        if self.parent is None or self.parent.type != ChannelType.forum:
+        if self.parent is None or self.parent.type not in (ChannelType.forum, ChannelType.media):
             return tags
 
         parent = self.parent
         for tag_id in self._applied_tags:
-            tag = parent.get_tag(tag_id)
+            tag = parent.get_tag(tag_id)  # type: ignore # parent here will be ForumChannel instance
             if tag is not None:
                 tags.append(tag)
 

@@ -109,6 +109,9 @@ class Parameter(inspect.Parameter):
         self._fallback = False
         self._displayed_name = displayed_name
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} name={self._name!r} required={self.required}>'
+
     def replace(
         self,
         *,
@@ -275,8 +278,7 @@ class ParameterAlias(Protocol):
         description: str = empty,
         displayed_default: str = empty,
         displayed_name: str = empty,
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
 
 param: ParameterAlias = parameter

@@ -6,6 +6,8 @@ import discord
 
 
 class Bot(commands.Bot):
+    user: discord.ClientUser
+
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True

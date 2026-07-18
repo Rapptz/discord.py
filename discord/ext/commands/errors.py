@@ -24,10 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union, Generic
 
 from discord.errors import ClientException, DiscordException
 from discord.utils import _human_join
+
+from ._types import BotT
 
 if TYPE_CHECKING:
     from discord.abc import GuildChannel
@@ -35,7 +37,6 @@ if TYPE_CHECKING:
     from discord.types.snowflake import Snowflake, SnowflakeList
     from discord.app_commands import AppCommandError
 
-    from ._types import BotT
     from .context import Context
     from .converter import Converter
     from .cooldowns import BucketType, Cooldown
@@ -78,6 +79,7 @@ __all__ = (
     'SoundboardSoundNotFound',
     'PartialEmojiConversionFailure',
     'BadBoolArgument',
+    'BadTimestampArgument',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
@@ -235,7 +237,7 @@ class CheckFailure(CommandError):
     pass
 
 
-class CheckAnyFailure(CheckFailure):
+class CheckAnyFailure(Generic[BotT], CheckFailure):
     """Exception raised when all predicates in :func:`check_any` fail.
 
     This inherits from :exc:`CheckFailure`.
@@ -601,6 +603,24 @@ class BadBoolArgument(BadArgument):
         super().__init__(f'{argument} is not a recognised boolean option')
 
 
+class BadTimestampArgument(BadArgument):
+    """Exception raised when a timestamp argument was not convertable.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.7
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The datetime/timestamp argument supplied by the caller that was not a valid timestamp format.
+    """
+
+    def __init__(self, argument: str) -> None:
+        self.argument: str = argument
+        super().__init__(f'{argument} is not a recognised datetime or timestamp option')
+
+
 class RangeError(BadArgument):
     """Exception raised when an argument is out of range.
 
@@ -869,7 +889,7 @@ class BotMissingPermissions(CheckFailure):
 
 
 class BadUnionArgument(UserInputError):
-    """Exception raised when a :data:`typing.Union` converter fails for all
+    """Exception raised when a :obj:`typing.Union` converter fails for all
     its associated types.
 
     This inherits from :exc:`UserInputError`
@@ -924,7 +944,7 @@ class BadLiteralArgument(UserInputError):
         .. versionadded:: 2.3
     """
 
-    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = "") -> None:
+    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = '') -> None:
         self.param: Parameter = param
         self.literals: Tuple[Any, ...] = literals
         self.errors: List[CommandError] = errors

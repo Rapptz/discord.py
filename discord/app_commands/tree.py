@@ -62,7 +62,7 @@ from .installs import AppCommandContext, AppInstallationType
 from .translator import Translator, locale_str
 from ..errors import ClientException, HTTPException
 from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
+from ..utils import MISSING, _get_as_snowflake, _iscoroutinefunction, _is_submodule, _shorten
 from .._types import ClientT
 
 
@@ -257,7 +257,7 @@ class CommandTree(Generic[ClientT]):
         --------
         CommandLimitReached
             The maximum number of commands was reached for that guild.
-            This is currently 100 for slash commands and 5 for context menu commands.
+            This is currently 100 for slash commands and 15 for context menu commands.
         """
 
         try:
@@ -277,9 +277,9 @@ class CommandTree(Generic[ClientT]):
 
         counter = Counter(cmd_type for _, _, cmd_type in ctx_menu)
         for cmd_type, count in counter.items():
-            if count > 5:
+            if count > 15:
                 as_enum = AppCommandType(cmd_type)
-                raise CommandLimitReached(guild_id=guild.id, limit=5, type=as_enum)
+                raise CommandLimitReached(guild_id=guild.id, limit=15, type=as_enum)
 
         self._context_menus.update(ctx_menu)
         self._guild_commands[guild.id] = mapping
@@ -338,7 +338,7 @@ class CommandTree(Generic[ClientT]):
             Or, ``guild`` and ``guilds`` were both given.
         CommandLimitReached
             The maximum number of commands was reached globally or for that guild.
-            This is currently 100 for slash commands and 5 for context menu commands.
+            This is currently 100 for slash commands and 15 for context menu commands.
         """
 
         guild_ids = _retrieve_guild_ids(command, guild, guilds)
@@ -361,8 +361,8 @@ class CommandTree(Generic[ClientT]):
                 # read as `0 if override and found else 1` if confusing
                 to_add = not (override and found)
                 total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
-                if total + to_add > 5:
-                    raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
+                if total + to_add > 15:
+                    raise CommandLimitReached(guild_id=guild_id, limit=15, type=AppCommandType(type))
                 data[key] = command
 
             if guild_ids is None:
@@ -419,8 +419,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> Optional[ContextMenu]:
-        ...
+    ) -> Optional[ContextMenu]: ...
 
     @overload
     def remove_command(
@@ -430,8 +429,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Optional[Union[Command[Any, ..., Any], Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], Group]]: ...
 
     @overload
     def remove_command(
@@ -441,8 +439,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]: ...
 
     def remove_command(
         self,
@@ -539,8 +536,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> Optional[ContextMenu]:
-        ...
+    ) -> Optional[ContextMenu]: ...
 
     @overload
     def get_command(
@@ -550,8 +546,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Optional[Union[Command[Any, ..., Any], Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], Group]]: ...
 
     @overload
     def get_command(
@@ -561,8 +556,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
-        ...
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]: ...
 
     def get_command(
         self,
@@ -613,8 +607,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> List[ContextMenu]:
-        ...
+    ) -> List[ContextMenu]: ...
 
     @overload
     def get_commands(
@@ -622,8 +615,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input],
-    ) -> List[Union[Command[Any, ..., Any], Group]]:
-        ...
+    ) -> List[Union[Command[Any, ..., Any], Group]]: ...
 
     @overload
     def get_commands(
@@ -631,8 +623,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
-        ...
+    ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]: ...
 
     @overload
     def get_commands(
@@ -640,8 +631,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Optional[AppCommandType] = ...,
-    ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
-        ...
+    ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]: ...
 
     def get_commands(
         self,
@@ -693,8 +683,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.message, AppCommandType.user],
-    ) -> Generator[ContextMenu, None, None]:
-        ...
+    ) -> Generator[ContextMenu, None, None]: ...
 
     @overload
     def walk_commands(
@@ -702,8 +691,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Generator[Union[Command[Any, ..., Any], Group], None, None]:
-        ...
+    ) -> Generator[Union[Command[Any, ..., Any], Group], None, None]: ...
 
     @overload
     def walk_commands(
@@ -711,8 +699,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
-        ...
+    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]: ...
 
     def walk_commands(
         self,
@@ -852,14 +839,14 @@ class CommandTree(Generic[ClientT]):
             not match the signature.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
         params = inspect.signature(coro).parameters
         if len(params) != 2:
             raise TypeError('error handler must have 2 parameters')
 
-        self.on_error = coro
+        self.on_error = coro  # type: ignore
         return coro
 
     def command(
@@ -921,7 +908,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         def decorator(func: CommandCallback[Group, P, T]) -> Command[Group, P, T]:
-            if not inspect.iscoroutinefunction(func):
+            if not _iscoroutinefunction(func):
                 raise TypeError('command function must be a coroutine function')
 
             if description is MISSING:
@@ -1018,7 +1005,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         def decorator(func: ContextMenuCallback) -> ContextMenu:
-            if not inspect.iscoroutinefunction(func):
+            if not _iscoroutinefunction(func):
                 raise TypeError('context menu function must be a coroutine function')
 
             actual_name = func.__name__.title() if name is MISSING else name
@@ -1302,7 +1289,12 @@ class CommandTree(Generic[ClientT]):
                 await command._invoke_autocomplete(interaction, focused, namespace)
             except Exception:
                 # Suppress exception since it can't be handled anyway.
-                _log.exception('Ignoring exception in autocomplete for %r', command.qualified_name)
+                _log.exception(
+                    'Ignoring exception in autocomplete for %r (Guild: %s, User: %s)',
+                    command.qualified_name,
+                    interaction.guild_id,
+                    interaction.user.id,
+                )
 
             return
 

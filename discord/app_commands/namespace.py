@@ -181,7 +181,7 @@ class Namespace:
         guild_id = interaction.guild_id
         guild = interaction.guild
         type = AppCommandOptionType.user.value
-        for (user_id, user_data) in resolved.get('users', {}).items():
+        for user_id, user_data in resolved.get('users', {}).items():
             try:
                 member_data = members[user_id]
             except KeyError:
@@ -203,7 +203,7 @@ class Namespace:
         )
 
         type = AppCommandOptionType.channel.value
-        for (channel_id, channel_data) in resolved.get('channels', {}).items():
+        for channel_id, channel_data in resolved.get('channels', {}).items():
             key = ResolveKey(id=channel_id, type=type)
             if channel_data['type'] in (10, 11, 12):
                 # The guild ID can't be none in this case
@@ -220,7 +220,7 @@ class Namespace:
             }
         )
 
-        for (message_id, message_data) in resolved.get('messages', {}).items():
+        for message_id, message_data in resolved.get('messages', {}).items():
             channel_id = int(message_data['channel_id'])
             if guild is None:
                 channel = PartialMessageable(state=state, guild_id=guild_id, id=channel_id)
