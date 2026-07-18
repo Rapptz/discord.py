@@ -403,7 +403,9 @@ class ScheduledEventException(Hashable):
         '_state',
     )
 
-    def __init__(self, *, event: ScheduledEvent, data: ScheduledEventExceptionPayload, state: ConnectionState | None = None) -> None:
+    def __init__(
+        self, *, event: ScheduledEvent, data: ScheduledEventExceptionPayload, state: ConnectionState | None = None
+    ) -> None:
         self.event: ScheduledEvent = event
         self._state: ConnectionState = state or event._state
         self._update(data)
@@ -518,7 +520,12 @@ class ScheduledEventException(Hashable):
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             users = await self._state.http.get_scheduled_event_exception_users(
-                self.event.guild_id, self.event.id, self.id, limit=retrieve, with_member=False, before=before_id,
+                self.event.guild_id,
+                self.event.id,
+                self.id,
+                limit=retrieve,
+                with_member=False,
+                before=before_id,
             )
 
             if users:
@@ -532,7 +539,12 @@ class ScheduledEventException(Hashable):
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             users = await self._state.http.get_scheduled_event_exception_users(
-                self.event.guild_id, self.event.id, self.id, limit=retrieve, with_member=False, after=after_id,
+                self.event.guild_id,
+                self.event.id,
+                self.id,
+                limit=retrieve,
+                with_member=False,
+                after=after_id,
             )
 
             if users:
@@ -856,8 +868,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def edit(
@@ -874,8 +885,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def edit(
@@ -892,8 +902,7 @@ class ScheduledEvent(Hashable):
         location: str,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def edit(
@@ -909,8 +918,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def edit(
@@ -926,8 +934,7 @@ class ScheduledEvent(Hashable):
         location: str,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     async def edit(
         self,
@@ -1303,7 +1310,7 @@ class ScheduledEvent(Hashable):
             payload['is_canceled'] = cancel
 
         if len(payload) < 2:
-            raise ValueError("You must provide at least one parameter of new_start_time, new_end_time, or cancel")
+            raise ValueError('You must provide at least one parameter of new_start_time, new_end_time, or cancel')
 
         data = await self._state.http.create_scheduled_event_exception(
             self.guild_id,

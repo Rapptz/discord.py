@@ -3235,8 +3235,7 @@ class Guild(Hashable):
         image: bytes = ...,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3252,8 +3251,7 @@ class Guild(Hashable):
         image: bytes = ...,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3268,8 +3266,7 @@ class Guild(Hashable):
         image: bytes = ...,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3284,8 +3281,7 @@ class Guild(Hashable):
         image: bytes = ...,
         reason: Optional[str] = ...,
         recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     async def create_scheduled_event(
         self,
