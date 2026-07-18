@@ -2198,6 +2198,149 @@ class HTTPClient:
             params=params,
         )
 
+    def create_scheduled_event_exception(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        reason: Optional[str] = None,
+        **payload: Any,
+    ) -> Response[scheduled_event.ScheduledEventException]:
+        valid_keys = (
+            'original_scheduled_start_time',
+            'scheduled_start_time',
+            'scheduled_end_time',
+            'is_canceled',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(
+            Route(
+                'POST',
+                '/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/exceptions',
+                guild_id=guild_id,
+                guild_scheduled_event_id=guild_scheduled_event_id,
+            ),
+            json=payload,
+            reason=reason,
+        )
+
+    def edit_scheduled_event_exception(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        exception_id: Snowflake,
+        reason: Optional[str] = None,
+        **payload: Any,
+    ) -> Response[scheduled_event.ScheduledEventException]:
+        valid_keys = (
+            'scheduled_start_time',
+            'scheduled_end_time',
+            'is_canceled',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(
+            Route(
+                'PATCH',
+                '/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/exceptions/{exception_id}',
+                guild_id=guild_id,
+                guild_scheduled_event_id=guild_scheduled_event_id,
+                exception_id=exception_id,
+            ),
+            json=payload,
+            reason=reason,
+        )
+
+    def delete_scheduled_event_exception(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        exception_id: Snowflake,
+        reason: Optional[str] = None,
+    ) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/exceptions/{exception_id}',
+                guild_id=guild_id,
+                guild_scheduled_event_id=guild_scheduled_event_id,
+                exception_id=exception_id,
+            ),
+            reason=reason,
+        )
+
+    @overload
+    def get_scheduled_event_exception_users(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        exception_id: Snowflake,
+        limit: int,
+        with_member: Literal[True],
+        before: Optional[Snowflake] = ...,
+        after: Optional[Snowflake] = ...,
+    ) -> Response[scheduled_event.ScheduledEventUsersWithMember]:
+        ...
+
+    @overload
+    def get_scheduled_event_exception_users(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        exception_id: Snowflake,
+        limit: int,
+        with_member: Literal[False],
+        before: Optional[Snowflake] = ...,
+        after: Optional[Snowflake] = ...,
+    ) -> Response[scheduled_event.ScheduledEventUsers]:
+        ...
+
+    @overload
+    def get_scheduled_event_exception_users(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        exception_id: Snowflake,
+        limit: int,
+        with_member: bool,
+        before: Optional[Snowflake] = ...,
+        after: Optional[Snowflake] = ...,
+    ) -> Union[Response[scheduled_event.ScheduledEventUsers], Response[scheduled_event.ScheduledEventUserWithMember]]:
+        ...
+
+    def get_scheduled_event_exception_users(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        exception_id: Snowflake,
+        limit: int,
+        with_member: bool,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+    ) -> Response[Any]:
+        params: Dict[str, Any] = {
+            'limit': limit,
+            'with_member': int(with_member),
+        }
+
+        if before is not None:
+            params['before'] = before
+        if after is not None:
+            params['after'] = after
+
+        return self.request(
+            Route(
+                'GET',
+                '/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/exceptions/{exception_id}/users',
+                guild_id=guild_id,
+                guild_scheduled_event_id=guild_scheduled_event_id,
+                exception_id=exception_id,
+            ),
+            params=params,
+        )
+
     # Application commands (global)
 
     def get_global_commands(self, application_id: Snowflake) -> Response[List[command.ApplicationCommand]]:

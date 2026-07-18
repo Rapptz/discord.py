@@ -53,6 +53,14 @@ class ScheduledEventRecurrenceRule(TypedDict):
     count: Optional[int]
 
 
+class ScheduledEventException(TypedDict):
+    event_id: Snowflake
+    event_exception_id: Snowflake
+    scheduled_start_time: Optional[str]
+    scheduled_end_time: Optional[str]
+    is_canceled: bool
+
+
 class _BaseGuildScheduledEvent(TypedDict):
     id: Snowflake
     guild_id: Snowflake
@@ -62,9 +70,8 @@ class _BaseGuildScheduledEvent(TypedDict):
     privacy_level: PrivacyLevel
     status: EventStatus
     auto_start: bool
-    guild_scheduled_events_exceptions: List[Snowflake]
+    guild_scheduled_events_exceptions: List[ScheduledEventException]
     recurrence_rule: Optional[ScheduledEventRecurrenceRule]
-    sku_ids: List[Snowflake]
     creator_id: NotRequired[Optional[Snowflake]]
     description: NotRequired[Optional[str]]
     creator: NotRequired[User]
@@ -124,6 +131,7 @@ GuildScheduledEventWithUserCount = Union[
 class ScheduledEventUser(TypedDict):
     guild_scheduled_event_id: Snowflake
     user: User
+    guild_scheduled_event_exception_id: NotRequired[Snowflake]
 
 
 class ScheduledEventUserWithMember(ScheduledEventUser):

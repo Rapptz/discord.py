@@ -43,7 +43,7 @@ from .appinfo import GatewayAppInfo, PartialAppInfo
 from .guild import Guild, UnavailableGuild
 from .user import User, AvatarDecorationData
 from .threads import Thread, ThreadMember
-from .scheduled_event import GuildScheduledEvent
+from .scheduled_event import GuildScheduledEvent, ScheduledEventException
 from .audit_log import AuditLogEntry
 from .soundboard import SoundboardSound
 from .subscription import Subscription
@@ -315,6 +315,7 @@ class _GuildScheduledEventUsersEvent(TypedDict):
     guild_scheduled_event_id: Snowflake
     user_id: Snowflake
     guild_id: Snowflake
+    guild_scheduled_event_exception_id: NotRequired[Snowflake]
 
 
 GuildScheduledEventUserAdd = GuildScheduledEventUserRemove = _GuildScheduledEventUsersEvent
@@ -379,3 +380,10 @@ class PollVoteActionEvent(TypedDict):
 
 
 SubscriptionCreateEvent = SubscriptionUpdateEvent = SubscriptionDeleteEvent = Subscription
+
+
+class _ScheduledEventException(ScheduledEventException):
+    guild_id: Snowflake
+
+
+ScheduledEventExceptionCreate = ScheduledEventExceptionUpdate = ScheduledEventExceptionDelete = _ScheduledEventException

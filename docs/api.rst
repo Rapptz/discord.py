@@ -3059,6 +3059,42 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.5
 
+    .. attribute:: scheduled_event_exception_create
+
+        A scheduled event exception was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.event`
+        - :attr:`~AuditLogDiff.event_exception_id`
+        - :attr:`~AuditLogDiff.start_time`
+        - :attr:`~AuditLogDiff.end_time`
+        - :attr:`~AuditLogDiff.cancelled`
+
+    .. attribute:: scheduled_event_exception_update
+
+        A scheduled event exception was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.event`
+        - :attr:`~AuditLogDiff.event_exception_id`
+        - :attr:`~AuditLogDiff.start_time`
+        - :attr:`~AuditLogDiff.end_time`
+        - :attr:`~AuditLogDiff.cancelled`
+
+    .. attribute:: scheduled_event_exception_delete
+
+        A scheduled event exception was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.event`
+        - :attr:`~AuditLogDiff.event_exception_id`
+        - :attr:`~AuditLogDiff.start_time`
+        - :attr:`~AuditLogDiff.end_time`
+        - :attr:`~AuditLogDiff.cancelled`
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -4585,6 +4621,47 @@ AuditLogDiff
 
         :type: :class:`float`
 
+    .. attribute:: event
+
+        The event of an scheduled event exception.
+
+        See also :attr:`ScheduledEventException.event`
+
+        :type: Union[:class:`ScheduledEvent`, :class:`Object`]
+
+    .. attribute:: event_exception_id
+
+        The scheduled event exception's ID.
+
+        See also :attr:`ScheduledEventException.id`
+
+        :type: :class:`int`
+
+    .. attribute:: start_time
+
+        The time when the exception will start.
+
+        See also :attr:`ScheduledEventException.start_time`
+
+        :type: Optional[:class:`datetime.datetime`]
+
+    .. attribute:: end_time
+
+        The time when the exception will end.
+
+        See also :attr:`ScheduledEventException.end_time`
+
+        :type: Optional[:class:`datetime.datetime`]
+
+    .. attribute:: cancelled
+                   canceled
+
+        Whether the event in the exception has been skipped.
+
+        See also :attr:`ScheduledEventException.cancelled`
+
+        :type: :class:`bool`
+
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
 
@@ -5416,6 +5493,14 @@ MessageSnapshot
 .. attributetable:: MessageSnapshot
 
 .. autoclass:: MessageSnapshot
+    :members:
+
+ScheduledEventException
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ScheduledEventException
+
+.. autoclass:: ScheduledEventException
     :members:
 
 Data Classes

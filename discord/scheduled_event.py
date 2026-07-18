@@ -27,6 +27,7 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import (
     TYPE_CHECKING,
+    Any,
     AsyncIterator,
     Dict,
     Optional,
@@ -56,6 +57,7 @@ if TYPE_CHECKING:
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
         ScheduledEventRecurrenceRule as ScheduledEventRecurrenceRulePayload,
+        ScheduledEventException as ScheduledEventExceptionPayload,
         EntityMetadata,
     )
 
@@ -74,6 +76,7 @@ if TYPE_CHECKING:
 __all__ = (
     "ScheduledEvent",
     "ScheduledEventRecurrenceRule",
+    "ScheduledEventException",
 )
 # fmt: on
 
@@ -81,7 +84,7 @@ __all__ = (
 class ScheduledEventRecurrenceRule:
     """Represents a :class:`ScheduledEvent`'s recurrence rule.
 
-    .. versionadded:: 2.6
+    .. versionadded:: 2.8
 
     Parameters
     ----------
@@ -353,6 +356,234 @@ class ScheduledEventRecurrenceRule:
         return payload
 
 
+class ScheduledEventException(Hashable):
+    """Represents a scheduled event in a recurrent event that has been skipped or rescheduled and is
+    not part of the original recurrence rule.
+
+    .. versionadded:: 2.8
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two scheduled event exceptions are equal.
+
+        .. describe:: x != y
+
+            Checks if two scheduled event exceptions are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the scheduled event exception's hash.
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The scheduled event exception's ID.
+
+        .. warning::
+
+            This ID is not guaranteed to be globally unique.
+    event: :class:`ScheduledEvent`
+        The scheduled event this exception belongs to.
+    start_time: Optional[:class:`str`]
+        The new time when the new recurrence will start, if applicable.
+    end_time: Optional[:class:``str`]
+        The new time when the new recurrence will end, if applicable.
+    cancelled: :class:`bool`
+        Whether the scheduled event will be skipped on the recurrence.
+    """
+
+    __slots__ = (
+        'id',
+        'event',
+        'cancelled',
+        'start_time',
+        'end_time',
+        '_state',
+    )
+
+    def __init__(self, *, event: ScheduledEvent, data: ScheduledEventExceptionPayload, state: ConnectionState | None = None) -> None:
+        self.event: ScheduledEvent = event
+        self._state: ConnectionState = state or event._state
+        self._update(data)
+
+    def _update(self, data: ScheduledEventExceptionPayload) -> None:
+        self.id: int = int(data['event_exception_id'])
+        self.cancelled: bool = data['is_canceled']
+        self.start_time: datetime | None = parse_time(data.get('scheduled_start_time'))
+        self.end_time: datetime | None = parse_time(data.get('scheduled_end_time'))
+
+    @property
+    def canceled(self) -> bool:
+        """An alias for :attr:`ScheduledEventException.cancelled`."""
+        return self.cancelled
+
+    async def edit(
+        self,
+        *,
+        start_time: datetime = MISSING,
+        end_time: datetime = MISSING,
+        cancel: bool = MISSING,
+        reason: Optional[str] = None,
+    ) -> ScheduledEventException:
+        """|coro|
+
+        Edits this exception.
+
+        Parameters
+        ----------
+        start_time: :class:`datetime.datetime`
+            The new start time of the scheduled event exception.
+        end_time: :class:`datetime.datetime`
+            The new ednt time of the scheduled event exception.
+        cancel: :class:`bool`
+            Whether to cancel the scheduled event this exception points to.
+        reason: Optional[:class:`str`]
+            The reason for updating the exception.
+
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to edit the scheduled event exception.
+        HTTPException
+            The scheduled event exception could not be updated.
+
+        Returns
+        -------
+        :class:`ScheduledEventException`
+            The updated scheduled event exception.
+        """
+
+        payload = {}
+
+        if start_time is not MISSING:
+            payload['scheduled_start_time'] = start_time.isoformat()
+        if end_time is not MISSING:
+            payload['scheduled_end_time'] = end_time.isoformat()
+        if cancel is not MISSING:
+            payload['is_canceled'] = cancel
+
+        data = await self._state.http.edit_scheduled_event_exception(
+            self.event.guild_id,
+            self.event.id,
+            self.id,
+            reason,
+            **payload,
+        )
+
+        return ScheduledEventException(event=self.event, data=data)
+
+    async def delete(self, *, reason: Optional[str]) -> None:
+        """|coro|
+
+        Deletes this scheduled event exception.
+
+        Parameters
+        ----------
+        reason: Optional[:class:`str`]
+            The reason for deleting the exception.
+        """
+        await self._state.http.delete_scheduled_event_exception(
+            self.event.guild_id,
+            self.event.id,
+            self.id,
+            reason,
+        )
+
+    async def users(
+        self,
+        *,
+        limit: Optional[int] = None,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        oldest_first: bool = MISSING,
+    ) -> AsyncIterator[User]:
+        """Returns an :term:`asynchronous iterator` representing the users that have subscribed to
+        this event exception.
+
+        This requires :attr:`Intents.members` to get information about members other than yourself.
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the members failed.
+
+        Yields
+        ------
+        :class:`User`
+            All subscribed users of this event.
+        """
+
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
+            before_id = before.id if before else None
+            users = await self._state.http.get_scheduled_event_exception_users(
+                self.event.guild_id, self.event.id, self.id, limit=retrieve, with_member=False, before=before_id,
+            )
+
+            if users:
+                if limit is not None:
+                    limit -= len(users)
+
+                before = Object(id=users[-1]['user']['id'])
+
+            return users, before, limit
+
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
+            after_id = after.id if after else None
+            users = await self._state.http.get_scheduled_event_exception_users(
+                self.event.guild_id, self.event.id, self.id, limit=retrieve, with_member=False, after=after_id,
+            )
+
+            if users:
+                if limit is not None:
+                    limit -= len(users)
+
+                after = Object(id=users[0]['user']['id'])
+
+            return users, after, limit
+
+        if limit is None:
+            limit = self.event.user_count or None
+
+        if oldest_first is MISSING:
+            reverse = after is not None
+        else:
+            reverse = oldest_first
+
+        predicate = None
+
+        if reverse:
+            strategy, state = _after_strategy, after
+            if before:
+                predicate = lambda u: u['user']['id'] < before.id
+        else:
+            strategy, state = _before_strategy, before
+            if after and after != OLDEST_OBJECT:
+                predicate = lambda u: u['user']['id'] > after.id
+
+        while True:
+            retrieve = 100 if limit is None else min(limit, 100)
+            if retrieve < 1:
+                return
+
+            data, state, limit = await strategy(retrieve, state, limit)
+
+            if reverse:
+                data = reversed(data)
+            if predicate:
+                data = filter(predicate, data)
+
+            users = (self._state.store_user(raw_user['user']) for raw_user in data)
+            count = 0
+
+            for count, user in enumerate(users, 1):
+                yield user
+
+            if count < 100:
+                break
+
+
 class ScheduledEvent(Hashable):
     """Represents a scheduled event in a guild.
 
@@ -405,16 +636,11 @@ class ScheduledEvent(Hashable):
     recurrence_rule: Optional[:class:`.ScheduledEventRecurrenceRule`]
         The recurrence rule for this event, or ``None``.
 
-        .. versionadded:: 2.6
-    sku_ids: List[:class:`Object`]
-        A list of objects that represent the related SKUs of this event.
+        .. versionadded:: 2.8
+    exceptions: List[:class:`ScheduledEventException`]
+        The exceptions to the recurrence rule of the scheduled event.
 
-        .. versionadded:: 2.6
-    exceptions: List[:class:`Object`]
-        A list of objects that represent the events on the recurrence rule of this event that
-        were cancelled.
-
-        .. versionadded:: 2.6
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -437,7 +663,6 @@ class ScheduledEvent(Hashable):
         'creator_id',
         'location',
         'recurrence_rule',
-        'sku_ids',
         'exceptions',
     )
 
@@ -463,11 +688,8 @@ class ScheduledEvent(Hashable):
         rrule = data.get('recurrence_rule')
         self.recurrence_rule = ScheduledEventRecurrenceRule.from_data(rrule)
 
-        sku_ids = data.get('sku_ids', [])
-        self.sku_ids: List[Object] = list(map(Object, sku_ids))
-
         exceptions = data.get('guild_scheduled_events_exceptions', [])
-        self.exceptions: List[Object] = list(map(Object, exceptions))
+        self.exceptions: List[ScheduledEventException] = [ScheduledEventException(event=self, data=d) for d in exceptions]
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
@@ -1019,3 +1241,74 @@ class ScheduledEvent(Hashable):
 
     def _pop_user(self, user_id: int) -> None:
         self._users.pop(user_id, None)
+
+    async def create_exception(
+        self,
+        *,
+        original_start_time: datetime,
+        new_start_time: Optional[datetime] = MISSING,
+        new_end_time: Optional[datetime] = MISSING,
+        cancel: bool = MISSING,
+        reason: Optional[str] = None,
+    ) -> ScheduledEventException:
+        """|coro|
+
+        Creates an exception to the scheduled event's recurrence rule.
+
+        .. note::
+
+            At least one of ``new_start_time``, ``new_end_time``, or ``cancel`` should be provided.
+
+        Parameters
+        ----------
+        original_start_time: :class:`datetime.datetime`
+            The start time in which the event would have started.
+
+            .. note::
+
+                If an exception with the same start time already exists, it will be overridden.
+        new_start_time: Optional[:class:`datetime.datetime`]
+            The new time in which the event will start.
+        new_end_time: Optional[:class:`datetime.datetime`]
+            The new time in which the event will end.
+        cancel: :class:`bool`
+            Whether the event should be skipped on this recurrence.
+        reason: Optional[:class:`str`]
+            The reason for creating the exception.
+
+        Raises
+        ------
+        ValueError
+            You did not provide at least one of ``new_start_time``, ``new_end_time``, or ``cancel``.
+        Forbidden
+            You do not have the proper permissions to create an exception.
+        HTTPException
+            Creating the exception failed.
+
+        Returns
+        -------
+        :class:`ScheduledEventException`
+            The created exception.
+        """
+
+        payload: Dict[str, Any] = {
+            'original_scheduled_start_time': original_start_time.isoformat(),
+        }
+
+        if new_start_time is not MISSING:
+            payload['scheduled_start_time'] = new_start_time.isoformat() if new_start_time is not None else None
+        if new_end_time is not MISSING:
+            payload['scheduled_end_time'] = new_end_time.isoformat() if new_end_time is not None else None
+        if cancel is not MISSING:
+            payload['is_canceled'] = cancel
+
+        if len(payload) < 2:
+            raise ValueError("You must provide at least one parameter of new_start_time, new_end_time, or cancel")
+
+        data = await self._state.http.create_scheduled_event_exception(
+            self.guild_id,
+            self.id,
+            reason=reason,
+            **payload,
+        )
+        return ScheduledEventException(event=self, data=data)

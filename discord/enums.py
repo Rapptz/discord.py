@@ -399,6 +399,9 @@ class AuditLogAction(Enum):
     automod_timeout_member                            = 145
     creator_monetization_request_created              = 150
     creator_monetization_terms_accepted               = 151
+    scheduled_event_exception_create                  = 200
+    scheduled_event_exception_update                  = 201
+    scheduled_event_exception_delete                  = 202
     # fmt: on
 
     @property
@@ -464,6 +467,9 @@ class AuditLogAction(Enum):
             AuditLogAction.soundboard_sound_create:                  AuditLogActionCategory.create,
             AuditLogAction.soundboard_sound_update:                  AuditLogActionCategory.update,
             AuditLogAction.soundboard_sound_delete:                  AuditLogActionCategory.delete,
+            AuditLogAction.scheduled_event_exception_create:         AuditLogActionCategory.create,
+            AuditLogAction.scheduled_event_exception_update:         AuditLogActionCategory.update,
+            AuditLogAction.scheduled_event_exception_delete:         AuditLogActionCategory.delete,
         }
         # fmt: on
         return lookup[self]
@@ -509,6 +515,8 @@ class AuditLogAction(Enum):
             return 'user'
         elif v < 152:
             return 'creator_monetization'
+        elif 200 <= v <= 202:
+            return 'scheduled_event_exception'
 
 
 class UserFlags(Enum):
