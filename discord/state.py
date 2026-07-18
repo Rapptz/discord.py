@@ -1628,13 +1628,18 @@ class ConnectionState(Generic[ClientT]):
             event_id = int(data['event_id'])
             event = guild._scheduled_events.get(event_id)
             if event is None:
-                _log.debug('SCHEDULED_EVENT_EXCEPTION_UPDATE referencing unknown scheduled event ID: %s. Discarding.', event_id)
+                _log.debug(
+                    'SCHEDULED_EVENT_EXCEPTION_UPDATE referencing unknown scheduled event ID: %s. Discarding.', event_id
+                )
                 return
 
             exception_id = int(data['event_exception_id'])
             raw_old_exception = event._exceptions.get(exception_id)
             if raw_old_exception is None:
-                _log.debug('SCHEDULED_EVENT_EXCEPTION_UPDATE referencing unknown scheduled event exception ID: %s. Discarding.', exception_id)
+                _log.debug(
+                    'SCHEDULED_EVENT_EXCEPTION_UPDATE referencing unknown scheduled event exception ID: %s. Discarding.',
+                    exception_id,
+                )
                 return
 
             old_exception = copy.copy(raw_old_exception)
@@ -1650,7 +1655,9 @@ class ConnectionState(Generic[ClientT]):
             event_id = int(data['event_id'])
             event = guild._scheduled_events.get(event_id)
             if event is None:
-                _log.debug('SCHEDULED_EVENT_EXCEPTION_DELETE referencing unknown scheduled event ID: %s. Discarding.', event_id)
+                _log.debug(
+                    'SCHEDULED_EVENT_EXCEPTION_DELETE referencing unknown scheduled event ID: %s. Discarding.', event_id
+                )
                 return
 
             exception_id = int(data['event_exception_id'])

@@ -698,8 +698,7 @@ class ScheduledEvent(Hashable):
 
         exceptions = data.get('guild_scheduled_events_exceptions', [])
         self._exceptions: Dict[int, ScheduledEventException] = {
-            int(d['event_exception_id']): ScheduledEventException(event=self, data=d)
-            for d in exceptions
+            int(d['event_exception_id']): ScheduledEventException(event=self, data=d) for d in exceptions
         }
 
         creator = data.get('creator')
