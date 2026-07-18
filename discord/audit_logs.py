@@ -1003,16 +1003,18 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_scheduled_event_exception(self, target_id: int) -> ScheduledEventException:
         changeset = self.before if self.action is enums.AuditLogAction.scheduled_event_exception_delete else self.after
+        event = self.guild.get_scheduled_event(changeset.event.id)
+        cached = event and event._exceptions.get(changeset.event_exception_id)
+        if cached:
+            return cached
 
         fake_payload: ScheduledEventExceptionPayload = {
-            'event_exception_id': changeset.id,
+            'event_exception_id': changeset.event_exception_id,
             'event_id': changeset.event.id,
             'is_canceled': changeset.cancelled,
             'scheduled_end_time': changeset.end_time.isoformat(),
             'scheduled_start_time': changeset.start_time.isoformat(),
         }
-
-        event = self.guild.get_scheduled_event(changeset.event.id)
 
         if not event:
             event = Object(id=changeset.event.id, type=ScheduledEvent)

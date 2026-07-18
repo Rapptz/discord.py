@@ -649,10 +649,6 @@ class ScheduledEvent(Hashable):
         The recurrence rule for this event, or ``None``.
 
         .. versionadded:: 2.8
-    exceptions: List[:class:`ScheduledEventException`]
-        The exceptions to the recurrence rule of the scheduled event.
-
-        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -675,7 +671,7 @@ class ScheduledEvent(Hashable):
         'creator_id',
         'location',
         'recurrence_rule',
-        'exceptions',
+        '_exceptions',
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
@@ -701,7 +697,10 @@ class ScheduledEvent(Hashable):
         self.recurrence_rule = ScheduledEventRecurrenceRule.from_data(rrule)
 
         exceptions = data.get('guild_scheduled_events_exceptions', [])
-        self.exceptions: List[ScheduledEventException] = [ScheduledEventException(event=self, data=d) for d in exceptions]
+        self._exceptions: Dict[int, ScheduledEventException] = {
+            int(d['event_exception_id']): ScheduledEventException(event=self, data=d)
+            for d in exceptions
+        }
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
@@ -742,6 +741,14 @@ class ScheduledEvent(Hashable):
     def url(self) -> str:
         """:class:`str`: The url for the scheduled event."""
         return f'https://discord.com/events/{self.guild_id}/{self.id}'
+
+    @property
+    def exceptions(self) -> List[ScheduledEventException]:
+        """List[:class:`ScheduledEventException`]: The exceptions to the recurrence rule of the scheduled event.
+
+        .. versionadded:: 2.8
+        """
+        return list(self._exceptions.values())
 
     async def __modify_status(self, status: EventStatus, reason: Optional[str], /) -> ScheduledEvent:
         payload = {'status': status.value}

@@ -1330,6 +1330,30 @@ Scheduled Events
     :param user: The user that was added or removed.
     :type user: :class:`User`
 
+.. function:: on_scheduled_event_exception_create(exception)
+              on_scheduled_event_exception_delete(exception)
+
+    Called when a :class:`ScheduledEventException` is created or deleted.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.8
+
+    :param exception: The scheduled event exception that was created or deleted.
+    :type exception: :class:`ScheduledEventException`
+
+.. function:: on_scheduled_event_exception_update(before, after)
+
+    Called when a :class:`ScheduledEventException` is updated.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.8
+
+    :param before: The scheduled event exception before the update.
+    :type before: :class:`ScheduledEventException`
+    :param after: The scheduled event exception after the update.
+    :type after: :class:`ScheduledEventException`
 
 Soundboard
 ~~~~~~~~~~~
