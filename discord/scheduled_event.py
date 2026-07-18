@@ -388,7 +388,7 @@ class ScheduledEventException(Hashable):
         The scheduled event this exception belongs to.
     start_time: Optional[:class:`str`]
         The new time when the new recurrence will start, if applicable.
-    end_time: Optional[:class:``str`]
+    end_time: Optional[:class:`str`]
         The new time when the new recurrence will end, if applicable.
     cancelled: :class:`bool`
         Whether the scheduled event will be skipped on the recurrence.
