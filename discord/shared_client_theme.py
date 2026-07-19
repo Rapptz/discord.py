@@ -49,7 +49,7 @@ class SharedClientTheme:
     Parameters
     -----------
     colours: Sequence[Union[:class:`Colour`, :class:`int`]]
-        An iterable of the theme's colours. Must be between 1 and 5 colours.
+        A list of the theme's colours. Must be between 1 and 5 colours.
     colors: Sequence[Union[:class:`Colour`, :class:`int`]]
         An alias for ``colours``.
     gradient_angle: :class:`int`
@@ -63,12 +63,13 @@ class SharedClientTheme:
     Raises
     -------
     ValueError
-        - If the number of colours is not between 1 and 5.
+        - If neither ``colours`` nor ``colors`` is provided.
         - If ``colours`` is empty.
         - If ``colours`` contains more than 5 colours.
         - If ``gradient_angle`` is set but there are less than 2 colours.
         - If ``gradient_angle`` is not between 0 and 360.
         - If ``intensity`` is not between 0 and 100.
+    TypeError
         - If ``theme`` is not an instance of :class:`BaseTheme`.
     """
 
@@ -83,20 +84,19 @@ class SharedClientTheme:
         intensity: int = 0,
         theme: BaseTheme = BaseTheme.dark,
     ) -> None:
-        self.colours = colours if colours is not MISSING else colors
+        colours = colours if colours is not MISSING else colors
+        if colours is MISSING:
+            raise ValueError('missing required argument `colo(u)rs`')
+
+        self.colours = colours
         self.gradient_angle = gradient_angle
         self.intensity = intensity
         self.theme = theme
 
     @classmethod
     def from_dict(cls, data: SharedClientThemePayload) -> Self:
-        """Creates a :class:`SharedClientTheme` from a dictionary.
-
-        Possible keys can be found in the
-        :ddocs:`api docs <resources/message#shared-client-theme-object>`.
-        """
         return cls(
-            colours=[Colour(int(colour, 16)) for colour in data.get('colors', [])],
+            colours=[Colour(int(colour.strip('#'), 16)) for colour in data.get('colors', [])],
             gradient_angle=data.get('gradient_angle', 0),
             intensity=data.get('base_mix', 0),
             theme=try_enum(BaseTheme, data.get('base_theme', BaseTheme.dark.value)),
@@ -104,7 +104,7 @@ class SharedClientTheme:
 
     def to_dict(self) -> SharedClientThemePayload:
         return {
-            'colors': [str(colour).lstrip('#') for colour in self._colours],
+            'colors': [f'{colour.value:06x}' for colour in self._colours],
             'gradient_angle': self.gradient_angle,
             'base_mix': self.intensity,
             'base_theme': self.theme.value,
@@ -121,13 +121,13 @@ class SharedClientTheme:
     @colours.setter
     def colours(self, value: Sequence[Union[Colour, int]]) -> None:
         if not value:
-            raise ValueError('colours cannot be empty')
+            raise ValueError('colours must contain at least 1 colour')
 
         if len(value) > 5:
             raise ValueError('cannot have more than 5 colours')
 
         if len(value) < 2:
-            self.intensity = 0
+            self._gradient_angle = 0
 
         self._colours = [colour if isinstance(colour, Colour) else Colour(colour) for colour in value]
 
@@ -143,11 +143,12 @@ class SharedClientTheme:
 
     @gradient_angle.setter
     def gradient_angle(self, value: int) -> None:
-        if len(self.colours) < 2 and value != 0:
+        if len(self._colours) < 2 and value != 0:
             raise ValueError('gradient_angle may only be set if there are at least 2 colours')
 
         if not 0 <= value <= 360:
             raise ValueError('gradient_angle must be between 0 and 360')
+
         self._gradient_angle = value
 
     @property
@@ -159,18 +160,17 @@ class SharedClientTheme:
     def intensity(self, value: int) -> None:
         if not 0 <= value <= 100:
             raise ValueError('intensity must be between 0 and 100')
+
         self._intensity = value
 
     @property
     def theme(self) -> BaseTheme:
         """:class:`BaseTheme`: The base theme to use for this client theme."""
-        if not isinstance(self._theme, BaseTheme):
-            raise ValueError('theme must be an instance of BaseTheme')
-
         return self._theme
 
     @theme.setter
     def theme(self, value: BaseTheme) -> None:
         if not isinstance(value, BaseTheme):
-            raise ValueError('theme must be an instance of BaseTheme')
+            raise TypeError('theme must be an instance of BaseTheme')
+
         self._theme = value
