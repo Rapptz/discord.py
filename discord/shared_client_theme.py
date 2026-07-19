@@ -118,8 +118,6 @@ class SharedClientTheme:
         """List[:class:`Colour`]: A list of the theme's colours."""
         return self._colours
 
-    colors = colours
-
     @colours.setter
     def colours(self, value: Sequence[Union[Colour, int]]) -> None:
         if not value:
@@ -132,6 +130,8 @@ class SharedClientTheme:
             self.intensity = 0
 
         self._colours = [colour if isinstance(colour, Colour) else Colour(colour) for colour in value]
+
+    colors = colours
 
     @property
     def gradient_angle(self) -> int:
