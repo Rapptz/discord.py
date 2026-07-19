@@ -1635,7 +1635,7 @@ class Messageable:
             The poll to send with this message.
 
             .. versionadded:: 2.4
-        shared_client_theme: :class:`~discord.SharedClientTheme`
+        shared_client_theme: Optional[:class:`~discord.SharedClientTheme`]
             The shared client theme to send with this message.
 
             .. versionadded:: 2.8
