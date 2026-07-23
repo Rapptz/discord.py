@@ -345,6 +345,34 @@ Is there an event for audit log entries being created?
 
 This event is now available in the library and Discord as of version 2.2. It can be found under :func:`on_audit_log_entry_create`.
 
+.. _obfuscation_faq:
+
+What is obfuscation?
+~~~~~~~~~~~~~~~~~~~~~~
+
+Starting October 12, 2026, Discord may tell your bot that a channel exists without letting it see what's inside.
+Rather than omitting the channel entirely, Discord sends it with most of its information stripped out and marks
+it as *obfuscated*. This happens whenever your bot lacks the ``view_channel`` permission for that channel.
+Only ``id``, ``type``, and ``parent_id`` keep their real values; every other field is obfuscated, including
+``permission_overwrites``, which is replaced with a single entry for your bot with every permission denied.
+
+Obfuscated channels still show up in :attr:`Guild.channels` and :attr:`CategoryChannel.channels`, so you may
+encounter them without expecting to. To filter out channels your bot can't actually see, use
+:meth:`abc.GuildChannel.is_obfuscated`: ::
+
+    channels = [channel for channel in guild.channels if not channel.is_obfuscated()]
+
+Calling :meth:`abc.GuildChannel.permissions_for` on an obfuscated channel for your own bot always returns
+:meth:`Permissions.none`, since the bot can't do anything in a channel it can't view.
+
+Obfuscated channels only ever come from the gateway, meaning your cache and events such as
+:func:`on_guild_channel_create`, :func:`on_guild_channel_update`, and :func:`on_guild_channel_delete` may
+contain them. You still receive these events as normal when an obfuscated channel is created, updated, or
+deleted, just with its data obfuscated.
+The API never returns them: :meth:`Guild.fetch_channels` silently omits any channel your bot can't view,
+and fetching one directly with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises
+:exc:`Forbidden`.
+
 
 Commands Extension
 -------------------
