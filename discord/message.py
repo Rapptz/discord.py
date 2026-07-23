@@ -206,6 +206,17 @@ class Attachment(Hashable):
         The normalised version of the attachment's filename.
 
         .. versionadded:: 2.5
+
+    placeholder: Optional[:class:`str`]
+        A `thumbhash <https://evanw.github.io/thumbhash/>`_, of the
+        attachment, if it's an image or video. Otherwise, ``None``.
+
+        .. versionadded:: 2.8
+    placeholder_version: Optional[:class:`int`]
+        The version of the placeholder, if the attachment is an image
+        or video. Otherwise, ``None``.
+
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -224,6 +235,8 @@ class Attachment(Hashable):
         'waveform',
         '_flags',
         'title',
+        'placeholder',
+        'placeholder_version',
     )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
@@ -240,6 +253,8 @@ class Attachment(Hashable):
         self.ephemeral: bool = data.get('ephemeral', False)
         self.duration: Optional[float] = data.get('duration_secs')
         self.title: Optional[str] = data.get('title')
+        self.placeholder: Optional[str] = data.get('placeholder')
+        self.placeholder_version: Optional[int] = data.get('placeholder_version')
 
         waveform = data.get('waveform')
         self.waveform: Optional[bytes] = utils._base64_to_bytes(waveform) if waveform is not None else None
