@@ -336,7 +336,6 @@ class Asset(AssetMixin):
             state,
             url=f'{cls.BASE}/app-assets/710982414301790216/store/{banner}',
             key=str(banner),
-            size=1024,
         )
 
     @classmethod
