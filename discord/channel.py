@@ -66,7 +66,7 @@ from .errors import ClientException
 from .stage_instance import StageInstance
 from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
-from .flags import ChannelFlags, MessageFlags
+from .flags import MessageFlags
 from .http import handle_message_parameters
 from .object import Object
 from .soundboard import BaseSoundboardSound, SoundboardDefaultSound
@@ -129,6 +129,7 @@ if TYPE_CHECKING:
         topic: str
         slowmode_delay: int
         nsfw: bool
+        spoiler: bool
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
         default_auto_archive_duration: int
         default_thread_slowmode_delay: int
@@ -138,6 +139,7 @@ if TYPE_CHECKING:
         user_limit: int
         rtc_region: Optional[str]
         video_quality_mode: VideoQualityMode
+        spoiler: bool
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite]
 
     class _CreateStageChannelOptions(_CreateVoiceChannelOptions, total=False):
@@ -350,6 +352,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         'last_message_id',
         'default_auto_archive_duration',
         'default_thread_slowmode_delay',
+        '_flags',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
@@ -381,6 +384,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
         self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
+        self._flags: int = data.get('flags', 0)
         self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
@@ -430,6 +434,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw
 
+    def is_spoiler(self) -> bool:
+        """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
+
+        .. versionadded:: 2.8
+        """
+        return self.flags.spoiler
+
     def is_news(self) -> bool:
         """:class:`bool`: Checks if the channel is a news channel."""
         return self._type == ChannelType.news.value
@@ -470,6 +481,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         topic: str = ...,
         position: int = ...,
         nsfw: bool = ...,
+        spoiler: bool = ...,
         sync_permissions: bool = ...,
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
@@ -509,6 +521,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The new channel's position.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
@@ -553,6 +567,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The newly edited text channel. If the edit was only positional
             then ``None`` is returned instead.
         """
+
+        try:
+            spoiler = options.pop('spoiler')
+        except KeyError:
+            pass
+        else:
+            flags = self.flags
+            flags.spoiler = spoiler
+            options['flags'] = flags.value
 
         payload = await self._edit(options, reason=reason)
         if payload is not None:
@@ -1087,6 +1110,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         'rtc_region',
         'video_quality_mode',
         'last_message_id',
+        '_flags',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]):
@@ -1115,6 +1139,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self.bitrate: int = data['bitrate']
         self.user_limit: int = data['user_limit']
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -1127,6 +1152,13 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         .. versionadded:: 2.0
         """
         return self.nsfw
+
+    def is_spoiler(self) -> bool:
+        """:class:`bool`: Checks if members must opt in before viewing the channel's contents.
+
+        .. versionadded:: 2.8
+        """
+        return self.flags.spoiler
 
     @property
     def members(self) -> List[Member]:
@@ -1557,6 +1589,7 @@ class VoiceChannel(VocalGuildChannel):
         *,
         name: str = ...,
         nsfw: bool = ...,
+        spoiler: bool = ...,
         bitrate: int = ...,
         user_limit: int = ...,
         position: int = ...,
@@ -1598,6 +1631,8 @@ class VoiceChannel(VocalGuildChannel):
             The new channel's bitrate.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         user_limit: :class:`int`
             The new channel's user limit.
         position: :class:`int`
@@ -1646,6 +1681,15 @@ class VoiceChannel(VocalGuildChannel):
             The newly edited voice channel. If the edit was only positional
             then ``None`` is returned instead.
         """
+        try:
+            spoiler = options.pop('spoiler')
+        except KeyError:
+            pass
+        else:
+            flags = self.flags
+            flags.spoiler = spoiler
+            options['flags'] = flags.value
+
         payload = await self._edit(options, reason=reason)
         if payload is not None:
             # the payload will always be the proper channel payload
@@ -1919,6 +1963,7 @@ class StageChannel(VocalGuildChannel):
         *,
         name: str = ...,
         nsfw: bool = ...,
+        spoiler: bool = ...,
         bitrate: int = ...,
         user_limit: int = ...,
         position: int = ...,
@@ -1961,6 +2006,8 @@ class StageChannel(VocalGuildChannel):
             The new channel's position.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the channel's contents.
         user_limit: :class:`int`
             The new channel's user limit.
         sync_permissions: :class:`bool`
@@ -2000,6 +2047,15 @@ class StageChannel(VocalGuildChannel):
             The newly edited stage channel. If the edit was only positional
             then ``None`` is returned instead.
         """
+
+        try:
+            spoiler = options.pop('spoiler')
+        except KeyError:
+            pass
+        else:
+            flags = self.flags
+            flags.spoiler = spoiler
+            options['flags'] = flags.value
 
         payload = await self._edit(options, reason=reason)
         if payload is not None:
@@ -2049,7 +2105,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
 
-    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id')
+    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id', '_flags')
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: CategoryChannelPayload):
         self._state: ConnectionState = state
@@ -2065,6 +2121,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
         self.nsfw: bool = data.get('nsfw', False)
         self.position: int = data['position']
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -2567,14 +2624,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         return [thread for thread in self.guild._threads.values() if thread.parent_id == self.id]
 
     @property
-    def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this forum.
-
-        .. versionadded:: 2.1
-        """
-        return ChannelFlags._from_value(self._flags)
-
-    @property
     def available_tags(self) -> Sequence[ForumTag]:
         """Sequence[:class:`ForumTag`]: Returns all the available tags for this forum.
 
@@ -2602,6 +2651,13 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the forum is NSFW."""
         return self.nsfw
+
+    def is_spoiler(self) -> bool:
+        """:class:`bool`: Checks if members must opt in before viewing the forum's contents.
+
+        .. versionadded:: 2.8
+        """
+        return self.flags.spoiler
 
     def is_media(self) -> bool:
         """:class:`bool`: Checks if the channel is a media channel.
@@ -2655,6 +2711,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         topic: str = ...,
         position: int = ...,
         nsfw: bool = ...,
+        spoiler: bool = ...,
         sync_permissions: bool = ...,
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
@@ -2686,6 +2743,8 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             The new forum's position.
         nsfw: :class:`bool`
             To mark the forum as NSFW or not.
+        spoiler: :class:`bool`
+            Whether members must opt in before viewing the forum's contents.
         sync_permissions: :class:`bool`
             Whether to sync permissions with the forum's new or pre-existing
             category. Defaults to ``False``.
@@ -2777,6 +2836,15 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         else:
             flags = self.flags
             flags.require_tag = require_tag
+            options['flags'] = flags.value
+
+        try:
+            spoiler = options.pop('spoiler')
+        except KeyError:
+            pass
+        else:
+            flags = self.flags
+            flags.spoiler = spoiler
             options['flags'] = flags.value
 
         try:
