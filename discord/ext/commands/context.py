@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from discord.ui.view import BaseView, View, LayoutView
     from discord.types.interactions import ApplicationCommandInteractionData
     from discord.poll import Poll
+    from discord.shared_client_theme import SharedClientTheme
 
     from .cog import Cog
     from .core import Command
@@ -681,6 +682,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -702,6 +704,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -723,6 +726,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -744,6 +748,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
@@ -898,6 +903,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -919,6 +925,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -940,6 +947,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -961,6 +969,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     async def send(
@@ -983,6 +992,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         ephemeral: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
+        shared_client_theme: Optional[SharedClientTheme] = None,
     ) -> Message:
         """|coro|
 
@@ -1078,6 +1088,10 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             .. versionadded:: 2.4
             .. versionchanged:: 2.6
                 This can now be ``None`` and defaults to ``None`` instead of ``MISSING``.
+        shared_client_theme: Optional[:class:`~discord.SharedClientTheme`]
+            The shared client theme to send with this message.
+
+            .. versionadded:: 2.8
 
         Raises
         --------
@@ -1117,6 +1131,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 suppress_embeds=suppress_embeds,
                 silent=silent,
                 poll=poll,
+                shared_client_theme=shared_client_theme,
             )  # type: ignore # The overloads don't support Optional but the implementation does
 
         # Convert the kwargs from None to MISSING to appease the remaining implementations
@@ -1133,6 +1148,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             'ephemeral': ephemeral,
             'silent': silent,
             'poll': MISSING if poll is None else poll,
+            'shared_client_theme': MISSING if shared_client_theme is None else shared_client_theme,
         }
 
         if self.interaction.response.is_done():

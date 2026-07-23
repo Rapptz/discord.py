@@ -113,6 +113,7 @@ if TYPE_CHECKING:
         SnowflakeList,
     )
     from .permissions import _PermissionOverwriteKwargs
+    from .shared_client_theme import SharedClientTheme
 
     PartialMessageableChannel = Union[TextChannel, VoiceChannel, StageChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
@@ -1458,6 +1459,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1478,6 +1480,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1498,6 +1501,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1518,6 +1522,7 @@ class Messageable:
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     async def send(
@@ -1539,6 +1544,7 @@ class Messageable:
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
+        shared_client_theme: Optional[SharedClientTheme] = None,
     ) -> Message:
         """|coro|
 
@@ -1629,6 +1635,10 @@ class Messageable:
             The poll to send with this message.
 
             .. versionadded:: 2.4
+        shared_client_theme: Optional[:class:`~discord.SharedClientTheme`]
+            The shared client theme to send with this message.
+
+            .. versionadded:: 2.8
 
         Raises
         --------
@@ -1702,6 +1712,7 @@ class Messageable:
             view=view,
             flags=flags,
             poll=poll,
+            shared_client_theme=shared_client_theme,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 

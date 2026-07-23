@@ -65,6 +65,7 @@ from .sticker import StickerItem, GuildSticker
 from .threads import Thread
 from .channel import PartialMessageable
 from .poll import Poll
+from .shared_client_theme import SharedClientTheme
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -81,6 +82,7 @@ if TYPE_CHECKING:
         CallMessage as CallMessagePayload,
         PurchaseNotificationResponse as PurchaseNotificationResponsePayload,
         GuildProductPurchase as GuildProductPurchasePayload,
+        SharedClientTheme as SharedClientThemePayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -1781,6 +1783,7 @@ class PartialMessage(Hashable):
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1801,6 +1804,7 @@ class PartialMessage(Hashable):
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1821,6 +1825,7 @@ class PartialMessage(Hashable):
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     @overload
@@ -1841,6 +1846,7 @@ class PartialMessage(Hashable):
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
+        shared_client_theme: SharedClientTheme = ...,
     ) -> Message: ...
 
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
@@ -2138,6 +2144,10 @@ class Message(PartialMessage, Hashable):
         The message snapshots attached to this message.
 
         .. versionadded:: 2.5
+    shared_client_theme: Optional[:class:`SharedClientTheme`]
+        The client theme shared in this message.
+
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -2178,6 +2188,7 @@ class Message(PartialMessage, Hashable):
         'purchase_notification',
         'message_snapshots',
         '_pinned_at',
+        'shared_client_theme',
     )
 
     if TYPE_CHECKING:
@@ -2322,6 +2333,14 @@ class Message(PartialMessage, Hashable):
             pass
         else:
             self.purchase_notification = PurchaseNotification(purchase_notification)
+
+        self.shared_client_theme: Optional[SharedClientTheme] = None
+        try:
+            shared_client_theme = data['shared_client_theme']  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        except KeyError:
+            pass
+        else:
+            self.shared_client_theme = SharedClientTheme.from_dict(shared_client_theme)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
@@ -2508,6 +2527,9 @@ class Message(PartialMessage, Hashable):
 
     def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
+
+    def _handle_shared_client_theme(self, data: SharedClientThemePayload):
+        self.shared_client_theme = SharedClientTheme.from_dict(data)
 
     def _handle_call(self, data: CallMessagePayload):
         if data is not None:

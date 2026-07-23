@@ -87,6 +87,7 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
+    'BaseTheme',
 )
 
 
@@ -1004,6 +1005,14 @@ class NameplatePalette(Enum):
     clover = 'clover'
     lemon = 'lemon'
     white = 'white'
+
+
+class BaseTheme(Enum):
+    unset = 0
+    light = 1
+    dark = 2
+    darker = 3
+    midnight = 4
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
