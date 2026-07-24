@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import io
 import os
-from typing import Any, Dict, Literal, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Literal, Optional, TYPE_CHECKING, Tuple, Union, Dict
 from .errors import DiscordException
 from . import utils
 from .file import File
@@ -292,7 +292,12 @@ class Asset(AssetMixin):
 
     @classmethod
     def _from_icon(cls, state: _State, object_id: int, icon_hash: str, path: str) -> Self:
-        return cls(state, url=f'{cls.BASE}/{path}-icons/{object_id}/{icon_hash}', key=icon_hash, size=1024)
+        return cls(
+            state,
+            url=f'{cls.BASE}/{path}-icons/{object_id}/{icon_hash}',
+            key=icon_hash,
+            size=1024,
+        )
 
     @classmethod
     def _from_app_icon(
@@ -410,6 +415,10 @@ class Asset(AssetMixin):
     def format(self) -> Optional[ValidAssetFormatTypes]:
         """Optional[:class:`str`]: Returns the set format of the asset.
 
+        Defaults to ``webp`` for animated assets and ``png`` for static assets.
+        You can use :meth:`with_format`, :meth:`with_static_format`, and :meth:`replace`
+        to set the format of the asset.
+
         .. versionadded:: 2.8
         """
         return self._format
@@ -417,6 +426,8 @@ class Asset(AssetMixin):
     @property
     def size(self) -> Optional[int]:
         """Optional[:class:`int`]: Returns the set size of the asset.
+
+        You can use :meth:`with_size` and :meth:`replace` to set the size of the asset.
 
         .. versionadded:: 2.8
         """
