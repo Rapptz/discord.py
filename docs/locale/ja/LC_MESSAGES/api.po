@@ -20187,6 +20187,7 @@ msgstr "詳細については、 :ref:`メンバーインテントの説明 <nee
 #: ../../docstring of discord.Intents.members:32
 #: ../../docstring of discord.Intents.presences:17
 #: ../../docstring of discord.Intents.message_content:19
+
 msgid "Currently, this requires opting in explicitly via the developer portal as well. Bots in over 100 guilds will need to apply to Discord for verification."
 msgstr "現在、開発者ポータルからも明示的にオプトインする必要があります。100を超えるギルドに属するボットは、認証のためにDiscordに申請する必要があります。"
 
