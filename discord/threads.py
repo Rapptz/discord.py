@@ -133,6 +133,10 @@ class Thread(Messageable, Hashable):
         Usually a value of 60, 1440, 4320 and 10080.
     archive_timestamp: :class:`datetime.datetime`
         An aware timestamp of when the thread's archived status was last updated in UTC.
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
+
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -156,6 +160,7 @@ class Thread(Messageable, Hashable):
         'auto_archive_duration',
         'archive_timestamp',
         'total_message_sent',
+        'last_pin_timestamp',
         '_created_at',
         '_flags',
         '_applied_tags',
@@ -190,6 +195,7 @@ class Thread(Messageable, Hashable):
         self.message_count: int = data['message_count']
         self.member_count: int = data['member_count']
         self.total_message_sent: int = data.get('total_message_sent', 0)
+        self.last_pin_timestamp: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
         self._flags: int = data.get('flags', 0)
         # SnowflakeList is sorted, but this would not be proper for applied tags, where order actually matters.
         self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))

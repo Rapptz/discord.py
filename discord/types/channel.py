@@ -65,7 +65,7 @@ class PartialChannel(_BaseChannel):
 class _BaseTextChannel(_BaseGuildChannel, total=False):
     topic: str
     last_message_id: Optional[Snowflake]
-    last_pin_timestamp: str
+    last_pin_timestamp: NotRequired[str]
     rate_limit_per_user: int
     default_thread_rate_limit_per_user: int
     default_auto_archive_duration: ThreadArchiveDuration
@@ -178,6 +178,7 @@ GuildChannel = Union[
 class _BaseDMChannel(_BaseChannel):
     type: Literal[1]
     last_message_id: Optional[Snowflake]
+    last_pin_timestamp: NotRequired[str]
 
 
 class DMChannel(_BaseDMChannel):
@@ -193,6 +194,7 @@ class GroupDMChannel(_BaseChannel):
     icon: Optional[str]
     owner_id: Snowflake
     recipients: List[PartialUser]
+    last_pin_timestamp: NotRequired[str]
 
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]
