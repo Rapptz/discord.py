@@ -200,7 +200,14 @@ class Asset(AssetMixin):
             Returns the hash of the asset.
     """
 
-    __slots__: Tuple[str, ...] = ('_state', '_url', '_animated', '_key', '_format', '_size')
+    __slots__: Tuple[str, ...] = (
+        '_state',
+        '_url',
+        '_animated',
+        '_key',
+        '_format',
+        '_size',
+    )
 
     BASE = 'https://cdn.discordapp.com'
 
@@ -318,7 +325,13 @@ class Asset(AssetMixin):
 
     @classmethod
     def _from_guild_image(cls, state: _State, guild_id: int, image: str, path: str) -> Self:
-        return cls(state, url=f'{cls.BASE}/{path}/{guild_id}/{image}', key=image, animated=image.startswith('a_'), size=1024)
+        return cls(
+            state,
+            url=f'{cls.BASE}/{path}/{guild_id}/{image}',
+            key=image,
+            animated=image.startswith('a_'),
+            size=1024,
+        )
 
     @classmethod
     def _from_guild_icon(cls, state: _State, guild_id: int, icon_hash: str) -> Self:
@@ -350,7 +363,12 @@ class Asset(AssetMixin):
 
     @classmethod
     def _from_primary_guild(cls, state: _State, guild_id: int, icon_hash: str) -> Self:
-        return cls(state, url=f'{cls.BASE}/guild-tag-badges/{guild_id}/{icon_hash}', key=icon_hash, size=64)
+        return cls(
+            state,
+            url=f'{cls.BASE}/guild-tag-badges/{guild_id}/{icon_hash}',
+            key=icon_hash,
+            size=64,
+        )
 
     @classmethod
     def _from_user_collectible(cls, state: _State, asset: str, animated: bool = False) -> Self:
@@ -476,7 +494,12 @@ class Asset(AssetMixin):
             new_size = size
 
         return self.__class__(
-            state=self._state, url=self._url, key=self._key, animated=self._animated, format=new_format, size=new_size
+            state=self._state,
+            url=self._url,
+            key=self._key,
+            animated=self._animated,
+            format=new_format,
+            size=new_size,
         )
 
     def with_size(self, size: int, /) -> Self:
@@ -505,7 +528,12 @@ class Asset(AssetMixin):
             raise ValueError('size must be a power of 2 between 16 and 4096')
 
         return self.__class__(
-            state=self._state, url=self._url, key=self._key, animated=self._animated, format=self._format, size=size
+            state=self._state,
+            url=self._url,
+            key=self._key,
+            animated=self._animated,
+            format=self._format,
+            size=size,
         )
 
     def with_format(self, format: ValidAssetFormatTypes, /) -> Self:
@@ -542,7 +570,12 @@ class Asset(AssetMixin):
                 raise ValueError(f'format must be one of {VALID_STATIC_FORMATS}')
 
         return self.__class__(
-            state=self._state, url=self._url, key=self._key, animated=self._animated, format=format, size=self._size
+            state=self._state,
+            url=self._url,
+            key=self._key,
+            animated=self._animated,
+            format=format,
+            size=self._size,
         )
 
     def with_static_format(self, format: ValidStaticFormatTypes, /) -> Self:
