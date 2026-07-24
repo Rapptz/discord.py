@@ -1307,6 +1307,7 @@ Scheduled Events
     - The description is changed.
     - The status is changed.
     - The image is changed.
+    - The recurrence rule is changed.
 
     .. versionadded:: 2.0
 
@@ -1329,6 +1330,30 @@ Scheduled Events
     :param user: The user that was added or removed.
     :type user: :class:`User`
 
+.. function:: on_scheduled_event_exception_create(exception)
+              on_scheduled_event_exception_delete(exception)
+
+    Called when a :class:`ScheduledEventException` is created or deleted.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.8
+
+    :param exception: The scheduled event exception that was created or deleted.
+    :type exception: :class:`ScheduledEventException`
+
+.. function:: on_scheduled_event_exception_update(before, after)
+
+    Called when a :class:`ScheduledEventException` is updated.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.8
+
+    :param before: The scheduled event exception before the update.
+    :type before: :class:`ScheduledEventException`
+    :param after: The scheduled event exception after the update.
+    :type after: :class:`ScheduledEventException`
 
 Soundboard
 ~~~~~~~~~~~
@@ -3240,6 +3265,42 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.6
 
+    .. attribute:: scheduled_event_exception_create
+
+        A scheduled event exception was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.event`
+        - :attr:`~AuditLogDiff.event_exception_id`
+        - :attr:`~AuditLogDiff.start_time`
+        - :attr:`~AuditLogDiff.end_time`
+        - :attr:`~AuditLogDiff.cancelled`
+
+    .. attribute:: scheduled_event_exception_update
+
+        A scheduled event exception was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.event`
+        - :attr:`~AuditLogDiff.event_exception_id`
+        - :attr:`~AuditLogDiff.start_time`
+        - :attr:`~AuditLogDiff.end_time`
+        - :attr:`~AuditLogDiff.cancelled`
+
+    .. attribute:: scheduled_event_exception_delete
+
+        A scheduled event exception was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.event`
+        - :attr:`~AuditLogDiff.event_exception_id`
+        - :attr:`~AuditLogDiff.start_time`
+        - :attr:`~AuditLogDiff.end_time`
+        - :attr:`~AuditLogDiff.cancelled`
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -3965,6 +4026,29 @@ of :class:`enum.Enum`.
     .. attribute:: burst
 
         A burst reaction, also known as a "super reaction".
+
+
+.. class:: ScheduledEventRecurrenceFrequency
+
+    Represents the frequency of a scheduled event recurrence rule.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: yearly
+
+        The event repeats yearly.
+
+    .. attribute:: monthly
+
+        The event repeats monthly.
+
+    .. attribute:: weekly
+
+        The event repeats weekly.
+
+    .. attribute:: daily
+
+        The event repeats daily.
 
 
 .. class:: VoiceChannelEffectAnimationType
@@ -4969,6 +5053,46 @@ AuditLogDiff
 
         :type: :class:`OnboardingMode`
 
+    .. attribute:: event
+
+        The event of an scheduled event exception.
+
+        See also :attr:`ScheduledEventException.event`
+
+        :type: Union[:class:`ScheduledEvent`, :class:`Object`]
+
+    .. attribute:: event_exception_id
+
+        The scheduled event exception's ID.
+
+        See also :attr:`ScheduledEventException.id`
+
+        :type: :class:`int`
+
+    .. attribute:: start_time
+
+        The time when the exception will start.
+
+        See also :attr:`ScheduledEventException.start_time`
+
+        :type: Optional[:class:`datetime.datetime`]
+
+    .. attribute:: end_time
+
+        The time when the exception will end.
+
+        See also :attr:`ScheduledEventException.end_time`
+
+        :type: Optional[:class:`datetime.datetime`]
+
+    .. attribute:: cancelled
+                   canceled
+
+        Whether the event in the exception has been skipped.
+
+        See also :attr:`ScheduledEventException.cancelled`
+
+        :type: :class:`bool`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
@@ -5867,6 +5991,14 @@ CallMessage
 .. autoclass:: CallMessage()
     :members:
 
+ScheduledEventException
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ScheduledEventException
+
+.. autoclass:: ScheduledEventException()
+    :members:
+
 .. _discord_api_data:
 
 Data Classes
@@ -6178,6 +6310,15 @@ PollMedia
 .. attributetable:: PollMedia
 
 .. autoclass:: PollMedia
+    :members:
+
+
+ScheduledEventRecurrenceRule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ScheduledEventRecurrenceRule
+
+.. autoclass:: ScheduledEventRecurrenceRule
     :members:
 
 

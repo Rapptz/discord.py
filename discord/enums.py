@@ -87,6 +87,7 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
+    'ScheduledEventRecurrenceFrequency',
 )
 
 
@@ -428,6 +429,9 @@ class AuditLogAction(Enum):
     onboarding_update                                 = 167
     home_settings_create                              = 190
     home_settings_update                              = 191
+    scheduled_event_exception_create                  = 200
+    scheduled_event_exception_update                  = 201
+    scheduled_event_exception_delete                  = 202
     # fmt: on
 
     @property
@@ -501,6 +505,9 @@ class AuditLogAction(Enum):
             AuditLogAction.onboarding_update:                        AuditLogActionCategory.update,
             AuditLogAction.home_settings_create:                     AuditLogActionCategory.create,
             AuditLogAction.home_settings_update:                     AuditLogActionCategory.update,
+            AuditLogAction.scheduled_event_exception_create:         AuditLogActionCategory.create,
+            AuditLogAction.scheduled_event_exception_update:         AuditLogActionCategory.update,
+            AuditLogAction.scheduled_event_exception_delete:         AuditLogActionCategory.delete,
         }
         # fmt: on
         return lookup.get(self, None)
@@ -552,6 +559,8 @@ class AuditLogAction(Enum):
             return 'onboarding'
         elif v < 192:
             return 'home_settings'
+        elif 200 <= v <= 202:
+            return 'scheduled_event_exception'
 
 
 class UserFlags(Enum):
@@ -1004,6 +1013,13 @@ class NameplatePalette(Enum):
     clover = 'clover'
     lemon = 'lemon'
     white = 'white'
+
+
+class ScheduledEventRecurrenceFrequency(Enum):
+    yearly = 0
+    monthly = 1
+    weekly = 2
+    daily = 3
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

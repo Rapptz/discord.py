@@ -1290,6 +1290,9 @@ class Intents(BaseFlags):
         - :func:`on_scheduled_event_delete`
         - :func:`on_scheduled_event_user_add`
         - :func:`on_scheduled_event_user_remove`
+        - :func:`on_scheduled_event_exception_create`
+        - :func:`on_scheduled_event_exception_update`
+        - :func:`on_scheduled_event_exception_delete`
 
         .. versionadded:: 2.0
         """
