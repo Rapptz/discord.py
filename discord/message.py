@@ -2138,6 +2138,11 @@ class Message(PartialMessage, Hashable):
         The message snapshots attached to this message.
 
         .. versionadded:: 2.5
+    channel_type: Optional[:class:`ChannelType`]
+        The message channel's Discord type.
+        This is only present when received in :func:`on_message`.
+
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -2177,6 +2182,7 @@ class Message(PartialMessage, Hashable):
         'call',
         'purchase_notification',
         'message_snapshots',
+        'channel_type',
         '_pinned_at',
     )
 
@@ -2218,6 +2224,9 @@ class Message(PartialMessage, Hashable):
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
         self.call: Optional[CallMessage] = None
+        self.channel_type: Optional[ChannelType] = (
+            try_enum(ChannelType, data['channel_type']) if 'channel_type' in data else None
+        )
         # Set by Messageable.pins
         self._pinned_at: Optional[datetime.datetime] = None
 
