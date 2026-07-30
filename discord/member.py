@@ -662,6 +662,17 @@ class Member(discord.abc.Messageable, _UserTag):
         return None
 
     @property
+    def display_avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the member's displayed avatar decoration, if any.
+
+        This is the member's guild specific avatar decoration if available, otherwise it's their
+        global avatar decoration. If the member has no avatar decoration set ``None`` is returned.
+
+        .. versionadded:: 2.8
+        """
+        return self.guild_avatar_decoration or self._user.avatar_decoration
+
+    @property
     def display_banner(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Returns the member's displayed banner, if any.
 
