@@ -260,14 +260,14 @@ class ActionRow(Item[V]):
             or (40) for the entire view.
         """
 
+        if not isinstance(item, Item):
+            raise TypeError(f'expected Item not {item.__class__.__name__}')
+
         if (self._weight + item.width) > 5:
             raise ValueError('maximum number of children exceeded')
 
         if len(self._children) >= 5:
             raise ValueError('maximum number of children exceeded')
-
-        if not isinstance(item, Item):
-            raise TypeError(f'expected Item not {item.__class__.__name__}')
 
         if self._view:
             self._view._add_count(1)
