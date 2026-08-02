@@ -1537,6 +1537,34 @@ def _format_call_duration(duration: datetime.timedelta) -> str:
     return formatted
 
 
+if TYPE_CHECKING:
+    from .enums import FileType
+
+DISCORD_FILE_TYPES_RE = re.compile(r'^\.[\w\-\.]+$', re.IGNORECASE)
+
+
+def _validate_discord_file_types(exts: Sequence[Union[FileType, str]], /) -> None:
+    if len(exts) > 10:
+        raise ValueError(
+            f'Too many file extensions provided. Must be 10 or less, got {len(exts)}.',
+        )
+
+    for ext in exts:
+        # don't need to validate the presets (FileType enum) since they are guaranteed to be valid
+        if not isinstance(ext, str):
+            continue
+
+        if len(ext) > 16:
+            raise ValueError(
+                f'File extension {ext!r} is too long. Must be 16 characters or less.',
+            )
+
+        if not DISCORD_FILE_TYPES_RE.match(ext):
+            raise ValueError(
+                f'File extension {ext!r} is invalid. It must start with a dot and contain only alphanumeric characters, hyphens, or underscores.',
+            )
+
+
 class _RawReprMixin:
     __slots__: Tuple[str, ...] = ()
 

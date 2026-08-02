@@ -68,6 +68,7 @@ from ..utils import (
     _iscoroutinefunction,
     _shorten,
     _to_kebab_case,
+    _validate_discord_file_types,
 )
 
 if TYPE_CHECKING:
@@ -387,7 +388,8 @@ def _populate_file_types(params: Dict[str, CommandParameter], file_types: Dict[s
         if not isinstance(types, (list, tuple)) or not all(isinstance(ft, (str, FileType)) for ft in types):
             raise TypeError('file_types must be a list of strings and FileType enums')
 
-        param.file_types = [ft.value if isinstance(ft, FileType) else ft for ft in types]
+        _validate_discord_file_types(types)
+        param.file_types = types
 
     if file_types:
         first = next(iter(file_types))

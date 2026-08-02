@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, List, Literal, Optional, Sequence, Tuple,
 
 import os
 
-from ..utils import MISSING
+from ..utils import MISSING, _validate_discord_file_types
 from ..components import FileUploadComponent
 from ..enums import ComponentType, FileType
 from .item import Item
@@ -116,13 +116,16 @@ class FileUpload(Item[V]):
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
 
+        if file_types:
+            _validate_discord_file_types(file_types)
+
         self._underlying: FileUploadComponent = FileUploadComponent._raw_construct(
             id=id,
             custom_id=custom_id,
             max_values=max_values,
             min_values=min_values,
             required=required,
-            file_types=[ft.value if isinstance(ft, FileType) else ft for ft in file_types] if file_types is not None else [],
+            file_types=file_types if file_types else [],
         )
         self.id = id
         self._values: List[Attachment] = []
@@ -186,7 +189,7 @@ class FileUpload(Item[V]):
         self._underlying.required = bool(value)
 
     @property
-    def file_types(self) -> List[str]:
+    def file_types(self) -> List[Union[str, FileType]]:
         """List[:class:`str`]: A list of file types that are allowed to be uploaded for this component.
 
         When setting this property, see the documentation for this parameter in the :class:`.FileUpload`
@@ -194,14 +197,15 @@ class FileUpload(Item[V]):
 
         .. versionadded:: 2.8
         """
-        return self._underlying.file_types
+        return list(self._underlying.file_types)
 
     @file_types.setter
-    def file_types(self, value: List[Union[str, FileType]]) -> None:
-        if not isinstance(value, list) or not all(isinstance(ft, (str, FileType)) for ft in value):
+    def file_types(self, value: Sequence[Union[str, FileType]]) -> None:
+        if not isinstance(value, (list, tuple)) or not all(isinstance(ft, (str, FileType)) for ft in value):
             raise TypeError('file_types must be a list of str or FileType')
 
-        self._underlying.file_types = [ft.value if isinstance(ft, FileType) else ft for ft in value]
+        _validate_discord_file_types(value)
+        self._underlying.file_types = list(value)
 
     @property
     def width(self) -> int:
