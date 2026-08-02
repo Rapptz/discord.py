@@ -377,15 +377,15 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
 
 def _populate_file_types(params: Dict[str, CommandParameter], file_types: Dict[str, Sequence[Union[str, FileType]]]) -> None:
     for name, param in params.items():
-        if param.type is not AppCommandOptionType.attachment:
-            raise TypeError('file_types is only supported for attachment option types')
-
         types = file_types.pop(name, MISSING)
         if types is MISSING:
             continue
 
+        if param.type is not AppCommandOptionType.attachment:
+            raise TypeError('file_types is only supported for attachment option types')
+
         if not isinstance(types, (list, tuple)) or not all(isinstance(ft, (str, FileType)) for ft in types):
-            raise TypeError('file_types must be a list of strings or FileType enums')
+            raise TypeError('file_types must be a list of strings and FileType enums')
 
         param.file_types = [ft.value if isinstance(ft, FileType) else ft for ft in types]
 
@@ -527,6 +527,8 @@ class Parameter:
         The maximum supported value for this parameter.
     file_types: Optional[Sequence[Union[:class:`str`, :class:`.FileType`]]]
         A list of file types that are allowed to be uploaded for this parameter.
+
+        Only applicable for :class:`~discord.AppCommandOptionType.attachment` parameters.
 
         .. versionadded:: 2.8
     default: Any
@@ -2981,7 +2983,7 @@ def set_file_types(**parameters: Sequence[Union[str, FileType]]) -> Callable[[T]
     Raises
     --------
     TypeError
-        The parameter name is not found or the parameter type was incorrect.
+        The parameter name is not found or the parameter type is not :class:`discord.Attachment`.
     """
 
     def decorator(inner: T) -> T:
