@@ -122,7 +122,7 @@ class ClientStatus:
 
     @property
     def vr_status(self) -> Status:
-        """:class:`Status`: The user's status set for an active virtual reality application session."""
+        """:class:`Status`: The user's status set for an active virtual reality application session, if applicable."""
         return try_enum(Status, self.vr or 'offline')
 
     def is_on_mobile(self) -> bool:
