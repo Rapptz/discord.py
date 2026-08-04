@@ -52,7 +52,7 @@ class ClientStatus:
     .. versionadded:: 2.5
     """
 
-    __slots__ = ('_status', 'desktop', 'mobile', 'web')
+    __slots__ = ('_status', 'desktop', 'mobile', 'web', 'vr')
 
     def __init__(self, *, status: str = MISSING, data: ClientStatusPayload = MISSING) -> None:
         self._status: str = status or 'offline'
@@ -61,6 +61,7 @@ class ClientStatus:
         self.desktop: Optional[str] = data.get('desktop')
         self.mobile: Optional[str] = data.get('mobile')
         self.web: Optional[str] = data.get('web')
+        self.vr: Optional[str] = data.get('vr')
 
     def __repr__(self) -> str:
         attrs = [
@@ -68,6 +69,7 @@ class ClientStatus:
             ('desktop', self.desktop),
             ('mobile', self.mobile),
             ('web', self.web),
+            ('vr', self.vr),
         ]
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {inner}>'
@@ -78,6 +80,7 @@ class ClientStatus:
         self.desktop = data.get('desktop')
         self.mobile = data.get('mobile')
         self.web = data.get('web')
+        self.vr = data.get('vr')
 
     @classmethod
     def _copy(cls, client_status: Self, /) -> Self:
@@ -88,6 +91,7 @@ class ClientStatus:
         self.desktop = client_status.desktop
         self.mobile = client_status.mobile
         self.web = client_status.web
+        self.vr = client_status.vr
 
         return self
 
@@ -115,6 +119,11 @@ class ClientStatus:
     def web_status(self) -> Status:
         """:class:`Status`: The user's status on the web client, if applicable."""
         return try_enum(Status, self.web or 'offline')
+
+    @property
+    def vr_status(self) -> Status:
+        """:class:`Status`: The user's status set for an active virtual reality application session."""
+        return try_enum(Status, self.vr or 'offline')
 
     def is_on_mobile(self) -> bool:
         """:class:`bool`: A helper function that determines if a user is active on a mobile device."""
