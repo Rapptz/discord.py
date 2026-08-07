@@ -270,7 +270,7 @@ class VoiceConnectionState:
 
     @property
     def can_encrypt(self) -> bool:
-        return self.dave_protocol_version != 0 and self.dave_session != None and self.dave_session.ready
+        return self.dave_protocol_version != 0 and self.dave_session is not None and self.dave_session.ready
 
     async def reinit_dave_session(self) -> None:
         if self.dave_protocol_version > 0:

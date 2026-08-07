@@ -48,7 +48,7 @@ from .webhook.async_ import async_context, Webhook, interaction_response_params,
 from .app_commands.installs import AppCommandContext
 from .app_commands.namespace import Namespace
 from .app_commands.translator import locale_str, TranslationContext, TranslationContextLocation
-from .channel import _threaded_channel_factory
+from .channel import _threaded_channel_factory, PartialMessageable
 
 __all__ = (
     'Interaction',
@@ -489,11 +489,6 @@ class Interaction(Generic[ClientT]):
         if self._original_response is not None:
             return self._original_response
 
-        # TODO: fix later to not raise?
-        channel = self.channel
-        if channel is None:
-            raise ClientException('Channel for message could not be resolved')
-
         adapter = async_context.get()
         http = self._state.http
         data = await adapter.get_original_interaction_response(
@@ -503,6 +498,14 @@ class Interaction(Generic[ClientT]):
             proxy=http.proxy,
             proxy_auth=http.proxy_auth,
         )
+        channel = self.channel
+        if channel is None:
+            channel_id = data.get('channel_id')
+            if channel_id is not None:
+                channel = PartialMessageable(state=self._state, id=int(channel_id), guild_id=self.guild_id)
+            else:
+                raise ClientException('Channel for message could not be resolved')
+
         state = _InteractionMessageState(self, self._state)
         # The state and channel parameters are mocked here
         message = InteractionMessage(state=state, channel=channel, data=data)  # type: ignore
@@ -611,9 +614,13 @@ class Interaction(Generic[ClientT]):
                 files=params.files,
             )
 
+        channel = self.channel
+        if channel is None and 'channel_id' in data:
+            channel = PartialMessageable(state=self._state, id=int(data['channel_id']), guild_id=self.guild_id)
+
         # The message channel types should always match
         state = _InteractionMessageState(self, self._state)
-        message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
+        message = InteractionMessage(state=state, channel=channel, data=data)  # type: ignore
         if view and not view.is_finished() and view.is_dispatchable():
             self._state.store_view(view, message.id)
         return message
