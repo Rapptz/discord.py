@@ -96,6 +96,7 @@ GuildFeature = Literal[
     'MORE_SOUNDBOARD',
     'GUESTS_ENABLED',
     'GUILD_TAGS',
+    'PRUNE_REQUIRES_ADMIN',
 ]
 
 
