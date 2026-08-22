@@ -62,7 +62,7 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
-from .flags import InviteFlags
+from .flags import InviteFlags, ChannelFlags
 import warnings
 
 __all__ = (
@@ -423,6 +423,7 @@ class GuildChannel:
     category_id: Optional[int]
     _state: ConnectionState
     _overwrites: List[_Overwrites]
+    _flags: int
 
     if TYPE_CHECKING:
 
@@ -566,6 +567,13 @@ class GuildChannel:
             pass
         else:
             await self._state.http.edit_voice_channel_status(status, channel_id=self.id, reason=reason)
+
+        flags = options.pop('flags', None)
+        if flags is not None:
+            if not isinstance(flags, ChannelFlags):
+                raise TypeError('flags field must be of type ChannelFlags')
+
+            options['flags'] = flags.value
 
         if options:
             return await self._state.http.edit_channel(self.id, reason=reason, **options)
