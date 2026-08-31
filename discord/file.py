@@ -71,10 +71,15 @@ class File:
     spoiler: :class:`bool`
         Whether the attachment is a spoiler. If left unspecified, the :attr:`~File.filename` is used
         to determine if the file is a spoiler.
+
+        .. versionchanged:: 2.8
+            This can now be edited after sending.
     description: Optional[:class:`str`]
         The file description to display, currently only supported for images.
 
         .. versionadded:: 2.0
+        .. versionchanged:: 2.8
+            This can now be edited after sending.
     """
 
     __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
@@ -123,8 +128,13 @@ class File:
         """:class:`str`: The filename to display when uploading to Discord.
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
         a string then the ``filename`` will default to the string given.
+
+        .. versionchanged:: 2.8
+            This no longer includes the ``SPOILER_`` prefix in the filename, and instead uses
+            the :attr:`spoiler` attribute to determine if the file is a spoiler, which also sets
+            the `is_spoiler` field in the payload sent to Discord.
         """
-        return 'SPOILER_' + self._filename if self.spoiler else self._filename
+        return self._filename
 
     @filename.setter
     def filename(self, value: str) -> None:
@@ -165,6 +175,7 @@ class File:
         payload = {
             'id': index,
             'filename': self.filename,
+            'is_spoiler': self.spoiler,
         }
 
         if self.description is not None:

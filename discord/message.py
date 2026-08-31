@@ -1350,6 +1350,19 @@ class PartialMessage(Hashable):
 
             .. note::
 
+                You may edit the :attr:`Attachment.description` and spoiler status of existing attachments by passing keyword
+                arguments to the :meth:`Attachment.to_file` method and then passing the returned :class:`File` object here. For
+                example, to edit the spoiler status of all attachments in a message, you can do the following:
+
+                .. code-block:: python3
+
+                    attachments = [await attachment.to_file(spoiler=True) for attachment in message.attachments]
+                    await message.edit(attachments=attachments)
+
+                .. versionadded:: 2.8
+
+            .. note::
+
                 New files will always appear after current attachments.
 
             .. versionadded:: 2.0
@@ -2909,6 +2922,19 @@ class Message(PartialMessage, Hashable):
         attachments: List[Union[:class:`Attachment`, :class:`File`]]
             A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
+
+            .. note::
+
+                You may edit the :attr:`Attachment.description` and spoiler status of existing attachments by passing keyword
+                arguments to the :meth:`Attachment.to_file` method and then passing the returned :class:`File` object here. For
+                example, to edit the spoiler status of all attachments in a message, you can do the following:
+
+                .. code-block:: python3
+
+                    attachments = [await attachment.to_file(spoiler=True) for attachment in message.attachments]
+                    await message.edit(attachments=attachments)
+
+                .. versionadded:: 2.8
 
             .. note::
 
