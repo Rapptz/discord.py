@@ -258,6 +258,20 @@ class Loop(Generic[LF]):
                         retry_after,
                     )
                     await asyncio.sleep(retry_after)
+                except asyncio.CancelledError:
+                    # If the task was cancelled externally (e.g. during a connection
+                    # reset) but the user did not request a stop or cancel, treat it
+                    # as a retriable failure so the loop survives reconnection.
+                    if self._stop_next_iteration or not self.reconnect:
+                        raise
+                    self._last_iteration_failed = True
+                    retry_after = backoff.delay()
+                    _log.warning(
+                        'Task %s was cancelled externally, likely due to a connection reset. Retrying in %.2fs',
+                        self.coro.__qualname__,
+                        retry_after,
+                    )
+                    await asyncio.sleep(retry_after)
                 else:
                     if self._stop_next_iteration:
                         return
