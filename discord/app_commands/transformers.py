@@ -818,6 +818,11 @@ def get_supported_annotation(
                 raise TypeError('Inline transformer with transform classmethod must be a coroutine')
             return (InlineTransformer(annotation), MISSING, False)
 
+    # FlagConverter subclasses are handled by the hybrid command layer
+    # and should be accepted as a string-based annotation here
+    if inspect.isclass(annotation) and hasattr(annotation, '__commands_is_flag__'):
+        return (IdentityTransformer(AppCommandOptionType.string), MISSING, True)
+
     # Check if there's an origin
     origin = getattr(annotation, '__origin__', None)
     if origin is Literal:
