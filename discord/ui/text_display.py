@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Optional, TypeVar
+from typing import TYPE_CHECKING, Literal, Optional, TypeVar, Union
 
 from .item import Item
 from ..components import TextDisplay as TextDisplayComponent
@@ -34,8 +34,9 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .view import LayoutView
+    from .modal import Modal
 
-V = TypeVar('V', bound='LayoutView', covariant=True)
+V = TypeVar('V', bound='Union[LayoutView, Modal]', covariant=True)
 
 __all__ = ('TextDisplay',)
 
