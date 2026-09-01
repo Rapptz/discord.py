@@ -525,6 +525,11 @@ class Member(discord.abc.Messageable, _UserTag):
         """:class:`Status`: The member's status on the web client, if applicable."""
         return self.client_status.web_status
 
+    @property
+    def vr_status(self) -> Status:
+        """:class:`Status`: The member's status set for an active virtual reality application session, if applicable."""
+        return self.client_status.vr_status
+
     def is_on_mobile(self) -> bool:
         """A helper function that determines if a member is active on a mobile device.
 
