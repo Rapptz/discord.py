@@ -23,13 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Tuple, TypeVar, Dict
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Sequence, Tuple, TypeVar, Dict, Union
 
 import os
 
-from ..utils import MISSING
+from ..utils import MISSING, _validate_discord_file_types
 from ..components import FileUploadComponent
-from ..enums import ComponentType
+from ..enums import ComponentType, FileType
 from .item import Item
 
 if TYPE_CHECKING:
@@ -72,6 +72,24 @@ class FileUpload(Item[V]):
     required: :class:`bool`
         Whether this component is required to be filled before submitting the modal.
         Defaults to ``True``.
+    file_types: List[Union[:class:`str`, :class:`.FileType`]]
+        A list of file types that are allowed to be uploaded for this component.
+
+        You can mix and match strings and :class:`.FileType` enums in the list.
+
+        If a string is provided, make sure to prefix it with a period (``.``) (e.g. ``.png``).
+        This is required.
+        You may provide any string you want, but (if you are specifying only extensions) you must
+        include ``.jpg`` for image uploads, and both ``.mp4`` and ``.mov`` for video uploads.
+
+        Must be between 0 and 10. Defaults to allowing all file types.
+
+        .. warning::
+
+            The actual file is not guaranteed to be of the specified type. The client only
+            checks the file extension, so users can easily bypass this check by renaming the file.
+
+        .. versionadded:: 2.8
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -90,6 +108,7 @@ class FileUpload(Item[V]):
         min_values: Optional[int] = None,
         max_values: Optional[int] = None,
         id: Optional[int] = None,
+        file_types: Optional[Sequence[Union[str, FileType]]] = None,
     ) -> None:
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
@@ -97,12 +116,16 @@ class FileUpload(Item[V]):
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
 
+        if file_types:
+            _validate_discord_file_types(file_types)
+
         self._underlying: FileUploadComponent = FileUploadComponent._raw_construct(
             id=id,
             custom_id=custom_id,
             max_values=max_values,
             min_values=min_values,
             required=required,
+            file_types=file_types if file_types else [],
         )
         self.id = id
         self._values: List[Attachment] = []
@@ -166,6 +189,25 @@ class FileUpload(Item[V]):
         self._underlying.required = bool(value)
 
     @property
+    def file_types(self) -> List[Union[str, FileType]]:
+        """List[:class:`str`]: A list of file types that are allowed to be uploaded for this component.
+
+        When setting this property, see the documentation for this parameter in the :class:`.FileUpload`
+        constructor for more information.
+
+        .. versionadded:: 2.8
+        """
+        return list(self._underlying.file_types)
+
+    @file_types.setter
+    def file_types(self, value: Sequence[Union[str, FileType]]) -> None:
+        if not isinstance(value, (list, tuple)) or not all(isinstance(ft, (str, FileType)) for ft in value):
+            raise TypeError('file_types must be a list of str or FileType')
+
+        _validate_discord_file_types(value)
+        self._underlying.file_types = list(value)
+
+    @property
     def width(self) -> int:
         return 5
 
@@ -188,6 +230,7 @@ class FileUpload(Item[V]):
             max_values=component.max_values,
             min_values=component.min_values,
             required=component.required,
+            file_types=component.file_types,
         )
         return self
 

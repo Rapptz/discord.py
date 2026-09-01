@@ -118,12 +118,18 @@ class _NumberApplicationCommandOption(_BaseValueApplicationCommandOption, total=
     autocomplete: bool
 
 
+class _AttachmentApplicationCommandOption(_BaseValueApplicationCommandOption):
+    type: Literal[11]
+    file_types: NotRequired[List[str]]
+
+
 _ValueApplicationCommandOption = Union[
     _StringApplicationCommandOption,
     _IntegerApplicationCommandOption,
     _BooleanApplicationCommandOption,
     _SnowflakeApplicationCommandOptionChoice,
     _NumberApplicationCommandOption,
+    _AttachmentApplicationCommandOption,
 ]
 
 ApplicationCommandOption = Union[

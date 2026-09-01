@@ -204,6 +204,7 @@ class FileUploadComponent(ComponentBase):
     max_values: NotRequired[int]
     min_values: NotRequired[int]
     required: NotRequired[bool]
+    file_types: NotRequired[List[str]]
 
 
 class RadioGroupComponent(ComponentBase):

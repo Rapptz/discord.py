@@ -39,6 +39,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Type,
@@ -52,7 +53,7 @@ from .translator import TranslationContextLocation, TranslationContext, Translat
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, ForumChannel
 from ..abc import GuildChannel
 from ..threads import Thread
-from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
+from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale, FileType
 from ..utils import MISSING, maybe_coroutine, _human_join, _iscoroutinefunction, TIMESTAMP_PATTERN
 from ..user import User
 from ..role import Role
@@ -91,6 +92,7 @@ class CommandParameter:
     min_value: Optional[Union[int, float]] = None
     max_value: Optional[Union[int, float]] = None
     autocomplete: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+    file_types: Optional[Sequence[Union[str, FileType]]] = MISSING
     _rename: Union[str, locale_str] = MISSING
     _annotation: Any = MISSING
 
@@ -143,6 +145,8 @@ class CommandParameter:
             base['channel_types'] = [t.value for t in self.channel_types]
         if self.autocomplete:
             base['autocomplete'] = True
+        if self.file_types:
+            base['file_types'] = [ft.value if isinstance(ft, FileType) else ft for ft in self.file_types]
 
         min_key, max_key = (
             ('min_value', 'max_value') if self.type is not AppCommandOptionType.string else ('min_length', 'max_length')

@@ -32,6 +32,7 @@ from typing import (
     TYPE_CHECKING,
     Tuple,
     Union,
+    Sequence,
 )
 
 from .asset import AssetMixin
@@ -44,6 +45,7 @@ from .enums import (
     SelectDefaultValueType,
     SeparatorSpacing,
     MediaItemLoadingState,
+    FileType,
 )
 from .flags import AttachmentFlags
 from .colour import Colour
@@ -1467,6 +1469,11 @@ class FileUploadComponent(Component):
     required: :class:`bool`
         Whether the component is required.
         Defaults to ``True``.
+    file_types: List[:class:`str`]
+        A list of file types that are allowed to be uploaded for this component.
+        Defaults to allowing all file types.
+
+        .. versionadded:: 2.8
     """
 
     __slots__: Tuple[str, ...] = (
@@ -1475,6 +1482,7 @@ class FileUploadComponent(Component):
         'max_values',
         'required',
         'id',
+        'file_types',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -1485,6 +1493,7 @@ class FileUploadComponent(Component):
         self.max_values: int = data.get('max_values', 1)
         self.required: bool = data.get('required', True)
         self.id: Optional[int] = data.get('id')
+        self.file_types: Sequence[Union[str, FileType]] = data.get('file_types', [])
 
     @property
     def type(self) -> Literal[ComponentType.file_upload]:
@@ -1501,6 +1510,8 @@ class FileUploadComponent(Component):
         }
         if self.id is not None:
             payload['id'] = self.id
+        if self.file_types:
+            payload['file_types'] = [ft.value if isinstance(ft, FileType) else ft for ft in self.file_types]
 
         return payload
 
