@@ -992,7 +992,12 @@ class UnfurledMediaItem(AssetMixin):
     content_type: Optional[:class:`str`]
         The media item's `media type <https://en.wikipedia.org/wiki/Media_type>`_
     placeholder: Optional[:class:`str`]
-        The media item's placeholder.
+        A `thumbhash <https://evanw.github.io/thumbhash/>` of the
+        attachment. Only applicable to images and videos.
+    placeholder_version: Optional[:class:`int`]
+        The version of the placeholder. Only applicable to images and videos.
+
+        .. versionadded:: 2.8
     loading_state: Optional[:class:`MediaItemLoadingState`]
         The loading state of this media item.
     attachment_id: Optional[:class:`int`]
@@ -1008,6 +1013,7 @@ class UnfurledMediaItem(AssetMixin):
         'content_type',
         '_flags',
         'placeholder',
+        'placeholder_version',
         'loading_state',
         'attachment_id',
         '_state',
@@ -1022,6 +1028,7 @@ class UnfurledMediaItem(AssetMixin):
         self.content_type: Optional[str] = None
         self._flags: int = 0
         self.placeholder: Optional[str] = None
+        self.placeholder_version: Optional[int] = None
         self.loading_state: Optional[MediaItemLoadingState] = None
         self.attachment_id: Optional[int] = None
         self._state: Optional[ConnectionState] = None
@@ -1044,6 +1051,7 @@ class UnfurledMediaItem(AssetMixin):
         self.content_type = data.get('content_type')
         self._flags = data.get('flags', 0)
         self.placeholder = data.get('placeholder')
+        self.placeholder_version = data.get('placeholder_version')
 
         loading_state = data.get('loading_state')
         if loading_state is not None:
