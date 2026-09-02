@@ -68,6 +68,7 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .poll import Poll
+    from .shared_client_theme import SharedClientTheme
 
     from .types import (
         appinfo,
@@ -161,6 +162,7 @@ def handle_message_parameters(
     channel_payload: Dict[str, Any] = MISSING,
     applied_tags: Optional[SnowflakeList] = MISSING,
     poll: Optional[Poll] = MISSING,
+    shared_client_theme: Optional[SharedClientTheme] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -205,6 +207,9 @@ def handle_message_parameters(
                     flags = MessageFlags(components_v2=True)
         else:
             payload['components'] = []
+
+    if shared_client_theme not in (MISSING, None):
+        payload['shared_client_theme'] = shared_client_theme.to_dict()
 
     if nonce is not None:
         payload['nonce'] = str(nonce)
