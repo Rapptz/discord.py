@@ -39,7 +39,7 @@ from typing import (
 )
 
 from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
-from .view import _component_to_item, LayoutView
+from .view import _component_to_item, LayoutView, BaseView
 from ..enums import ComponentType
 from ..utils import get as _utils_get
 from ..colour import Colour, Color
@@ -116,7 +116,7 @@ class Container(Item[V]):
 
     def __init__(
         self,
-        *children: Item[V],
+        *children: Item[BaseView],
         accent_colour: Optional[Union[Colour, int]] = None,
         accent_color: Optional[Union[Color, int]] = None,
         spoiler: bool = False,

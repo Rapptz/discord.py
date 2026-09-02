@@ -53,7 +53,7 @@ from ..utils import MISSING, get as _utils_get
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import LayoutView
+    from .view import LayoutView, BaseView
     from .select import (
         BaseSelectT,
         ValidDefaultValues,
@@ -125,7 +125,7 @@ class ActionRow(Item[V]):
 
     def __init__(
         self,
-        *children: Item[V],
+        *children: Item[BaseView],
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
