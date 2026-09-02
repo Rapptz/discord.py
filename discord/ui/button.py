@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import copy
 from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
-import inspect
 import os
 
 
@@ -34,6 +33,7 @@ from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCall
 from ..enums import ButtonStyle, ComponentType
 from ..partial_emoji import PartialEmoji, _EmojiTag
 from ..components import Button as ButtonComponent
+from ..utils import _iscoroutinefunction
 
 __all__ = (
     'Button',
@@ -370,7 +370,7 @@ def button(
     """
 
     def decorator(func: ItemCallbackType[S, Button[V]]) -> ItemCallbackType[S, Button[V]]:
-        if not inspect.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 
         func.__discord_ui_model_type__ = Button

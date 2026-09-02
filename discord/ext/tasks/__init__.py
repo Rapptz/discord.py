@@ -46,7 +46,7 @@ import inspect
 
 from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
-from discord.utils import MISSING
+from discord.utils import MISSING, _iscoroutinefunction
 
 _log = logging.getLogger(__name__)
 
@@ -182,7 +182,7 @@ class Loop(Generic[LF]):
         self._last_iteration: datetime.datetime = MISSING
         self._next_iteration = None
 
-        if not inspect.iscoroutinefunction(self.coro):
+        if not _iscoroutinefunction(self.coro):
             raise TypeError(f'Expected coroutine function, not {type(self.coro).__name__!r}.')
 
     async def _call_loop_function(self, name: str, *args: Any, **kwargs: Any) -> None:
@@ -574,7 +574,7 @@ class Loop(Generic[LF]):
             The function was not a coroutine.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._before_loop = coro
@@ -602,7 +602,7 @@ class Loop(Generic[LF]):
             The function was not a coroutine.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._after_loop = coro
@@ -632,7 +632,7 @@ class Loop(Generic[LF]):
         TypeError
             The function was not a coroutine.
         """
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._error = coro  # type: ignore

@@ -116,7 +116,7 @@ class SKU:
         Raises
         -------
         NotFound
-            An subscription with this ID does not exist.
+            A subscription with this ID does not exist.
         HTTPException
             Fetching the subscription failed.
 

@@ -173,6 +173,9 @@ def handle_message_parameters(
     if attachments is not MISSING and files is not MISSING:
         raise TypeError('Cannot mix attachments and files keyword arguments.')
 
+    if files is not MISSING and len(files) > 10:
+        raise ValueError('files has a maximum of 10 elements.')
+
     payload = {}
     if embeds is not MISSING:
         if len(embeds) > 10:
@@ -568,7 +571,7 @@ class HTTPClient:
             'compress': compress,
         }
 
-        return await self.__session.ws_connect(url, **kwargs)
+        return await self.__session.ws_connect(url, **kwargs)  # pyright: ignore[reportReturnType]
 
     def _try_clear_expired_ratelimits(self) -> None:
         if len(self._buckets) < 256:

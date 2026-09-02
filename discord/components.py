@@ -1379,7 +1379,7 @@ class Container(Component):
         }
         if self.id is not None:
             payload['id'] = self.id
-        if self._colour:
+        if self._colour is not None:
             payload['accent_color'] = self._colour.value
         return payload
 

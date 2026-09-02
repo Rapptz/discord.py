@@ -533,10 +533,10 @@ Enumerations
 
     .. attribute:: file_upload
 
-       Represents a file upload component, usually in a modal.
+        Represents a file upload component, usually in a modal.
 
-         .. versionadded:: 2.7
-    
+        .. versionadded:: 2.7
+
     .. attribute:: radio_group
 
         Represents a radio group component.
@@ -634,7 +634,7 @@ Enumerations
         A string parameter.
     .. attribute:: integer
 
-        A integer parameter.
+        An integer parameter.
     .. attribute:: boolean
 
         A boolean parameter.

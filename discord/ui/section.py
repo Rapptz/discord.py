@@ -212,6 +212,7 @@ class Section(Item[V]):
         else:
             if self._view:
                 self._view._add_count(-1)
+            item._detach_view()
 
         return self
 
@@ -244,6 +245,8 @@ class Section(Item[V]):
         if self._view:
             self._view._add_count(-len(self._children))  # we don't count the accessory because it is required
 
+        for item in self._children:
+            item._detach_view()
         self._children.clear()
         return self
 

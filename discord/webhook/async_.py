@@ -571,6 +571,9 @@ def interaction_message_response_params(
     if attachments is not MISSING and files is not MISSING:
         raise TypeError('Cannot mix attachments and files keyword arguments.')
 
+    if files is not MISSING and len(files) > 10:
+        raise ValueError('files has a maximum of 10 elements.')
+
     data: Optional[Dict[str, Any]] = {
         'tts': tts,
     }
@@ -1322,6 +1325,9 @@ class Webhook(BaseWebhook):
 
         state = None
         if client is not MISSING:
+            if client._ready is MISSING:
+                raise ValueError('Client must be logged in to use from_url with a client.')
+
             state = client._connection
             if session is MISSING:
                 session = client.http._HTTPClient__session  # type: ignore

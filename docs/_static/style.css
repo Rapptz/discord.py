@@ -387,7 +387,7 @@ aside {
   background-color: var(--mobile-nav-background);
   color: var(--mobile-nav-text);
   z-index: 2;
-  max-height: 100vh;
+  max-height: 100dvh;
   overflow-y: auto;
   overscroll-behavior-y: contain;
 }
@@ -1285,7 +1285,7 @@ div.code-block-caption {
     display: inline-block;
     position: sticky;
     top: 1em;
-    max-height: calc(100vh - 2em);
+    max-height: calc(100dvh - 2em);
     max-width: 100%;
     overflow-y: auto;
     margin: 1em;

@@ -468,8 +468,8 @@ class BaseView:
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
-        item._update_view(self)
         self._add_count(item._total_count)
+        item._update_view(self)
         self._children.append(item)
         return self
 
@@ -783,20 +783,17 @@ class View(BaseView):
         return components
 
     def add_item(self, item: Item[Any]) -> Self:
+        if not isinstance(item, Item):
+            raise TypeError(f'expected Item not {item.__class__.__name__}')
+
         if len(self._children) >= 25:
             raise ValueError('maximum number of children exceeded')
 
         if item._is_v2():
             raise ValueError('v2 items cannot be added to this view')
 
+        self.__weights.add_item(item)
         super().add_item(item)
-        try:
-            self.__weights.add_item(item)
-        except ValueError as e:
-            # if the item has no space left then remove it from _children
-            self._children.remove(item)
-            raise e
-
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:
@@ -806,6 +803,7 @@ class View(BaseView):
             pass
         else:
             self.__weights.remove_item(item)
+            self._add_count(-item._total_count)
             item._update_view(None)
 
         return self

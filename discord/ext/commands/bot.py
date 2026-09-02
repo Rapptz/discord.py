@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-import asyncio
 import collections
 import collections.abc
 import inspect
@@ -53,7 +52,7 @@ from typing import (
 import discord
 from discord import app_commands
 from discord.app_commands.tree import _retrieve_guild_ids
-from discord.utils import MISSING, _is_submodule
+from discord.utils import MISSING, _iscoroutinefunction, _is_submodule
 
 from .core import GroupMixin
 from .view import StringView
@@ -581,7 +580,7 @@ class BotBase(GroupMixin[None]):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
-        if not asyncio.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
@@ -618,7 +617,7 @@ class BotBase(GroupMixin[None]):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
-        if not asyncio.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
@@ -654,7 +653,7 @@ class BotBase(GroupMixin[None]):
         """
         name = func.__name__ if name is MISSING else name
 
-        if not asyncio.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('Listeners must be coroutines')
 
         if name in self.extra_events:

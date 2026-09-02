@@ -153,7 +153,7 @@ If the cache is disabled or you disable chunking guilds at startup, we might sti
 - :meth:`Guild.fetch_member`
     - Used to fetch a member by ID through the HTTP API.
 - :meth:`Guild.fetch_members`
-    - used to fetch a large number of members through the HTTP API.
+    - Used to fetch a large number of members through the HTTP API.
 
 It should be noted that the gateway has a strict rate limit of 120 requests per 60 seconds.
 

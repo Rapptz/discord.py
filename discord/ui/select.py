@@ -40,14 +40,13 @@ from typing import (
 )
 from contextvars import ContextVar
 import copy
-import inspect
 import os
 
 from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..utils import MISSING, _human_join
+from ..utils import MISSING, _human_join, _iscoroutinefunction
 from ..components import (
     SelectOption,
     SelectMenu,
@@ -241,7 +240,7 @@ class BaseSelect(Item[V]):
         min_values: Optional[int] = None,
         max_values: Optional[int] = None,
         disabled: bool = False,
-        required: bool = False,
+        required: bool = True,
         options: List[SelectOption] = MISSING,
         channel_types: List[ChannelType] = MISSING,
         default_values: Sequence[SelectDefaultValue] = MISSING,
@@ -640,7 +639,7 @@ class UserSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        required: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -748,7 +747,7 @@ class RoleSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        required: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -852,7 +851,7 @@ class MentionableSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        required: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -966,7 +965,7 @@ class ChannelSelect(BaseSelect[V]):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        required: bool = False,
+        required: bool = True,
         row: Optional[int] = None,
         default_values: Sequence[ValidDefaultValues] = MISSING,
         id: Optional[int] = None,
@@ -1209,7 +1208,7 @@ def select(
     """
 
     def decorator(func: ItemCallbackType[S, BaseSelectT]) -> ItemCallbackType[S, BaseSelectT]:
-        if not inspect.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
         callback_cls = getattr(cls, '__origin__', cls)
         if not issubclass(callback_cls, BaseSelect):

@@ -1140,6 +1140,9 @@ class Greedy(List[T]):
         converter = getattr(self.converter, '__name__', repr(self.converter))
         return f'Greedy[{converter}]'
 
+    def __or__(self, value: Any) -> Any:
+        return Union[self, value]
+
     def __class_getitem__(cls, params: Union[Tuple[T], T]) -> Greedy[T]:
         if not isinstance(params, tuple):
             params = (params,)

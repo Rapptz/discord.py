@@ -45,4 +45,4 @@ jobs:
       - name: Run ruff
         if: ${{ always() && steps.install-deps.outcome == 'success' }}
         run: |
-          ruff format --check discord examples
+          ruff format --check

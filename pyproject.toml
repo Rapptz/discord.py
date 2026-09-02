@@ -91,6 +91,7 @@ include-package-data = true
 
 [tool.ruff]
 line-length = 125
+extend-exclude = ["docs", "tests"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
