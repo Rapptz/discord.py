@@ -729,6 +729,53 @@ Guilds
     :type invite: :class:`Invite`
 
 
+.. function:: on_join_request_create(join_request)
+              on_join_request_update(join_request)
+
+    Called when a :class:`JoinRequest` is created or updated in a guild with
+    member verification enabled.
+
+    You must have :attr:`~Permissions.kick_members` to receive this.
+
+    .. versionadded:: 2.8
+
+    :param join_request: The join request that was created or updated.
+    :type join_request: :class:`JoinRequest`
+
+.. function:: on_join_request_delete(guild, user)
+
+    Called when a :class:`JoinRequest` is deleted in a guild with member
+    verification enabled.
+
+    You must have :attr:`~Permissions.kick_members` to receive this.
+
+    This is only called if the user who created the join request
+    is found in the internal cache. To be notified regardless, use
+    :func:`on_raw_join_request_delete`.
+
+    .. versionadded:: 2.8
+
+    :param guild: The guild the join request was for.
+    :type guild: :class:`Guild`
+    :param user: The user that created the join request.
+    :type user: :class:`User`
+
+.. function:: on_raw_join_request_delete(payload)
+
+    Called when a :class:`JoinRequest` is deleted in a guild with member
+    verification enabled.
+
+    You must have :attr:`~Permissions.kick_members` to receive this.
+
+    Unlike :func:`on_join_request_delete`, this is called regardless of the state
+    of the internal cache.
+
+    .. versionadded:: 2.8
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawJoinRequestDeleteEvent`
+
+
 Integrations
 ~~~~~~~~~~~~~
 
@@ -4060,6 +4107,50 @@ of :class:`enum.Enum`.
 
         Prompt options are displayed as a drop-down.
 
+.. class:: MemberVerificationFieldType
+
+    Represents the type of a member verification question.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: terms
+
+        The user must agree to the guild's rules.
+
+    .. attribute:: text_input
+
+        The user must respond with a short answer.
+
+    .. attribute:: paragraph
+
+        The user must respond with a paragraph.
+
+    .. attribute:: multiple_choice
+
+        The user must select one of the provided choices.
+
+.. class:: JoinRequestStatus
+
+    Represents the status of a :class:`JoinRequest`.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: started
+
+        The join request has been started but not submitted.
+
+    .. attribute:: submitted
+
+        The join request has been submitted.
+
+    .. attribute:: rejected
+
+        The join request has been rejected.
+
+    .. attribute:: approved
+
+        The join request has been approved.
+
 .. class:: OnboardingMode
 
     Represents the onboarding constraint mode.
@@ -5619,6 +5710,27 @@ OnboardingPromptOption
 .. autoclass:: OnboardingPromptOption()
     :members:
 
+MemberVerification
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MemberVerification
+
+.. autoclass:: MemberVerification()
+    :members:
+
+.. attributetable:: MemberVerificationFormField
+
+.. autoclass:: MemberVerificationFormField
+    :members:
+
+JoinRequest
+~~~~~~~~~~~~
+
+.. attributetable:: JoinRequest
+
+.. autoclass:: JoinRequest()
+    :members:
+
 BaseSoundboardSound
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -5801,6 +5913,14 @@ RawPresenceUpdateEvent
 .. attributetable:: RawPresenceUpdateEvent
 
 .. autoclass:: RawPresenceUpdateEvent()
+    :members:
+
+RawJoinRequestDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawJoinRequestDeleteEvent
+
+.. autoclass:: RawJoinRequestDeleteEvent()
     :members:
 
 PartialWebhookGuild

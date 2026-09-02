@@ -36,6 +36,7 @@ from .interactions import Interaction
 from .invite import InviteTargetType
 from .emoji import Emoji, PartialEmoji
 from .member import MemberWithUser
+from .member_verification import JoinRequest, JoinRequestStatus
 from .snowflake import Snowflake
 from .message import Message, ReactionType
 from .sticker import GuildSticker
@@ -212,6 +213,21 @@ class ThreadMembersUpdate(TypedDict):
 
 class GuildMemberAddEvent(MemberWithUser):
     guild_id: Snowflake
+
+
+class GuildJoinRequestCreateEvent(TypedDict):
+    guild_id: Snowflake
+    request: JoinRequest
+    status: JoinRequestStatus
+
+
+GuildJoinRequestUpdateEvent = GuildJoinRequestCreateEvent
+
+
+class GuildJoinRequestDeleteEvent(TypedDict):
+    guild_id: Snowflake
+    id: Snowflake
+    user_id: Snowflake
 
 
 class GuildMemberRemoveEvent(TypedDict):

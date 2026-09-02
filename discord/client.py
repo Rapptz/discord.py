@@ -55,6 +55,7 @@ from .invite import Invite
 from .template import Template
 from .widget import Widget
 from .guild import Guild, GuildPreview
+from .member_verification import JoinRequest
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType, EntitlementOwnerType
@@ -109,6 +110,7 @@ if TYPE_CHECKING:
         RawThreadMembersUpdate,
         RawThreadUpdateEvent,
         RawTypingEvent,
+        RawJoinRequestDeleteEvent,
         RawPollVoteActionEvent,
     )
     from .reaction import Reaction
@@ -1472,6 +1474,38 @@ class Client:
         check: Optional[Callable[[AuditLogEntry], bool]] = ...,
         timeout: Optional[float] = ...,
     ) -> AuditLogEntry: ...
+
+    # Member Verification
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['join_request_create', 'join_request_update'],
+        /,
+        *,
+        check: Optional[Callable[[JoinRequest], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> JoinRequest: ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['join_request_delete'],
+        /,
+        *,
+        check: Optional[Callable[[Guild, User], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> Tuple[Guild, User]: ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['raw_join_request_delete'],
+        /,
+        *,
+        check: Optional[Callable[[RawJoinRequestDeleteEvent], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> RawJoinRequestDeleteEvent: ...
 
     # Integrations
 

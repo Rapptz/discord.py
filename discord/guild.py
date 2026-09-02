@@ -67,6 +67,7 @@ from .enums import (
     PrivacyLevel,
     try_enum,
     VerificationLevel,
+    JoinRequestStatus,
     ContentFilter,
     NotificationLevel,
     NSFWLevel,
@@ -91,6 +92,7 @@ from .sticker import GuildSticker
 from .file import File
 from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
+from .member_verification import JoinRequest, MemberVerification, MemberVerificationFormField
 from .onboarding import Onboarding
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
@@ -136,6 +138,7 @@ if TYPE_CHECKING:
         ForumChannel as ForumChannelPayload,
     )
     from .types.integration import IntegrationType
+    from .types.member_verification import JoinRequest as JoinRequestPayload
     from .types.snowflake import SnowflakeList
     from .types.widget import EditWidgetSettings
     from .types.audit_log import AuditLogEvent
@@ -3963,6 +3966,250 @@ class Guild(Hashable):
 
         data = await self._state.http.edit_welcome_screen(self.id, reason=reason, **fields)
         return WelcomeScreen(data=data, guild=self)
+
+    async def member_verification(self) -> MemberVerification:
+        """|coro|
+
+        Fetches the member verification gate for this guild.
+
+        .. versionadded:: 2.8
+
+        Raises
+        -------
+        NotFound
+            The guild does not have member verification enabled.
+        Forbidden
+            You do not have permissions to fetch the member verification.
+        HTTPException
+            Fetching the member verification failed.
+
+        Returns
+        --------
+        :class:`MemberVerification`
+            The member verification that was fetched.
+        """
+        data = await self._state.http.get_member_verification(self.id)
+        return MemberVerification(data=data, guild=self)
+
+    async def edit_member_verification(
+        self,
+        *,
+        enabled: bool = MISSING,
+        form_fields: Sequence[MemberVerificationFormField] = MISSING,
+        description: Optional[str] = MISSING,
+        bulk_action: JoinRequestStatus = MISSING,
+        reason: Optional[str] = None,
+    ) -> MemberVerification:
+        """|coro|
+
+        Edits the member verification gate for this guild.
+
+        You must have :attr:`~Permissions.manage_guild` to do this.
+
+        All parameters are optional.
+
+        .. versionadded:: 2.8
+
+        Parameters
+        -----------
+        enabled: :class:`bool`
+            Whether the member verification gate is enabled.
+        form_fields: List[:class:`MemberVerificationFormField`]
+            The questions the user must answer. There can be up to 5 questions.
+
+            Using a field type other than :attr:`MemberVerificationFieldType.terms`
+            requires the guild to have the ``MEMBER_VERIFICATION_MANUAL_APPROVAL`` feature.
+        description: Optional[:class:`str`]
+            A description of what the guild is about. Can be up to 300 characters long.
+        bulk_action: :class:`JoinRequestStatus`
+            What to do with the pending join requests when disabling the gate.
+            Only :attr:`JoinRequestStatus.approved` and :attr:`JoinRequestStatus.rejected`
+            can be used. Defaults to approving.
+        reason: Optional[:class:`str`]
+            The reason for editing the member verification. Shows up on the audit log.
+
+        Raises
+        -------
+        ValueError
+            An invalid ``bulk_action`` was passed.
+        Forbidden
+            You do not have permissions to edit the member verification.
+        HTTPException
+            Editing the member verification failed.
+
+        Returns
+        --------
+        :class:`MemberVerification`
+            The newly updated member verification.
+        """
+        payload: Dict[str, Any] = {}
+        if enabled is not MISSING:
+            payload['enabled'] = enabled
+        if form_fields is not MISSING:
+            payload['form_fields'] = [field.to_dict() for field in form_fields]
+        if description is not MISSING:
+            payload['description'] = description
+        if bulk_action is not MISSING:
+            if bulk_action not in (JoinRequestStatus.approved, JoinRequestStatus.rejected):
+                raise ValueError('bulk_action must be either JoinRequestStatus.approved or JoinRequestStatus.rejected')
+            payload['bulk_action'] = bulk_action.value
+
+        data = await self._state.http.edit_member_verification(self.id, reason=reason, **payload)
+        return MemberVerification(data=data, guild=self)
+
+    async def join_requests(
+        self,
+        *,
+        status: JoinRequestStatus = JoinRequestStatus.submitted,
+        limit: Optional[int] = 100,
+        before: SnowflakeTime = MISSING,
+        after: SnowflakeTime = MISSING,
+        oldest_first: bool = MISSING,
+    ) -> AsyncIterator[JoinRequest]:
+        """Retrieves an :term:`asynchronous iterator` of the guild's :class:`JoinRequest`\\s.
+
+        You must have :attr:`~Permissions.kick_members` to do this.
+
+        .. note::
+
+            Join requests with a status of :attr:`JoinRequestStatus.submitted` are ordered
+            and paginated by the request itself, whereas actioned join requests are ordered
+            and paginated by :attr:`JoinRequest.actioned_at`.
+
+        .. versionadded:: 2.8
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for request in guild.join_requests():
+                print(request.user, request.status)
+
+        Flattening into a list ::
+
+            requests = [request async for request in guild.join_requests()]
+
+        Parameters
+        -----------
+        status: :class:`JoinRequestStatus`
+            The status of the join requests to retrieve.
+            Defaults to :attr:`JoinRequestStatus.submitted`.
+
+            :attr:`JoinRequestStatus.started` cannot be used.
+        limit: Optional[:class:`int`]
+            The number of join requests to retrieve. If ``None``, retrieves every
+            join request with the given status. Note that this is potentially slow.
+        before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
+            Retrieve join requests before this date or join request.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
+            Retrieve join requests after this date or join request.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        oldest_first: :class:`bool`
+            If set to ``True``, return join requests in oldest->newest order.
+            Defaults to ``True`` if ``after`` is specified, otherwise ``False``.
+
+        Raises
+        -------
+        ValueError
+            :attr:`JoinRequestStatus.started` was passed as the ``status``.
+        Forbidden
+            You do not have permissions to fetch the join requests.
+        HTTPException
+            Fetching the join requests failed.
+
+        Yields
+        -------
+        :class:`JoinRequest`
+            The join request that was fetched.
+        """
+        if status is JoinRequestStatus.started:
+            raise ValueError('Join requests with a status of JoinRequestStatus.started cannot be queried')
+
+        if isinstance(before, datetime.datetime):
+            before = Object(id=utils.time_snowflake(before, high=False))
+        if isinstance(after, datetime.datetime):
+            after = Object(id=utils.time_snowflake(after, high=True))
+
+        state = self._state
+        endpoint = state.http.get_join_requests
+
+        def _cursor(request: JoinRequestPayload, *, high: bool) -> int:
+            if status is JoinRequestStatus.submitted:
+                return int(request['id'])
+
+            return utils.time_snowflake(
+                utils.parse_time(request['reviewed_at']),  # pyright: ignore[reportTypedDictNotRequiredAccess]
+                high=high,
+            )
+
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
+            before_id = before.id if before else None
+            data = (await endpoint(self.id, status.value, limit=retrieve, before=before_id))['guild_join_requests']
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = Object(id=_cursor(data[-1], high=True) + 1)
+
+            return data, before, limit
+
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
+            after_id = after.id if after else None
+            data = (await endpoint(self.id, status.value, limit=retrieve, after=after_id))['guild_join_requests']
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                after = Object(id=_cursor(data[-1], high=False) - 1)
+
+            return data, after, limit
+
+        if oldest_first is MISSING:
+            reverse = after is not MISSING
+        else:
+            reverse = oldest_first
+
+        predicate = None
+
+        if reverse:
+            strategy, state_ = _after_strategy, after or OLDEST_OBJECT
+            if before is not MISSING:
+                predicate = lambda r: _cursor(r, high=False) < before.id
+        else:
+            strategy, state_ = _before_strategy, before
+            if after is not MISSING:
+                predicate = lambda r: _cursor(r, high=True) > after.id
+
+        while True:
+            retrieve = 100 if limit is None else min(limit, 100)
+            if retrieve < 1:
+                return
+
+            data, state_, limit = await strategy(retrieve, state_, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 100:
+                limit = 0
+            else:
+                # A full page may have cut through requests actioned in the same millisecond
+                # (somewhat common), so drop the trailing ones and let them be refetched.
+                # actioned_at exists as a snowflake but it's deprecated, so it isn't used here;
+                # however, if 100 actions happened to be performed in the same millisecond
+                # (possible with bulk actioning?), pagination would be broken because of the precision loss
+                boundary = _cursor(data[-1], high=False)
+                data = [request for request in data if _cursor(request, high=False) != boundary] or data
+
+            if predicate:
+                data = filter(predicate, data)
+
+            for raw_request in data:
+                yield JoinRequest(data=raw_request, state=state)
 
     async def kick(self, user: Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|

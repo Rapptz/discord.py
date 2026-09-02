@@ -74,6 +74,7 @@ from .soundboard import *
 from .subscription import *
 from .presences import *
 from .primary_guild import *
+from .member_verification import *
 from .onboarding import *
 from .collectible import *
 

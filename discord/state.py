@@ -61,6 +61,7 @@ from .partial_emoji import PartialEmoji
 from .message import Message
 from .channel import *
 from .channel import _channel_factory
+from .member_verification import JoinRequest
 from .raw_models import *
 from .presences import RawPresenceUpdateEvent
 from .member import Member
@@ -1188,6 +1189,21 @@ class ConnectionState(Generic[ClientT]):
 
         guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
+
+    def parse_guild_join_request_create(self, data: gw.GuildJoinRequestCreateEvent) -> None:
+        self.dispatch('join_request_create', JoinRequest(data=data['request'], state=self))
+
+    def parse_guild_join_request_update(self, data: gw.GuildJoinRequestUpdateEvent) -> None:
+        self.dispatch('join_request_update', JoinRequest(data=data['request'], state=self))
+
+    def parse_guild_join_request_delete(self, data: gw.GuildJoinRequestDeleteEvent) -> None:
+        raw = RawJoinRequestDeleteEvent(data)
+        self.dispatch('raw_join_request_delete', raw)
+
+        user = self.get_user(raw.user_id)
+        guild = self._get_guild(raw.guild_id)
+        if user is not None and guild is not None:
+            self.dispatch('join_request_delete', guild, user)
 
     def parse_guild_audit_log_entry_create(self, data: gw.GuildAuditLogEntryCreate) -> None:
         guild = self._get_guild(int(data['guild_id']))

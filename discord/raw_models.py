@@ -48,6 +48,7 @@ if TYPE_CHECKING:
         ThreadDeleteEvent,
         ThreadMembersUpdate,
         TypingStartEvent,
+        GuildJoinRequestDeleteEvent,
         GuildMemberRemoveEvent,
         PollVoteActionEvent,
     )
@@ -79,6 +80,7 @@ __all__ = (
     'RawMemberRemoveEvent',
     'RawAppCommandPermissionsUpdateEvent',
     'RawPollVoteActionEvent',
+    'RawJoinRequestDeleteEvent',
 )
 
 
@@ -553,3 +555,26 @@ class RawPollVoteActionEvent(_RawReprMixin):
         self.message_id: int = int(data['message_id'])
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         self.answer_id: int = int(data['answer_id'])
+
+
+class RawJoinRequestDeleteEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_join_request_delete` event.
+
+    .. versionadded:: 2.8
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The ID of the join request that was deleted.
+    guild_id: :class:`int`
+        The ID of the guild the join request was for.
+    user_id: :class:`int`
+        The ID of the user that created the join request.
+    """
+
+    __slots__ = ('id', 'guild_id', 'user_id')
+
+    def __init__(self, data: GuildJoinRequestDeleteEvent) -> None:
+        self.id: int = int(data['id'])
+        self.guild_id: int = int(data['guild_id'])
+        self.user_id: int = int(data['user_id'])

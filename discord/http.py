@@ -80,6 +80,7 @@ if TYPE_CHECKING:
         integration,
         invite,
         member,
+        member_verification,
         message,
         onboarding,
         template,
@@ -1594,6 +1595,58 @@ class HTTPClient:
         payload = {k: v for k, v in fields.items() if k in valid_keys}
         return self.request(
             Route('PATCH', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id), json=payload, reason=reason
+        )
+
+    def get_member_verification(self, guild_id: Snowflake) -> Response[member_verification.MemberVerification]:
+        return self.request(Route('GET', '/guilds/{guild_id}/member-verification', guild_id=guild_id))
+
+    def edit_member_verification(
+        self, guild_id: Snowflake, *, reason: Optional[str] = None, **fields: Any
+    ) -> Response[member_verification.MemberVerification]:
+        return self.request(
+            Route('PATCH', '/guilds/{guild_id}/member-verification', guild_id=guild_id), json=fields, reason=reason
+        )
+
+    def get_join_requests(
+        self,
+        guild_id: Snowflake,
+        status: str,
+        *,
+        limit: int = 100,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+    ) -> Response[member_verification.JoinRequestList]:
+        params: Dict[str, Any] = {
+            'status': status,
+            'limit': limit,
+        }
+        if before is not None:
+            params['before'] = before
+        if after is not None:
+            params['after'] = after
+
+        return self.request(Route('GET', '/guilds/{guild_id}/requests', guild_id=guild_id), params=params)
+
+    def action_join_request(
+        self,
+        guild_id: Snowflake,
+        request_id: Snowflake,
+        action: str,
+        *,
+        rejection_reason: Optional[str] = None,
+    ) -> Response[member_verification.JoinRequest]:
+        payload: Dict[str, Any] = {'action': action}
+        if rejection_reason is not None:
+            payload['rejection_reason'] = rejection_reason
+
+        return self.request(
+            Route(
+                'PATCH',
+                '/guilds/{guild_id}/requests/{request_id}',
+                guild_id=guild_id,
+                request_id=request_id,
+            ),
+            json=payload,
         )
 
     def get_ban(self, user_id: Snowflake, guild_id: Snowflake) -> Response[guild.Ban]:
