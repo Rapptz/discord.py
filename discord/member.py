@@ -33,7 +33,7 @@ import discord.abc
 
 from . import utils
 from .asset import Asset
-from .utils import MISSING
+from .utils import MISSING, _get_as_snowflake
 from .user import BaseUser, ClientUser, User, _UserTag
 from .permissions import Permissions
 from .enums import Status
@@ -636,6 +636,41 @@ class Member(discord.abc.Messageable, _UserTag):
         if self._avatar is None:
             return None
         return Asset._from_guild_avatar(self._state, self.guild.id, self.id, self._avatar)
+
+    @property
+    def guild_avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns an :class:`Asset` for the guild specific avatar decoration the member has.
+
+        If the member has not set a guild specific avatar decoration, ``None`` is returned.
+
+        .. versionadded:: 2.8
+        """
+        if self._avatar_decoration_data is not None:
+            return Asset._from_avatar_decoration(self._state, self._avatar_decoration_data['asset'])
+        return None
+
+    @property
+    def guild_avatar_decoration_sku_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns the SKU ID of the guild specific avatar decoration the member has.
+
+        If the member has not set a guild specific avatar decoration, ``None`` is returned.
+
+        .. versionadded:: 2.8
+        """
+        if self._avatar_decoration_data is not None:
+            return _get_as_snowflake(self._avatar_decoration_data, 'sku_id')
+        return None
+
+    @property
+    def display_avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the member's displayed avatar decoration, if any.
+
+        This is the member's guild specific avatar decoration if available, otherwise it's their
+        global avatar decoration. If the member has no avatar decoration set ``None`` is returned.
+
+        .. versionadded:: 2.8
+        """
+        return self.guild_avatar_decoration or self._user.avatar_decoration
 
     @property
     def display_banner(self) -> Optional[Asset]:
