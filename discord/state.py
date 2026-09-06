@@ -72,7 +72,7 @@ from .invite import Invite
 from .integrations import _integration_factory
 from .interactions import Interaction
 from .ui.view import ViewStore, BaseView
-from .scheduled_event import ScheduledEvent
+from .scheduled_event import ScheduledEvent, ScheduledEventException
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
@@ -81,6 +81,7 @@ from .audit_logs import AuditLogEntry
 from ._types import ClientT
 from .soundboard import SoundboardSound
 from .subscription import Subscription
+from .object import Object
 
 
 if TYPE_CHECKING:
@@ -1598,6 +1599,72 @@ class ConnectionState(Generic[ClientT]):
                 )
         else:
             _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_exception_create(self, data: gw.ScheduledEventExceptionCreate) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            event_id = int(data['event_id'])
+            event = guild._scheduled_events.get(event_id)
+            if event is None:
+                event = Object(event_id, type=ScheduledEvent)
+                event.guild_id = guild.id  # type: ignore
+
+            event_exc = ScheduledEventException(
+                state=self,
+                data=data,
+                event=event,  # type: ignore
+            )
+
+            if event and not isinstance(event, Object):
+                event._exceptions[event_exc.id] = event_exc
+
+            self.dispatch('scheduled_event_exception_create', event_exc)
+        else:
+            _log.debug('SCHEDULED_EVENT_EXCEPTION_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_exception_update(self, data: gw.ScheduledEventExceptionUpdate) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            event_id = int(data['event_id'])
+            event = guild._scheduled_events.get(event_id)
+            if event is None:
+                _log.debug(
+                    'SCHEDULED_EVENT_EXCEPTION_UPDATE referencing unknown scheduled event ID: %s. Discarding.', event_id
+                )
+                return
+
+            exception_id = int(data['event_exception_id'])
+            raw_old_exception = event._exceptions.get(exception_id)
+            if raw_old_exception is None:
+                _log.debug(
+                    'SCHEDULED_EVENT_EXCEPTION_UPDATE referencing unknown scheduled event exception ID: %s. Discarding.',
+                    exception_id,
+                )
+                return
+
+            old_exception = copy.copy(raw_old_exception)
+            raw_old_exception._update(data)
+
+            self.dispatch('scheduled_event_exception_update', old_exception, raw_old_exception)
+        else:
+            _log.debug('SCHEDULED_EVENT_EXCEPTION_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_exception_delete(self, data: gw.ScheduledEventExceptionUpdate) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            event_id = int(data['event_id'])
+            event = guild._scheduled_events.get(event_id)
+            if event is None:
+                _log.debug(
+                    'SCHEDULED_EVENT_EXCEPTION_DELETE referencing unknown scheduled event ID: %s. Discarding.', event_id
+                )
+                return
+
+            exception_id = int(data['event_exception_id'])
+            exception = event._exceptions.pop(exception_id, ScheduledEventException(state=self, data=data, event=event))
+            self.dispatch('scheduled_event_exception_delete', exception)
+        else:
+            _log.debug('SCHEDULED_EVENT_EXCEPTION_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_soundboard_sound_create(self, data: gw.GuildSoundBoardSoundCreateEvent) -> None:
         guild_id = int(data['guild_id'])  # type: ignore # can't be None here

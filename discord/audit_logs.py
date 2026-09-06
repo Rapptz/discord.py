@@ -38,7 +38,7 @@ from .role import Role
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .member import Member
-from .scheduled_event import ScheduledEvent
+from .scheduled_event import ScheduledEvent, ScheduledEventException
 from .stage_instance import StageInstance
 from .sticker import GuildSticker
 from .threads import Thread
@@ -68,6 +68,9 @@ if TYPE_CHECKING:
         PermissionOverwrite as PermissionOverwritePayload,
         ForumTag as ForumTagPayload,
         DefaultReaction as DefaultReactionPayload,
+    )
+    from .types.scheduled_event import (
+        ScheduledEventException as ScheduledEventExceptionPayload,
     )
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload, RoleColours
@@ -293,6 +296,11 @@ def _transform_type(
         return enums.try_enum(enums.ChannelType, data)
 
 
+def _transform_scheduled_event(entry: AuditLogEntry, data: Snowflake) -> ScheduledEvent | Object:
+    id = int(data)
+    return entry.guild.get_scheduled_event(id) or Object(id=id, type=ScheduledEvent)
+
+
 class AuditLogDiff:
     def __len__(self) -> int:
         return len(self.__dict__)
@@ -366,6 +374,11 @@ class AuditLogChanges:
         'default_reaction_emoji':                (None, _transform_default_reaction),
         'emoji_name':                            ('emoji', _transform_default_emoji),
         'user_id':                               ('user', _transform_member_id),
+        'event_id':                              ('event', _transform_scheduled_event),
+        'event_exception_id':                    (None, _transform_snowflake),
+        'scheduled_start_time':                  ('start_time', _transform_timestamp),
+        'scheduled_end_time':                    ('end_time', _transform_timestamp),
+        'is_canceled':                           ('cancelled', None),
         'options':                               (None, _transform_onboarding_prompt_options),
         'prompts':                               (None, _transform_onboarding_prompts),
         'default_channel_ids':                   ('default_channels', _transform_channels_or_threads),
@@ -466,6 +479,9 @@ class AuditLogChanges:
         if hasattr(self.after, 'expire_behavior'):
             self.after.expire_behaviour = self.after.expire_behavior
             self.before.expire_behaviour = self.before.expire_behavior
+        if hasattr(self.after, 'cancelled'):
+            self.after.canceled = self.after.cancelled
+            self.before.canceled = self.before.cancelled
 
     def __repr__(self) -> str:
         return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
@@ -984,3 +1000,28 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_onboarding_prompt(self, target_id: int) -> Object:
         return Object(target_id, type=OnboardingPrompt)
+
+    def _convert_target_scheduled_event_exception(self, target_id: int) -> ScheduledEventException:
+        changeset = self.before if self.action is enums.AuditLogAction.scheduled_event_exception_delete else self.after
+        event = self.guild.get_scheduled_event(changeset.event.id)
+        cached = event and event._exceptions.get(changeset.event_exception_id)
+        if cached:
+            return cached
+
+        fake_payload: ScheduledEventExceptionPayload = {
+            'event_exception_id': changeset.event_exception_id,
+            'event_id': changeset.event.id,
+            'is_canceled': changeset.cancelled,
+            'scheduled_end_time': changeset.end_time.isoformat(),
+            'scheduled_start_time': changeset.start_time.isoformat(),
+        }
+
+        if not event:
+            event = Object(id=changeset.event.id, type=ScheduledEvent)
+            event.guild_id: int = self.guild.id  # type: ignore # this makes the ScheduledEventException methods work
+
+        return ScheduledEventException(
+            data=fake_payload,
+            event=event,  # type: ignore
+            state=self._state,
+        )

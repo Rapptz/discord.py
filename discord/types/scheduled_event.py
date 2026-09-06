@@ -32,6 +32,33 @@ from .channel import PrivacyLevel as PrivacyLevel
 
 EventStatus = Literal[1, 2, 3, 4]
 EntityType = Literal[1, 2, 3]
+ScheduledEventRecurrenceRuleFrequency = Literal[0, 1, 2, 3]
+
+
+class _NWeekday(TypedDict):
+    n: Literal[1, 2, 3, 4, 5]
+    day: Literal[0, 1, 2, 3, 4, 5, 6]
+
+
+class ScheduledEventRecurrenceRule(TypedDict):
+    start: str
+    end: Optional[str]
+    frequency: ScheduledEventRecurrenceRuleFrequency
+    interval: int
+    by_weekday: Optional[List[Literal[0, 1, 2, 3, 4, 5, 6]]]
+    by_n_weekday: Optional[List[_NWeekday]]
+    by_month: Optional[List[int]]
+    by_month_day: Optional[List[int]]
+    by_year_day: Optional[List[int]]
+    count: Optional[int]
+
+
+class ScheduledEventException(TypedDict):
+    event_id: Snowflake
+    event_exception_id: Snowflake
+    scheduled_start_time: Optional[str]
+    scheduled_end_time: Optional[str]
+    is_canceled: bool
 
 
 class _BaseGuildScheduledEvent(TypedDict):
@@ -42,6 +69,9 @@ class _BaseGuildScheduledEvent(TypedDict):
     scheduled_start_time: str
     privacy_level: PrivacyLevel
     status: EventStatus
+    auto_start: bool
+    guild_scheduled_events_exceptions: List[ScheduledEventException]
+    recurrence_rule: Optional[ScheduledEventRecurrenceRule]
     creator_id: NotRequired[Optional[Snowflake]]
     description: NotRequired[Optional[str]]
     creator: NotRequired[User]
@@ -98,6 +128,7 @@ GuildScheduledEventWithUserCount = Union[
 class ScheduledEventUser(TypedDict):
     guild_scheduled_event_id: Snowflake
     user: User
+    guild_scheduled_event_exception_id: NotRequired[Snowflake]
 
 
 class ScheduledEventUserWithMember(ScheduledEventUser):
