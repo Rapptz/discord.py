@@ -260,6 +260,13 @@ class DiscordClientWebSocketResponse(aiohttp.ClientWebSocketResponse):
 DWS = TypeVar('DWS', bound='DiscordWebSocket')
 
 
+def _set_identify_properties(properties: dict[str, str]):
+    if not isinstance(properties, dict):
+        raise TypeError(f'expected dict not {properties.__class__.__name__}')
+
+    DiscordWebSocket.IDENTIFY_PROPERTIES = dict(properties)
+
+
 class DiscordWebSocket:
     """Implements a WebSocket for Discord's gateway v10.
 
@@ -327,6 +334,12 @@ class DiscordWebSocket:
     HEARTBEAT_ACK               = 11
     GUILD_SYNC                  = 12
     # fmt: on
+
+    IDENTIFY_PROPERTIES = {
+        'os': sys.platform,
+        'browser': 'discord.py',
+        'device': 'discord.py',
+    }
 
     def __init__(self, socket: aiohttp.ClientWebSocketResponse, *, loop: asyncio.AbstractEventLoop) -> None:
         self.socket: aiohttp.ClientWebSocketResponse = socket
@@ -474,11 +487,7 @@ class DiscordWebSocket:
             'op': self.IDENTIFY,
             'd': {
                 'token': self.token,
-                'properties': {
-                    'os': sys.platform,
-                    'browser': 'discord.py',
-                    'device': 'discord.py',
-                },
+                'properties': self.IDENTIFY_PROPERTIES,
                 'compress': True,
                 'large_threshold': 250,
             },
