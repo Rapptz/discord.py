@@ -691,7 +691,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         if codec_match:
             codec = codec_match.group(1)
 
-        br_match = re.search(r'(\d+) [kK]b/s', output)
+        br_match = re.search(r'^\s*Stream #\d+:\d+.*?Audio:.*?(\d+)\s+[kK]b/s', output, re.MULTILINE)
         if br_match:
             bitrate = min(int(br_match.group(1)), 512)
 
