@@ -1280,6 +1280,7 @@ class HTTPClient:
             'default_reaction_emoji',
             'default_forum_layout',
             'available_tags',
+            'flags',
         )
         payload.update({k: v for k, v in options.items() if k in valid_keys and v is not None})
 

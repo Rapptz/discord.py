@@ -56,6 +56,7 @@ class _BaseGuildChannel(_BaseChannel):
     permission_overwrites: List[PermissionOverwrite]
     nsfw: bool
     parent_id: Optional[Snowflake]
+    flags: NotRequired[int]
 
 
 class PartialChannel(_BaseChannel):
