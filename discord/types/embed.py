@@ -58,7 +58,22 @@ class EmbedAuthor(TypedDict, total=False):
     proxy_icon_url: str
 
 
-EmbedType = Literal['rich', 'image', 'video', 'gifv', 'article', 'link', 'poll_result']
+EmbedType = Literal[
+    "rich",
+    "image",
+    "video",
+    "gifv",
+    "article",
+    "link",
+    "poll_result",
+    "post_preview",
+    "safety_policy_notice",
+    "safety_system_notification",
+    "auto_moderation_message",
+    "auto_moderation_notification",
+    "age_verification_system_notification",
+    "gift",
+]
 
 
 class Embed(TypedDict, total=False):
