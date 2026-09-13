@@ -604,6 +604,10 @@ class AppCommandChannel(Hashable):
         If the channel is marked as "not safe for work" or "age restricted".
 
         .. versionadded:: 2.6
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
+
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -618,7 +622,7 @@ class AppCommandChannel(Hashable):
         'category_id',
         'slowmode_delay',
         'last_message_id',
-        '_last_pin',
+        'last_pin_timestamp',
         '_flags',
         '_state',
     )
@@ -642,7 +646,7 @@ class AppCommandChannel(Hashable):
         self.category_id: Optional[int] = _get_as_snowflake(data, 'parent_id')
         self.slowmode_delay: int = data.get('rate_limit_per_user') or 0
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
-        self._last_pin: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
+        self.last_pin_timestamp: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
         self._flags: int = data.get('flags', 0)
 
     def __str__(self) -> str:
@@ -793,6 +797,10 @@ class AppCommandThread(Hashable):
         The total number of messages sent, including deleted messages.
 
         .. versionadded:: 2.6
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned in UTC. ``None`` if no messages are currently pinned.
+
+        .. versionadded:: 2.8
     permissions: :class:`~discord.Permissions`
         The resolved permissions of the user who invoked
         the application command in that thread.
@@ -833,6 +841,7 @@ class AppCommandThread(Hashable):
         'slowmode_delay',
         'last_message_id',
         'total_message_sent',
+        'last_pin_timestamp',
         '_applied_tags',
         '_flags',
         '_created_at',
@@ -859,6 +868,7 @@ class AppCommandThread(Hashable):
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.total_message_sent: int = data.get('total_message_sent', 0)
+        self.last_pin_timestamp: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
         self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
         self._flags: int = data.get('flags', 0)
         self._unroll_metadata(data['thread_metadata'])

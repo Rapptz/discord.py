@@ -92,6 +92,7 @@ class PartialThread(_BasePartialChannel):
     last_message_id: NotRequired[Optional[Snowflake]]
     flags: NotRequired[int]
     total_message_sent: int
+    last_pin_timestamp: NotRequired[str]
 
 
 class ResolvedData(TypedDict, total=False):
