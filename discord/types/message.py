@@ -228,6 +228,7 @@ class Message(PartialMessage):
     thread: NotRequired[Thread]
     call: NotRequired[CallMessage]
     purchase_notification: NotRequired[PurchaseNotificationResponse]
+    channel_type: NotRequired[int]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']
