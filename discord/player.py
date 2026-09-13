@@ -675,7 +675,7 @@ class FFmpegOpusAudio(FFmpegAudio):
 
             codec = streamdata.get('codec_name')
             bitrate = int(streamdata.get('bit_rate', 0))
-            bitrate = max(round(bitrate / 1000), 512)
+            bitrate = min(round(bitrate / 1000), 512)
 
         return codec, bitrate
 
@@ -693,7 +693,7 @@ class FFmpegOpusAudio(FFmpegAudio):
 
         br_match = re.search(r'(\d+) [kK]b/s', output)
         if br_match:
-            bitrate = max(int(br_match.group(1)), 512)
+            bitrate = min(int(br_match.group(1)), 512)
 
         return codec, bitrate
 
