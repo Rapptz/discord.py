@@ -86,7 +86,7 @@ class Attachment(TypedDict):
     flags: NotRequired[int]
 
 
-MessageActivityType = Literal[1, 2, 3, 5]
+MessageActivityType = Literal[1, 2, 3, 5, 6]
 
 
 class MessageActivity(TypedDict):
