@@ -641,9 +641,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         loop = asyncio.get_running_loop()
         try:
             codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except BaseException:
+        except Exception:
             if not fallback:
                 _log.exception("Probe '%s' using '%s' failed", method, executable)
                 return None, None
@@ -651,9 +649,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             _log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
             try:
                 codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except BaseException:
+            except Exception:
                 _log.exception("Fallback probe using '%s' failed", executable)
             else:
                 _log.debug('Fallback probe found codec=%s, bitrate=%s', codec, bitrate)
@@ -683,7 +679,12 @@ class FFmpegOpusAudio(FFmpegAudio):
     def _probe_codec_fallback(source, executable: str = 'ffmpeg') -> Tuple[Optional[str], Optional[int]]:
         args = [executable, '-hide_banner', '-i', source]
         proc = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, _ = proc.communicate(timeout=20)
+        try:
+            out, _ = proc.communicate(timeout=20)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.communicate()
+            raise
         output = out.decode('utf8')
         codec = bitrate = None
 
