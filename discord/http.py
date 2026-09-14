@@ -1832,6 +1832,76 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
 
+    def search_guild_messages(
+        self,
+        guild_id: Snowflake,
+        *,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
+        content: Optional[str] = None,
+        slop: Optional[int] = None,
+        author_id: Optional[Sequence[Snowflake]] = None,
+        author_type: Optional[List[str]] = None,
+        mentions: Optional[Sequence[Snowflake]] = None,
+        mentions_role_id: Optional[Sequence[Snowflake]] = None,
+        mention_everyone: Optional[bool] = None,
+        replied_to_user_id: Optional[Sequence[Snowflake]] = None,
+        replied_to_message_id: Optional[Sequence[Snowflake]] = None,
+        min_id: Optional[Snowflake] = None,
+        max_id: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[str] = None,
+        has: Optional[List[str]] = None,
+        link_hostname: Optional[List[str]] = None,
+        embed_provider: Optional[List[str]] = None,
+        embed_type: Optional[List[str]] = None,
+        attachment_extension: Optional[List[str]] = None,
+        attachment_filename: Optional[List[str]] = None,
+        pinned: Optional[bool] = None,
+        include_nsfw: Optional[bool] = None,
+        channel_id: Optional[Sequence[Snowflake]] = None,
+    ) -> Response[message.MessageSearchResult]:
+        params: List[Tuple[str, Any]] = []
+
+        def add(key: str, value: Any) -> None:
+            if value is None:
+                return
+            if isinstance(value, (list, tuple)):
+                for item in value:
+                    params.append((key, item))
+            else:
+                params.append((key, value))
+
+        add('sort_by', sort_by)
+        add('sort_order', sort_order)
+        add('content', content)
+        add('slop', slop)
+        add('author_id', author_id)
+        add('author_type', author_type)
+        add('mentions', mentions)
+        add('mentions_role_id', mentions_role_id)
+        add('mention_everyone', mention_everyone)
+        add('replied_to_user_id', replied_to_user_id)
+        add('replied_to_message_id', replied_to_message_id)
+        add('min_id', min_id)
+        add('max_id', max_id)
+        add('limit', limit)
+        add('offset', offset)
+        add('cursor', cursor)
+        add('has', has)
+        add('link_hostname', link_hostname)
+        add('embed_provider', embed_provider)
+        add('embed_type', embed_type)
+        add('attachment_extension', attachment_extension)
+        add('attachment_filename', attachment_filename)
+        add('pinned', pinned)
+        add('include_nsfw', include_nsfw)
+        add('channel_id', channel_id)
+
+        r = Route('GET', '/guilds/{guild_id}/messages/search', guild_id=guild_id)
+        return self.request(r, params=params)
+
     def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 

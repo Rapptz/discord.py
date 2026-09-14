@@ -4154,6 +4154,142 @@ of :class:`enum.Enum`.
 
         The collectible nameplate palette is white.
 
+.. class:: SearchSortBy
+
+    Represents what to sort :meth:`Guild.search` results by.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: relevance
+
+        Sort by how relevant the message is to the search query.
+
+    .. attribute:: timestamp
+
+        Sort by the message creation time.
+
+.. class:: SearchSortOrder
+
+    Represents the order to sort :meth:`Guild.search` results in.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: ascending
+
+        Sort in ascending order.
+
+    .. attribute:: descending
+
+        Sort in descending order.
+
+.. class:: SearchAuthorType
+
+    Represents the type of author to filter :meth:`Guild.search` results by.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: user
+
+        Only return messages sent by users.
+
+    .. attribute:: bot
+
+        Only return messages sent by bots.
+
+    .. attribute:: webhook
+
+        Only return messages sent by webhooks.
+
+    .. attribute:: not_user
+
+        Only return messages not sent by users.
+
+    .. attribute:: not_bot
+
+        Only return messages not sent by bots.
+
+    .. attribute:: not_webhook
+
+        Only return messages not sent by webhooks.
+
+.. class:: SearchHasType
+
+    Represents the type of content to filter :meth:`Guild.search` results by.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: link
+
+        Only return messages that have a link.
+
+    .. attribute:: embed
+
+        Only return messages that have an embed.
+
+    .. attribute:: file
+
+        Only return messages that have a file attachment.
+
+    .. attribute:: image
+
+        Only return messages that have an image attachment.
+
+    .. attribute:: video
+
+        Only return messages that have a video attachment.
+
+    .. attribute:: sound
+
+        Only return messages that have a sound attachment.
+
+    .. attribute:: sticker
+
+        Only return messages that have a sticker.
+
+    .. attribute:: poll
+
+        Only return messages that have a poll.
+
+    .. attribute:: snapshot
+
+        Only return messages that have a message snapshot (forwarded message).
+
+    .. attribute:: not_link
+
+        Only return messages that do not have a link.
+
+    .. attribute:: not_embed
+
+        Only return messages that do not have an embed.
+
+    .. attribute:: not_file
+
+        Only return messages that do not have a file attachment.
+
+    .. attribute:: not_image
+
+        Only return messages that do not have an image attachment.
+
+    .. attribute:: not_video
+
+        Only return messages that do not have a video attachment.
+
+    .. attribute:: not_sound
+
+        Only return messages that do not have a sound attachment.
+
+    .. attribute:: not_sticker
+
+        Only return messages that do not have a sticker.
+
+    .. attribute:: not_poll
+
+        Only return messages that do not have a poll.
+
+    .. attribute:: not_snapshot
+
+        Only return messages that do not have a message snapshot (forwarded message).
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -5223,6 +5359,52 @@ Guild
         has the :attr:`Object.type` set to :class:`User`.
 
         :type: List[:class:`Object`]
+
+.. class:: SearchResult
+
+    A namedtuple which represents a single search hit returned from :meth:`Guild.search`.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: message
+
+        The message that matched the search query.
+
+        :type: :class:`Message`
+    .. attribute:: context
+
+        The other messages Discord returned alongside the hit for context.
+
+        :type: List[:class:`Message`]
+
+.. class:: GuildSearchResults
+
+    Represents the results of :meth:`Guild.search`. This is both an :term:`asynchronous iterator`
+    yielding :class:`SearchResult` and a container for metadata about the overall search, which is
+    only populated once the first page of results has been fetched.
+
+    .. versionadded:: 2.8
+
+    .. attribute:: total_results
+
+        The total number of messages matching the search. This is ``None`` until the first page
+        of results has been fetched.
+
+        :type: Optional[:class:`int`]
+    .. attribute:: doing_deep_historical_index
+
+        Whether the guild is still undergoing a deep historical index, meaning not all of the
+        guild's messages have been indexed for search yet. This is ``None`` until the first page
+        of results has been fetched.
+
+        :type: Optional[:class:`bool`]
+    .. attribute:: documents_indexed
+
+        The number of messages that have been indexed for search so far, if provided by Discord.
+        This is ``None`` until the first page of results has been fetched, and may remain ``None``
+        afterwards.
+
+        :type: Optional[:class:`int`]
 
 GuildPreview
 ~~~~~~~~~~~~

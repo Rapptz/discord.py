@@ -87,6 +87,10 @@ __all__ = (
     'MediaItemLoadingState',
     'CollectibleType',
     'NameplatePalette',
+    'SearchSortBy',
+    'SearchSortOrder',
+    'SearchAuthorType',
+    'SearchHasType',
 )
 
 
@@ -1004,6 +1008,46 @@ class NameplatePalette(Enum):
     clover = 'clover'
     lemon = 'lemon'
     white = 'white'
+
+
+class SearchSortBy(Enum):
+    relevance = 'relevance'
+    timestamp = 'timestamp'
+
+
+class SearchSortOrder(Enum):
+    ascending = 'asc'
+    descending = 'desc'
+
+
+class SearchAuthorType(Enum):
+    user = 'user'
+    bot = 'bot'
+    webhook = 'webhook'
+    not_user = '-user'
+    not_bot = '-bot'
+    not_webhook = '-webhook'
+
+
+class SearchHasType(Enum):
+    link = 'link'
+    embed = 'embed'
+    file = 'file'
+    image = 'image'
+    video = 'video'
+    sound = 'sound'
+    sticker = 'sticker'
+    poll = 'poll'
+    snapshot = 'snapshot'
+    not_link = '-link'
+    not_embed = '-embed'
+    not_file = '-file'
+    not_image = '-image'
+    not_video = '-video'
+    not_sound = '-sound'
+    not_sticker = '-sticker'
+    not_poll = '-poll'
+    not_snapshot = '-snapshot'
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

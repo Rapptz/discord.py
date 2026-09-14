@@ -36,7 +36,7 @@ from .channel import ChannelType
 from .components import ComponentBase
 from .interactions import MessageInteraction, MessageInteractionMetadata
 from .sticker import StickerItem
-from .threads import Thread
+from .threads import Thread, ThreadMember
 from .poll import Poll
 
 
@@ -248,3 +248,17 @@ class MessagePin(TypedDict):
 class ChannelPins(TypedDict):
     items: List[MessagePin]
     has_more: bool
+
+
+class SearchMessage(Message):
+    hit: bool
+
+
+class MessageSearchResult(TypedDict):
+    analytics_id: str
+    messages: List[List[SearchMessage]]
+    doing_deep_historical_index: bool
+    total_results: int
+    threads: NotRequired[Optional[List[Thread]]]
+    members: NotRequired[Optional[List[ThreadMember]]]
+    documents_indexed: NotRequired[Optional[int]]
