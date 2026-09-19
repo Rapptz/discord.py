@@ -390,7 +390,19 @@ class DiscordWebSocket:
                 v=INTERNAL_API_VERSION, encoding=encoding, compress=utils._ActiveDecompressionContext.COMPRESSION_TYPE
             )
 
-        socket = await client.http.ws_connect(str(url))
+        try:
+            socket = await client.http.ws_connect(str(url))
+        except aiohttp.WSServerHandshakeError as e:
+            # If the server errors out while connecting while under a non-default URL
+            # due to resume_gateway_url, then fallback to the older default
+            # See #10511
+            if e.status >= 500 and gateway != cls.DEFAULT_GATEWAY:
+                socket = await client.http.ws_connect(str(cls.DEFAULT_GATEWAY))
+                gateway = cls.DEFAULT_GATEWAY
+                resume = False
+            else:
+                raise e
+
         ws = cls(socket, loop=client.loop)
 
         # dynamically add attributes needed
