@@ -1371,6 +1371,10 @@ class Container(Component):
     def type(self) -> Literal[ComponentType.container]:
         return ComponentType.container
 
+    @property
+    def _total_children(self) -> int:
+        return 1 + sum((len(c.children) + 1) if isinstance(c, (Container, SectionComponent)) else 1 for c in self.children)
+
     def to_dict(self) -> ContainerComponentPayload:
         payload: ContainerComponentPayload = {
             'type': self.type.value,

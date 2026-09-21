@@ -31,6 +31,12 @@ from . import utils
 from .colour import Colour
 from .flags import AttachmentFlags, EmbedFlags
 
+from .components import _component_factory
+
+if TYPE_CHECKING:
+    from .components import Container
+    from .types.components import ContainerComponent as ContainerComponentPayload
+
 # fmt: off
 __all__ = (
     'Embed',
@@ -141,8 +147,9 @@ class Embed:
         This can be set during initialisation.
         Can only be up to 256 characters.
     type: :class:`str`
-        The type of embed. Usually "rich".
+        The type of embed. Usually "rich" or "components" but can be other values as well.
         This can be set during initialisation.
+        Bots can only send "rich" embeds.
         Possible strings for embed types can be found on discord's
         :ddocs:`api docs <resources/message#embed-object-embed-types>`
     description: Optional[:class:`str`]
@@ -176,6 +183,8 @@ class Embed:
         '_fields',
         'description',
         '_flags',
+        '_cs_components',
+        '_components',
     )
 
     def __init__(
@@ -195,6 +204,7 @@ class Embed:
         self.url: Optional[str] = url
         self.description: Optional[str] = description
         self._flags: int = 0
+        self._components: List[ContainerComponentPayload] = []
 
         if self.title is not None:
             self.title = str(self.title)
@@ -252,7 +262,12 @@ class Embed:
         except KeyError:
             pass
 
-        for attr in ('thumbnail', 'video', 'provider', 'author', 'fields', 'image', 'footer'):
+        # payload from a script {"type": 17, ..., "components": [...]}
+        component = data.get('component')
+        if component:
+            self._components = [component]
+
+        for attr in ('thumbnail', 'video', 'provider', 'author', 'fields', 'image', 'footer', 'components'):
             try:
                 value = data[attr]
             except KeyError:
@@ -285,6 +300,9 @@ class Embed:
         else:
             total += len(author['name'])
 
+        if self.components:
+            total += self.components[0]._total_children
+
         return total
 
     def __bool__(self) -> bool:
@@ -302,6 +320,7 @@ class Embed:
                 self.image,
                 self.provider,
                 self.video,
+                self.components and self.components[0]._total_children > 0,
             )
         )
 
@@ -321,6 +340,7 @@ class Embed:
             and self.provider == other.provider
             and self.video == other.video
             and self._flags == other._flags
+            and self.components == other.components
         )
 
     @property
@@ -537,6 +557,16 @@ class Embed:
         """
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_author', {}))  # type: ignore
+
+    @utils.cached_slot_property('_cs_components')
+    def components(self) -> List[Container]:
+        """List[:class:`discord.Container`]: Returns a list of components in the embed.
+
+        Bots cannot send embeds with components, but they can receive them.
+
+        .. versionadded:: 2.8
+        """
+        return [_component_factory(c) for c in getattr(self, '_components', [])]  # type: ignore
 
     def set_author(self, *, name: Any, url: Optional[Any] = None, icon_url: Optional[Any] = None) -> Self:
         """Sets the author for the embed content.
@@ -767,6 +797,11 @@ class Embed:
                     result['timestamp'] = timestamp.astimezone(tz=datetime.timezone.utc).isoformat()
                 else:
                     result['timestamp'] = timestamp.replace(tzinfo=datetime.timezone.utc).isoformat()
+
+        # Discord expects a single container component
+        components = result.pop('components', [])
+        if components:
+            result['component'] = components[0]
 
         # add in the non raw attribute ones
         if self.type:

@@ -22,8 +22,22 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Literal, TypedDict
+from typing import List, Literal, TypedDict, Union
 from typing_extensions import NotRequired, Required
+
+from .components import ContainerComponent
+
+
+PollResultFieldName = Literal[
+    'poll_question_text',
+    'victor_answer_votes',
+    'total_votes',
+    'victor_answer_id',
+    'victor_answer_text',
+    'victor_answer_emoji_id',
+    'victor_answer_emoji_name',
+    'victor_answer_emoji_animated',
+]
 
 
 class EmbedFooter(TypedDict):
@@ -58,10 +72,10 @@ class EmbedAuthor(TypedDict, total=False):
     proxy_icon_url: str
 
 
-EmbedType = Literal['rich', 'image', 'video', 'gifv', 'article', 'link', 'poll_result']
+EmbedType = Literal['rich', 'image', 'video', 'gifv', 'article', 'link', 'poll_result', 'components']
 
 
-class Embed(TypedDict, total=False):
+class _Embed(TypedDict, total=False):
     title: str
     type: EmbedType
     description: str
@@ -76,3 +90,21 @@ class Embed(TypedDict, total=False):
     author: EmbedAuthor
     fields: List[EmbedField]
     flags: int
+
+
+class PollResultField(TypedDict):
+    name: PollResultFieldName
+    value: Union[str, int, bool]
+
+
+class _PollResultEmbed(_Embed):
+    type: Literal['poll_result']
+    fields: List[PollResultField]
+
+
+class _EmbedWithComponents(_Embed):
+    type: Literal['components']
+    components: List[ContainerComponent]
+
+
+Embed = Union[_Embed, _PollResultEmbed, _EmbedWithComponents]
