@@ -44,6 +44,8 @@ class EmbedMedia(TypedDict, total=False):
     height: int
     width: int
     flags: int
+    placeholder: NotRequired[str]
+    placeholder_version: NotRequired[int]
 
 
 class EmbedProvider(TypedDict, total=False):

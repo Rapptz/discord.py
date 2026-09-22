@@ -147,6 +147,7 @@ class UnfurledMediaItem(TypedDict):
     width: NotRequired[Optional[int]]
     content_type: NotRequired[str]
     placeholder: str
+    placeholder_version: NotRequired[int]
     loading_state: MediaItemLoadingState
     attachment_id: NotRequired[int]
     flags: NotRequired[int]

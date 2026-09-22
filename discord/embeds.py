@@ -94,6 +94,8 @@ if TYPE_CHECKING:
         height: Optional[int]
         width: Optional[int]
         flags: AttachmentFlags
+        placeholder: Optional[str]
+        placeholder_version: Optional[int]
 
     class _EmbedProviderProxy(Protocol):
         name: Optional[str]
@@ -424,6 +426,12 @@ class Embed:
         - ``width`` for the image width.
         - ``height`` for the image height.
         - ``flags`` for the image's attachment flags.
+        - ``placeholder`` for a thumbhash of the image.
+
+            .. versionadded:: 2.8
+        - ``placeholder_version`` for the placeholder version.
+
+            .. versionadded:: 2.8
 
         If the attribute has no value then ``None`` is returned.
         """
@@ -467,6 +475,12 @@ class Embed:
         - ``width`` for the thumbnail width.
         - ``height`` for the thumbnail height.
         - ``flags`` for the thumbnail's attachment flags.
+        - ``placeholder`` for a thumbhash of the image.
+
+            .. versionadded:: 2.8
+        - ``placeholder_version`` for the placeholder version.
+
+            .. versionadded:: 2.8
 
         If the attribute has no value then ``None`` is returned.
         """
@@ -510,6 +524,12 @@ class Embed:
         - ``height`` for the video height.
         - ``width`` for the video width.
         - ``flags`` for the video's attachment flags.
+        - ``placeholder`` for a thumbhash of the video.
+
+            .. versionadded:: 2.8
+        - ``placeholder_version`` for the placeholder version.
+
+            .. versionadded:: 2.8
 
         If the attribute has no value then ``None`` is returned.
         """
