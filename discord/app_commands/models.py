@@ -255,8 +255,8 @@ class AppCommand(Hashable):
             'description': self.description,
             'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
             'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
-            'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
-            'integration_types': self.allowed_installs.to_array() if self.allowed_installs is not None else None,
+            'contexts': self.allowed_contexts.to_array() if self.allowed_contexts else None,
+            'integration_types': self.allowed_installs.to_array() if self.allowed_installs else None,
             'options': [opt.to_dict() for opt in self.options],
         }  # type: ignore # Type checker does not understand this literal.
 
@@ -393,6 +393,41 @@ class AppCommand(Hashable):
                 self.id,
                 payload,
             )
+        return AppCommand(data=data, state=state)
+
+    async def sync(
+        self,
+    ) -> AppCommand:
+        """|coro|
+
+        Syncs the application command to Discord.
+
+        .. versionadded:: 2.6
+
+        Raises
+        -------
+        HTTPException
+            Syncing the commands failed.
+        Forbidden
+            The client does not have the ``applications.commands`` scope in the guild.
+        MissingApplicationID
+            The client does not have an application ID.
+
+        Returns
+        --------
+        :class:`AppCommand`
+            The application command that got synced.
+        """
+        state = self._state
+        if not state.application_id:
+            raise MissingApplicationID
+
+        payload = self.to_dict()
+        if self.guild_id:
+            data = await state.http.upsert_guild_command(state.application_id, self.guild_id, payload=payload)
+        else:
+            data = await state.http.upsert_global_command(state.application_id, payload=payload)
+
         return AppCommand(data=data, state=state)
 
     async def fetch_permissions(self, guild: Snowflake) -> GuildAppCommandPermissions:
