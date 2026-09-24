@@ -108,6 +108,8 @@ AuditLogEvent = Literal[
     167,
     190,
     191,
+    212,
+    213,
 ]
 
 

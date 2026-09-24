@@ -428,6 +428,8 @@ class AuditLogAction(Enum):
     onboarding_update                                 = 167
     home_settings_create                              = 190
     home_settings_update                              = 191
+    pin_permission_migration_complete                 = 212
+    bypass_slowmode_permission_migration_complete     = 213
     # fmt: on
 
     @property
