@@ -188,7 +188,7 @@ class KeepAliveHandler(threading.Thread):
                         except KeyError:
                             msg = self.block_msg
                         else:
-                            stack = ''.join(traceback.format_stack(frame))
+                            stack = ''.join(traceback.format_stack(frame)).replace('%', '%%')
                             msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
                         _log.warning(msg, self.shard_id, total)
 
