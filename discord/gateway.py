@@ -186,11 +186,11 @@ class KeepAliveHandler(threading.Thread):
                         try:
                             frame = sys._current_frames()[self._main_thread_id]
                         except KeyError:
-                            msg = self.block_msg
+                            _log.warning(self.block_msg, self.shard_id, total)
                         else:
                             stack = ''.join(traceback.format_stack(frame))
-                            msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
-                        _log.warning(msg, self.shard_id, total)
+                            msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n%s'
+                            _log.warning(msg, self.shard_id, total, stack)
 
             except Exception:
                 self.stop()
