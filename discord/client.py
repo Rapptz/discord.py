@@ -100,6 +100,7 @@ if TYPE_CHECKING:
         RawBulkMessageDeleteEvent,
         RawIntegrationDeleteEvent,
         RawMemberRemoveEvent,
+        RawMemberUpdateEvent,
         RawMessageDeleteEvent,
         RawMessageUpdateEvent,
         RawReactionActionEvent,
@@ -1548,6 +1549,16 @@ class Client:
         check: Optional[Callable[[RawMemberRemoveEvent], bool]] = ...,
         timeout: Optional[float] = ...,
     ) -> RawMemberRemoveEvent: ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['raw_member_update'],
+        /,
+        *,
+        check: Optional[Callable[[RawMemberUpdateEvent], bool]] = ...,
+        timeout: Optional[float] = ...,
+    ) -> RawMemberUpdateEvent: ...
 
     @overload
     async def wait_for(

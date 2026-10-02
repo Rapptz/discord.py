@@ -1150,18 +1150,25 @@ class ConnectionState(Generic[ClientT]):
             if user_update:
                 self.dispatch('user_update', user_update[0], user_update[1])
 
+            raw = RawMemberUpdateEvent(data, member)
+            raw.cached_member = old_member
             self.dispatch('member_update', old_member, member)
         else:
+            member = Member(data=data, guild=guild, state=self)  # type: ignore # the data is not complete, contains a delta of values
+
+            # Force an update on the inner user if necessary
+            user_update = member._update_inner_user(user)
+            if user_update:
+                self.dispatch('user_update', user_update[0], user_update[1])
+
             if self.member_cache_flags.joined:
-                member = Member(data=data, guild=guild, state=self)  # type: ignore # the data is not complete, contains a delta of values
-
-                # Force an update on the inner user if necessary
-                user_update = member._update_inner_user(user)
-                if user_update:
-                    self.dispatch('user_update', user_update[0], user_update[1])
-
                 guild._add_member(member)
-            _log.debug('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s. Discarding.', user_id)
+            else:
+                _log.debug('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s. Not caching.', user_id)
+
+            raw = RawMemberUpdateEvent(data, member)
+
+        self.dispatch('raw_member_update', raw)
 
     def parse_guild_emojis_update(self, data: gw.GuildEmojisUpdateEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))

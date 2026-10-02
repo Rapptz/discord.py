@@ -858,12 +858,29 @@ Members
 
     Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
+    If the member could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_member_update` instead.
+
     This requires :attr:`Intents.members` to be enabled.
 
     :param before: The updated member's old info.
     :type before: :class:`Member`
     :param after: The updated member's updated info.
     :type after: :class:`Member`
+
+.. function:: on_raw_member_update(payload)
+
+    Called when a :class:`Member` updates their profile.
+
+    Unlike :func:`on_member_update`
+    this is called regardless of the member being in the internal cache.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    .. versionadded:: 2.8
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawMemberUpdateEvent`
 
 .. function:: on_user_update(before, after)
 
@@ -5777,6 +5794,14 @@ RawMemberRemoveEvent
 .. attributetable:: RawMemberRemoveEvent
 
 .. autoclass:: RawMemberRemoveEvent()
+    :members:
+
+RawMemberUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawMemberUpdateEvent
+
+.. autoclass:: RawMemberUpdateEvent()
     :members:
 
 RawAppCommandPermissionsUpdateEvent
