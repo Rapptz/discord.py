@@ -853,8 +853,11 @@ class AuditLogEntry(Hashable):
             if self._target_id is None:
                 return None
             return Object(id=self._target_id)
-        else:
-            return converter(self._target_id)
+
+        if self._target_id is None:
+            return None
+
+        return converter(self._target_id)
 
     @utils.cached_property
     def category(self) -> Optional[enums.AuditLogActionCategory]:
