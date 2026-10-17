@@ -341,7 +341,7 @@ class Asset(AssetMixin):
         format = 'gif' if animated else 'png'
         return cls(
             state,
-            url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=512',
+            url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=1024',
             key=banner_hash,
             animated=animated,
         )
