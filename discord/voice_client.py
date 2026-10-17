@@ -401,7 +401,7 @@ class VoiceClient(VoiceProtocol):
         return encrypt_packet(header, packet)
 
     def _encrypt_aead_xchacha20_poly1305_rtpsize(self, header: bytes, data) -> bytes:
-        # Esentially the same as _lite
+        # Essentially the same as _lite
         # Uses an incrementing 32-bit integer which is appended to the payload
         # The only other difference is we require AEAD with Additional Authenticated Data (the header)
         box = nacl.secret.Aead(bytes(self.secret_key))

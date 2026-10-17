@@ -319,7 +319,7 @@ class VoiceConnectionState:
                 self.dave_session.set_passthrough_mode(True, 10)
             _log.debug('DAVE Session upgraded')
 
-        # In the future, the session should be signaled too, but for now theres just v1
+        # In the future, the session should be signaled too, but for now there's just v1
         _log.debug('Transition id %d executed', transition_id)
 
     async def voice_state_update(self, data: GuildVoiceStatePayload) -> None:
