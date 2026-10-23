@@ -33,18 +33,16 @@ def test_blocked_heartbeat_logging_with_percent():
         return future
 
     # Avoid replacing sys._current_frames globally.
-    with (
-        patch(
-            'discord.gateway.asyncio.run_coroutine_threadsafe',
-            side_effect=fake_run_coroutine_threadsafe,
-        ),
-        patch(
+    with patch(
+        'discord.gateway.asyncio.run_coroutine_threadsafe',
+        side_effect=fake_run_coroutine_threadsafe,
+    ):
+        with patch(
             'discord.gateway.traceback.format_stack',
             return_value=[stack],
-        ),
-        patch('discord.gateway._log') as mock_logger,
-    ):
-        handler.run()
+        ):
+            with patch('discord.gateway._log') as mock_logger:
+                handler.run()
 
     assert future.result.call_count == 2
     assert mock_logger.warning.call_count == 1
