@@ -564,6 +564,56 @@ class Member(discord.abc.Messageable, _UserTag):
         return self.colour
 
     @property
+    def secondary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: A property that returns the rendered secondary colour for the member, if one exists.
+
+        There is an alias for this named :attr:`secondary_color`.
+
+        .. versionadded:: 2.8
+        """
+        roles = self.roles[1:]  # Remove @everyone
+
+        for role in reversed(roles):
+            if role.secondary_colour is not None:
+                return role.secondary_colour
+        return None
+
+    @property
+    def secondary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: A property that returns the rendered secondary color for the member, if one exists.
+
+        There is an alias for this named :attr:`secondary_colour`.
+
+        .. versionadded:: 2.8
+        """
+        return self.secondary_colour
+
+    @property
+    def tertiary_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: A property that returns the rendered tertiary colour for the member, if one exists.
+
+        There is an alias for this named :attr:`tertiary_color`.
+
+        .. versionadded:: 2.8
+        """
+        roles = self.roles[1:]  # Remove @everyone
+
+        for role in reversed(roles):
+            if role.tertiary_colour is not None:
+                return role.tertiary_colour
+        return None
+
+    @property
+    def tertiary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: A property that returns the rendered tertiary color for the member, if one exists.
+
+        There is an alias for this named :attr:`tertiary_colour`.
+
+        .. versionadded:: 2.8
+        """
+        return self.tertiary_colour
+
+    @property
     def roles(self) -> List[Role]:
         """List[:class:`Role`]: A :class:`list` of :class:`Role` that the member belongs to. Note
         that the first element of this list is always the default '@everyone'
