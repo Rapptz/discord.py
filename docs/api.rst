@@ -2349,6 +2349,17 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.id`
         - :attr:`~AuditLogDiff.type`
 
+    .. attribute:: channel_position_update
+
+        A channel's position was updated. This triggers when channels are reordered.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``count``: An integer specifying how many position updates occurred.
+
+        .. versionadded:: 2.8
+
     .. attribute:: kick
 
         A member was kicked.
@@ -2524,6 +2535,17 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.hoist`
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.permissions`
+
+    .. attribute:: role_position_update
+
+        A role's position was updated. This triggers when roles are reordered.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``count``: An integer specifying how many position updates occurred.
+
+        .. versionadded:: 2.8
 
     .. attribute:: invite_create
 
