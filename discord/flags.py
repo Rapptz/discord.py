@@ -2261,6 +2261,22 @@ class AttachmentFlags(BaseFlags):
         """
         return 1 << 5
 
+    @flag_value
+    def contains_gore_media(self):
+        """:class:`bool`: Returns ``True`` if the attachment was flagged as gore content.
+
+        .. versionadded:: 2.8
+        """
+        return 1 << 6
+
+    @flag_value
+    def contains_self_harm_media(self):
+        """:class:`bool`: Returns ``True`` if the attachment was flagged as self-harm content.
+
+        .. versionadded:: 2.8
+        """
+        return 1 << 7
+
 
 @fill_with_flags()
 class RoleFlags(BaseFlags):
