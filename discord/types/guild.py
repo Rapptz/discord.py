@@ -28,7 +28,7 @@ from typing_extensions import NotRequired
 from .scheduled_event import GuildScheduledEvent
 from .sticker import GuildSticker
 from .snowflake import Snowflake
-from .channel import GuildChannel, StageInstance
+from .channel import GuildChannel, StageInstance, ChannelPermissions
 from .voice import GuildVoiceState
 from .welcome_screen import WelcomeScreen
 from .activity import PartialPresenceUpdate
@@ -195,3 +195,7 @@ class RolePositionUpdate(_RolePositionRequired, total=False):
 class BulkBanUserResponse(TypedDict):
     banned_users: Optional[List[Snowflake]]
     failed_users: Optional[List[Snowflake]]
+
+
+GuildMemberPermissions = ChannelPermissions
+GuildRolePermissions = ChannelPermissions

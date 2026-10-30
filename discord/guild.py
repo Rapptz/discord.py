@@ -53,7 +53,7 @@ from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
 from .errors import InvalidData
-from .permissions import PermissionOverwrite
+from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .errors import ClientException
 from .channel import *
@@ -120,7 +120,6 @@ if TYPE_CHECKING:
         Thread as ThreadPayload,
     )
     from .types.voice import GuildVoiceState
-    from .permissions import Permissions
     from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
     from .template import Template
     from .webhook import Webhook
@@ -4959,3 +4958,50 @@ class Guild(Hashable):
             reason=reason if reason is not MISSING else None,
         )
         return Onboarding(data=data, guild=self, state=self._state)
+
+    async def fetch_permissions_for(self, target: Union[Member, User, Role, Object]) -> Permissions:
+        """|coro|
+
+        Fetches the guild-level permissions for a member or role.
+
+        For a member, this returns their full permissions, applying
+        all of their roles. For a role, this returns the role's own permissions.
+        Both combine the outcome with the :attr:`Guild.default_role` (``@everyone``).
+
+        .. versionadded:: 2.8
+
+        Parameters
+        -----------
+        target: Union[:class:`Member`, :class:`User`, :class:`Role`, :class:`Object`]
+            The member or role to fetch the permissions for.
+
+            If a :class:`Object` is passed, it must have a type of :attr:`Member`
+            or :attr:`User` for members, and :attr:`Role` for roles.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to fetch the permissions.
+        NotFound
+            The member or role was not found in the guild.
+        HTTPException
+            Fetching the permissions failed.
+        :exc:`TypeError`
+            The target is not a :class:`Member`, :class:`User`, :class:`Role`,
+            or :class:`Object` with the appropriate type.
+
+        Returns
+        --------
+        :class:`Permissions`
+            The permissions for the member or role.
+        """
+        if isinstance(target, (Member, User)) or isinstance(target, Object) and target.type in (Member, User):
+            data = await self._state.http.get_guild_member_permissions(self.id, target.id)
+        elif isinstance(target, Role) or isinstance(target, Object) and target.type is Role:
+            data = await self._state.http.get_guild_role_permissions(self.id, target.id)
+        else:
+            raise TypeError(
+                f'target must be a Member, User, Role, or Object with the appropriate type, not {target.__class__.__name__!r}'
+            )
+
+        return Permissions(int(data['permissions']))

@@ -1386,6 +1386,63 @@ class GuildChannel:
         guild = self.guild
         return [Invite(state=state, data=invite, channel=self, guild=guild) for invite in data]
 
+    async def fetch_permissions_for(
+        self, target: Union[Member, User, Role, Object], *, implicit: bool = True
+    ) -> Permissions:
+        """|coro|
+
+        Fetches the channel-specific permissions for a member or role.
+
+        For a member, this returns their fully cascaded permissions in this channel,
+        applying their roles and the channel's permission overwrites. For a role,
+        this returns the permissions the role grants in this channel, applying the
+        channel's permission overwrites on top of the role's guild-level permissions.
+
+        You must have :attr:`~discord.Permissions.view_channel` to do this.
+
+        .. versionadded:: 2.8
+
+        Parameters
+        -----------
+        target: Union[:class:`~discord.Member`, :class:`~discord.User`, :class:`~discord.Role`, :class:`~discord.Object`]
+            The member or role to fetch the permissions for.
+
+            If a :class:`~discord.Object` is passed, it must have a type of :attr:`~discord.Member`
+            or :attr:`~discord.User` for members, and :attr:`~discord.Role` for roles.
+        implicit: :class:`bool`
+            Whether to apply :ddocs:`implicit permissions <topics/permissions#implicit-permissions>`.
+            Defaults to ``True``.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to view the channel.
+        NotFound
+            The member or role was not found in the guild.
+        HTTPException
+            Fetching the permissions failed.
+        :exc:`TypeError`
+            The target is not a :class:`~discord.Member`, :class:`~discord.User`, :class:`~discord.Role`,
+            or :class:`~discord.Object` with the appropriate type.
+
+        Returns
+        --------
+        :class:`~discord.Permissions`
+            The permissions for the member or role.
+        """
+        from .member import Member  # circular import
+
+        if isinstance(target, (Member, User)) or (isinstance(target, Object) and target.type in (Member, User)):
+            data = await self._state.http.get_channel_member_permissions(self.id, target.id, implicit=implicit)
+        elif isinstance(target, Role) or (isinstance(target, Object) and target.type is Role):
+            data = await self._state.http.get_channel_role_permissions(self.id, target.id, implicit=implicit)
+        else:
+            raise TypeError(
+                f'target must be a Member, User, Role, or Object with the appropriate type, not {target.__class__.__name__!r}'
+            )
+
+        return Permissions(int(data['permissions']))
+
 
 class Messageable:
     """An ABC that details the common operations on a model that can send messages.

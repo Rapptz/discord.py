@@ -1452,6 +1452,22 @@ class HTTPClient:
             Route('POST', '/channels/{channel_id}/followers', channel_id=channel_id), json=payload, reason=reason
         )
 
+    def get_channel_member_permissions(
+        self, channel_id: Snowflake, user_id: Snowflake, *, implicit: bool = True
+    ) -> Response[channel.ChannelPermissions]:
+        return self.request(
+            Route('GET', '/channels/{channel_id}/permissions/member/{user_id}', channel_id=channel_id, user_id=user_id),
+            params={'implicit': int(implicit)},
+        )
+
+    def get_channel_role_permissions(
+        self, channel_id: Snowflake, role_id: Snowflake, *, implicit: bool = True
+    ) -> Response[channel.ChannelPermissions]:
+        return self.request(
+            Route('GET', '/channels/{channel_id}/permissions/role/{role_id}', channel_id=channel_id, role_id=role_id),
+            params={'implicit': int(implicit)},
+        )
+
     # Guild management
 
     def get_guilds(
@@ -1842,6 +1858,18 @@ class HTTPClient:
 
     def edit_incident_actions(self, guild_id: Snowflake, payload: guild.IncidentData) -> Response[guild.IncidentData]:
         return self.request(Route('PUT', '/guilds/{guild_id}/incident-actions', guild_id=guild_id), json=payload)
+
+    def get_guild_member_permissions(
+        self, guild_id: Snowflake, user_id: Snowflake
+    ) -> Response[guild.GuildMemberPermissions]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/permissions/member/{user_id}', guild_id=guild_id, user_id=user_id)
+        )
+
+    def get_guild_role_permissions(self, guild_id: Snowflake, role_id: Snowflake) -> Response[guild.GuildRolePermissions]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/permissions/role/{role_id}', guild_id=guild_id, role_id=role_id)
+        )
 
     # Invite management
 

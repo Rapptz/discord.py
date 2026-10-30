@@ -208,3 +208,11 @@ class StageInstance(TypedDict):
     privacy_level: PrivacyLevel
     discoverable_disabled: bool
     guild_scheduled_event_id: Optional[int]
+
+
+class ChannelPermissions(TypedDict):
+    permissions: str
+
+
+ChannelMemberPermissions = ChannelPermissions
+ChannelRolePermissions = ChannelPermissions
