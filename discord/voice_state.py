@@ -45,7 +45,7 @@ import asyncio
 import logging
 import threading
 
-from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any, Tuple
+from typing import TYPE_CHECKING, Optional, Dict, List, Set, Callable, Coroutine, Any, Tuple
 
 from .enums import Enum
 from .utils import MISSING, sane_wait_for
@@ -220,6 +220,7 @@ class VoiceConnectionState:
         self.dave_protocol_version: int = 0
         self.dave_pending_transitions: Dict[int, int] = {}
         self.dave_downgraded: bool = False
+        self.connected_user_ids: Set[int] = set()
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
         self._expecting_disconnect: bool = False
@@ -270,25 +271,35 @@ class VoiceConnectionState:
 
     @property
     def can_encrypt(self) -> bool:
-        return self.dave_protocol_version != 0 and self.dave_session != None and self.dave_session.ready
+        return (
+            self.dave_protocol_version != 0
+            and not self.dave_downgraded
+            and self.dave_session is not None
+            and self.dave_session.ready
+        )
 
     async def reinit_dave_session(self) -> None:
+        self.dave_pending_transitions.clear()
         if self.dave_protocol_version > 0:
             if not has_dave:
                 raise RuntimeError('davey library needed in order to use E2EE voice')
-            if self.dave_session is not None:
-                self.dave_session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+            session = self.dave_session
+            if session is not None:
+                session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
             else:
-                self.dave_session = davey.DaveSession(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+                session = davey.DaveSession(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+                self.dave_session = session
 
-            if self.dave_session is not None:
-                await self.voice_client.ws.send_binary(
-                    DiscordVoiceWebSocket.MLS_KEY_PACKAGE, self.dave_session.get_serialized_key_package()
-                )
+            # When upgrading, unencrypted packets are still sent until the transition is executed
+            if self.dave_downgraded:
+                session.set_passthrough_mode(True)
+
+            await self.voice_client.ws.send_binary(
+                DiscordVoiceWebSocket.MLS_KEY_PACKAGE, session.get_serialized_key_package()
+            )
         elif self.dave_session:
             self.dave_session.reset()
-            self.dave_session.set_passthrough_mode(True, 10)
-        pass
+            self.dave_session.set_passthrough_mode(True)
 
     async def _recover_from_invalid_commit(self, transition_id: int) -> None:
         payload = {
@@ -307,6 +318,18 @@ class VoiceConnectionState:
             _log.warning("Received execute transition, but we don't have a pending transition for id %d", transition_id)
             return
 
+        # ID 0 already gets executed by davey
+        if self.dave_session and transition_id != 0:
+            try:
+                if not self.dave_session.execute_transition(transition_id):
+                    self.dave_pending_transitions.pop(transition_id, None)
+                    _log.warning('Failed to execute DAVE transition id %d: davey did not execute it', transition_id)
+                    return
+            except Exception:
+                self.dave_pending_transitions.pop(transition_id, None)
+                _log.exception('Failed to execute DAVE transition id %d', transition_id)
+                return
+
         old_version = self.dave_protocol_version
         self.dave_protocol_version = self.dave_pending_transitions.pop(transition_id)
 
@@ -316,10 +339,9 @@ class VoiceConnectionState:
         elif transition_id > 0 and self.dave_downgraded:
             self.dave_downgraded = False
             if self.dave_session:
-                self.dave_session.set_passthrough_mode(True, 10)
+                self.dave_session.set_passthrough_mode(False, 10)
             _log.debug('DAVE Session upgraded')
 
-        # In the future, the session should be signaled too, but for now theres just v1
         _log.debug('Transition id %d executed', transition_id)
 
     async def voice_state_update(self, data: GuildVoiceStatePayload) -> None:
@@ -647,6 +669,8 @@ class VoiceConnectionState:
         seq_ack = -1
         if self.ws is not MISSING:
             seq_ack = self.ws.seq_ack
+        if not resume:
+            self.connected_user_ids.clear()
         ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook, seq_ack=seq_ack)
         self.state = ConnectionFlowState.websocket_connected
         return ws

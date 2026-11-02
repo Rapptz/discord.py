@@ -382,12 +382,15 @@ class VoiceClient(VoiceProtocol):
 
     # audio related
 
-    def _get_voice_packet(self, data: bytes):
-        packet = (
-            self._connection.dave_session.encrypt_opus(data)
-            if self._connection.dave_session and self._connection.can_encrypt
-            else data
-        )
+    def _get_voice_packet(self, data: bytes) -> Optional[bytes]:
+        packet = data
+        if self._connection.dave_session and self._connection.can_encrypt:
+            # After a welcome, we dont yet have a key until the transition is executed,
+            # so we need to drop outgoing frames until then to avoid leakage
+            if not self._connection.dave_session.can_encrypt:
+                return None
+            packet = self._connection.dave_session.encrypt_opus(data)
+
         header = bytearray(12)
 
         # Formulate rtp header
@@ -602,9 +605,10 @@ class VoiceClient(VoiceProtocol):
         else:
             encoded_data = data
         packet = self._get_voice_packet(encoded_data)
-        try:
-            self._connection.send_packet(packet)
-        except OSError:
-            _log.debug('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
+        if packet is not None:
+            try:
+                self._connection.send_packet(packet)
+            except OSError:
+                _log.debug('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
