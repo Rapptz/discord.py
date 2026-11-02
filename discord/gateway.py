@@ -1035,12 +1035,12 @@ class DiscordVoiceWebSocket:
                 except Exception:
                     _log.exception('Failed to prepare DAVE transition id %d', data['transition_id'])
 
+                if data['protocol_version'] == 0:
+                    state.dave_session.set_passthrough_mode(True)
+
                 if data['transition_id'] == 0:
                     await state._execute_transition(data['transition_id'])
                 else:
-                    if data['protocol_version'] == 0:
-                        state.dave_session.set_passthrough_mode(True)
-
                     await self.send_transition_ready(data['transition_id'])
             elif op == self.DAVE_EXECUTE_TRANSITION:
                 _log.debug('Executing DAVE transition id %d', data['transition_id'])
