@@ -282,17 +282,19 @@ class VoiceConnectionState:
         if self.dave_protocol_version > 0:
             if not has_dave:
                 raise RuntimeError('davey library needed in order to use E2EE voice')
-            if self.dave_session is not None:
-                self.dave_session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+            session = self.dave_session
+            if session is not None:
+                session.reinit(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
             else:
-                self.dave_session = davey.DaveSession(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+                session = davey.DaveSession(self.dave_protocol_version, self.user.id, self.voice_client.channel.id)
+                self.dave_session = session
 
             # When upgrading, unencrypted packets are still sent until the transition is executed
             if self.dave_downgraded:
-                self.dave_session.set_passthrough_mode(True)
+                session.set_passthrough_mode(True)
 
             await self.voice_client.ws.send_binary(
-                DiscordVoiceWebSocket.MLS_KEY_PACKAGE, self.dave_session.get_serialized_key_package()
+                DiscordVoiceWebSocket.MLS_KEY_PACKAGE, session.get_serialized_key_package()
             )
         elif self.dave_session:
             self.dave_session.reset()

@@ -998,6 +998,7 @@ class DiscordVoiceWebSocket:
         op = msg['op']
         data = msg['d']  # According to Discord this key is always given
         self.seq_ack = msg.get('seq', self.seq_ack)  # this key could not be given
+        state = self._connection
 
         if op == self.READY:
             await self.initial_connection(data)
@@ -1021,8 +1022,7 @@ class DiscordVoiceWebSocket:
             self._connection.connected_user_ids.update(int(user_id) for user_id in data['user_ids'])
         elif op == self.CLIENT_DISCONNECT:
             self._connection.connected_user_ids.discard(int(data['user_id']))
-        elif self._connection.dave_session:
-            state = self._connection
+        elif state.dave_session:
             if op == self.DAVE_PREPARE_TRANSITION:
                 _log.debug(
                     'Preparing for DAVE transition id %d for protocol version %d',
