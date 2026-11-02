@@ -279,6 +279,7 @@ class VoiceConnectionState:
         )
 
     async def reinit_dave_session(self) -> None:
+        self.dave_pending_transitions.clear()
         if self.dave_protocol_version > 0:
             if not has_dave:
                 raise RuntimeError('davey library needed in order to use E2EE voice')
@@ -320,9 +321,14 @@ class VoiceConnectionState:
         # ID 0 already gets executed by davey
         if self.dave_session and transition_id != 0:
             try:
-                self.dave_session.execute_transition(transition_id)
+                if not self.dave_session.execute_transition(transition_id):
+                    self.dave_pending_transitions.pop(transition_id, None)
+                    _log.warning('Failed to execute DAVE transition id %d: davey did not execute it', transition_id)
+                    return
             except Exception:
+                self.dave_pending_transitions.pop(transition_id, None)
                 _log.exception('Failed to execute DAVE transition id %d', transition_id)
+                return
 
         old_version = self.dave_protocol_version
         self.dave_protocol_version = self.dave_pending_transitions.pop(transition_id)
