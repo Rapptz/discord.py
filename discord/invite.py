@@ -44,6 +44,7 @@ from .flags import InviteFlags
 from .colour import Colour
 from .errors import ClientException
 from .role import Role
+from .file import File
 
 
 __all__ = (
@@ -83,7 +84,7 @@ if TYPE_CHECKING:
 class InviteUsersJob:
     """Represents the status of an invite's target users job.
 
-    .. versionadded:: 2.7
+    .. versionadded:: 2.8
 
     Attributes
     -----------
@@ -119,7 +120,7 @@ class InviteUsersJob:
 class PartialInviteRole:
     """Represents a "partial" invite role.
 
-    .. versionadded:: 2.7
+    .. versionadded:: 2.8
 
     Attributes
     -----------
@@ -571,7 +572,7 @@ class Invite(Hashable):
         - :class:`Object` if the invite is received through a gateway event or the role is not in cache.
         - :class:`Role` if the role is in cache.
 
-        .. versionadded:: 2.7
+        .. versionadded:: 2.8
     """
 
     __slots__ = (
@@ -858,10 +859,12 @@ class Invite(Hashable):
         the following permissions: :attr:`~Permissions.manage_guild`,
         :attr:`~Permissions.view_audit_log`.
 
+        .. versionadded:: 2.8
+
         Returns
         --------
         List[:class:`discord.Object`]
-            A list of user objects.
+            A list of objects.
 
         Raises
         -------
@@ -879,7 +882,7 @@ class Invite(Hashable):
         if not res:
             return []
 
-        return list(map(lambda x: Object(id=int(x), type=User), res.lstrip('user_id\n').strip().split('\n')))
+        return [Object(id=int(line), type=User) for line in res.splitlines()[1:]]
 
     async def target_users_job_status(self) -> InviteUsersJob:
         """|coro|
@@ -890,6 +893,7 @@ class Invite(Hashable):
         the following permissions: :attr:`~Permissions.manage_guild`,
         :attr:`~Permissions.view_audit_log`.
 
+        .. versionadded:: 2.8
 
         Returns
         --------
@@ -908,37 +912,149 @@ class Invite(Hashable):
         data = await self._state.http.get_invite_target_users_job_status(self.code)
         return InviteUsersJob(data)
 
-    async def edit(
-        self,
-        *,
-        target_users: Sequence[Snowflake] = MISSING,
-    ) -> None:
+    async def add_target_user(self, user: Snowflake, /) -> None:
         """|coro|
 
-        Edits the invite.
+        Adds a user to the list of users that are allowed to join via this invite.
+
+        Requires the bot to have created the invite or the
+        :attr:`~Permissions.manage_guild` permission.
+
+        .. versionadded:: 2.8
 
         Parameters
         -----------
-        users: List[:class:`~discord.abc.Snowflake`]
-            A list of users that should be able to use this invite.
-
-            Requires the bot to have created the invite or the
-            :attr:`~Permissions.manage_guild` permission.
-
-            .. note::
-                You cannot clear the list of target users once set.
-
-                There must be at least one user in the list.
+        user: :class:`~discord.abc.Snowflake`
+            The user to add to the list of target users.
 
         Raises
         -------
         Forbidden
-            You do not have permissions to edit invites.
+            You do not have permissions to add target users.
         NotFound
-            The invite is invalid or expired.
+            The invite is invalid or expired or the invite does not have target users.
         HTTPException
-            Editing the invite failed.
+            Adding the target user failed.
         """
+        await self._state.http.add_invite_target_user(self.code, user.id)
 
-        if target_users:
-            await self._state.http.edit_invite_target_users(self.code, user_ids=[user.id for user in target_users])
+    async def remove_target_user(self, user: Snowflake, /) -> None:
+        """|coro|
+
+        Removes a user from the list of users that are allowed to join via this invite.
+
+        Requires the bot to have created the invite or the
+        :attr:`~Permissions.manage_guild` permission.
+
+        .. versionadded:: 2.8
+
+        Parameters
+        -----------
+        user: :class:`~discord.abc.Snowflake`
+            The user to remove from the list of target users.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to remove target users.
+        NotFound
+            The invite is invalid or expired or the invite does not have target users.
+        HTTPException
+            Removing the target user failed.
+        """
+        await self._state.http.remove_invite_target_user(self.code, user.id)
+
+    async def edit_target_users(self, *, user_ids: Optional[list[Snowflake]] = None, file: Optional[File] = None) -> None:
+        """|coro|
+
+        Edits the list of users that are allowed to join via this invite.
+
+        Requires the bot to have created the invite or the
+        :attr:`~Permissions.manage_guild` permission.
+
+        .. versionadded:: 2.8
+
+        Parameters
+        -----------
+        user_ids: List[:class:`~discord.abc.Snowflake`]
+            The new list of target users.
+
+            This parameter is mutually exclusive with ``file``.
+        file: :class:`~discord.file.File`
+            A file containing the new list of target users.
+
+            This parameter is mutually exclusive with ``user_ids``.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit target users.
+        NotFound
+            The invite is invalid or expired or the invite does not have target users.
+        HTTPException
+            Editing the target users failed.
+        :exc:`ValueError`
+            Both ``user_ids`` and ``file`` were specified.
+        """
+        if user_ids is not None and file is not None:
+            raise ValueError('Cannot specify both user_ids and file')
+
+        if user_ids is not None:
+            await self._state.http.edit_invite_target_users(self.code, user_ids=[user.id for user in user_ids])
+        elif file is not None:
+            try:
+                await self._state.http.edit_invite_target_users(self.code, file=file)
+            finally:
+                file.close()
+
+    async def bulk_add_target_users(self, users: list[Snowflake], /) -> None:
+        """|coro|
+
+        Adds multiple users to the list of users that are allowed to join via this invite.
+
+        Requires the bot to have created the invite or the
+        :attr:`~Permissions.manage_guild` permission.
+
+        .. versionadded:: 2.8
+
+        Parameters
+        -----------
+        users: List[:class:`~discord.abc.Snowflake`]
+            The users to add to the list of target users.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to add target users.
+        NotFound
+            The invite is invalid or expired or the invite does not have target users.
+        HTTPException
+            Adding the target users failed.
+        """
+        await self._state.http.bulk_add_invite_target_users(self.code, [user.id for user in users])
+
+    async def bulk_remove_target_users(self, users: list[Snowflake], /) -> None:
+        """|coro|
+
+        Removes multiple users from the list of users that are allowed to join via this invite.
+
+        Requires the bot to have created the invite or the
+        :attr:`~Permissions.manage_guild` permission.
+
+        .. versionadded:: 2.8
+
+        Parameters
+        -----------
+        users: List[:class:`~discord.abc.Snowflake`]
+            The users to remove from the list of target users.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to remove target users.
+        NotFound
+            The invite is invalid or expired or the invite does not have target users.
+        HTTPException
+            Removing the target users failed.
+        """
+        await self._state.http.bulk_remove_invite_target_users(self.code, [user.id for user in users])

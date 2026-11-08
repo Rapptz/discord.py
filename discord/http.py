@@ -1849,13 +1849,27 @@ class HTTPClient:
         self,
         *,
         payload: dict[str, Any],
-        user_ids: List[Snowflake],
+        file: Optional[File] = None,
+        user_ids: Optional[list[Snowflake]] = None,
     ) -> list[dict[str, Any]]:
-        users = 'user_id\n' + '\n'.join(map(str, user_ids))
-        return [
+        data = [
             {'name': 'payload_json', 'value': utils._to_json(payload)},
-            {'name': 'target_users_file', 'value': users, 'filename': 'users.csv', 'content_type': 'text/csv'},
         ]
+
+        base: dict[str, Any] = {
+            'name': 'target_users_file',
+            'value': '',
+            'filename': 'users.csv',
+            'content_type': 'text/csv',
+        }
+        if file:
+            base['value'] = file.fp
+            base['filename'] = file.filename
+        elif user_ids:
+            base['value'] = 'user_id\n' + '\n'.join(map(str, user_ids))
+
+        data.append(base)
+        return data
 
     def create_invite(
         self,
@@ -1871,7 +1885,8 @@ class HTTPClient:
         target_application_id: Optional[Snowflake] = None,
         flags: Optional[int] = None,
         role_ids: Optional[List[Snowflake]] = None,
-        user_ids: Optional[List[Snowflake]] = None,
+        target_user_ids: Optional[List[Snowflake]] = None,
+        target_users_file: Optional[File] = None,
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -1896,13 +1911,12 @@ class HTTPClient:
         if role_ids:
             payload['role_ids'] = list(map(str, role_ids))
 
-        if user_ids:
-            form = self._generate_invite_form(payload=payload, user_ids=user_ids)
-            return self.request(
-                r,
-                form=form,
-                reason=reason,
-            )
+        if target_user_ids:
+            payload['target_user_ids'] = target_user_ids
+
+        if target_users_file:
+            form = self._generate_invite_form(payload=payload, file=target_users_file)
+            return self.request(r, reason=reason, form=form, files=[target_users_file])
 
         return self.request(r, reason=reason, json=payload)
 
@@ -1937,17 +1951,6 @@ class HTTPClient:
     ) -> Response[str]:
         return self.request(Route('GET', '/invites/{invite_id}/target-users', invite_id=invite_id))
 
-    def edit_invite_target_users(
-        self,
-        invite_id: str,
-        user_ids: List[Snowflake],
-    ) -> Response[None]:
-        form = self._generate_invite_form(
-            payload={},
-            user_ids=user_ids,
-        )
-        return self.request(Route('PUT', '/invites/{invite_id}/target-users', invite_id=invite_id), form=form)
-
     def get_invite_target_users_job_status(
         self,
         invite_id: str,
@@ -1958,6 +1961,76 @@ class HTTPClient:
                 '/invites/{invite_id}/target-users/job-status',
                 invite_id=invite_id,
             )
+        )
+
+    def add_invite_target_user(self, invite_id: str, user_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route(
+                'PUT',
+                '/invites/{invite_id}/target-users/{user_id}',
+                invite_id=invite_id,
+                user_id=user_id,
+            )
+        )
+
+    def remove_invite_target_user(self, invite_id: str, user_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/invites/{invite_id}/target-users/{user_id}',
+                invite_id=invite_id,
+                user_id=user_id,
+            )
+        )
+
+    def edit_invite_target_users(
+        self,
+        invite_id: str,
+        file: Optional[File] = None,
+        user_ids: Optional[List[Snowflake]] = None,
+    ) -> Response[None]:
+        form: Optional[List[Dict[str, Any]]] = None
+        if file:
+            form = self._generate_invite_form(payload={}, file=file)
+        elif user_ids:
+            form = self._generate_invite_form(payload={}, user_ids=user_ids)
+
+        return self.request(
+            Route(
+                'PUT',
+                '/invites/{invite_id}/target-users',
+                invite_id=invite_id,
+            ),
+            form=form,
+            files=[file] if file else None,
+        )
+
+    def bulk_add_invite_target_users(
+        self,
+        invite_id: str,
+        user_ids: List[Snowflake],
+    ) -> Response[None]:
+        return self.request(
+            Route(
+                'POST',
+                '/invites/{invite_id}/target-users/bulk-add',
+                invite_id=invite_id,
+            ),
+            json={'user_ids': user_ids},
+        )
+
+    def bulk_remove_invite_target_users(
+        self,
+        invite_id: str,
+        user_ids: List[Snowflake],
+    ) -> Response[None]:
+        return self.request(
+            Route(
+                'POST',
+                '/invites/{invite_id}/target-users/bulk-delete',
+                invite_id=invite_id,
+            ),
+            json={'user_ids': user_ids},
         )
 
     # Role management
