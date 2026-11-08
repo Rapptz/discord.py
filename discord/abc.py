@@ -1283,6 +1283,9 @@ class GuildChannel:
         target_user: Optional[User] = None,
         target_application_id: Optional[int] = None,
         guest: bool = False,
+        roles: Optional[Sequence[Snowflake]] = None,
+        target_users: Optional[Sequence[Snowflake]] = None,
+        target_users_file: Optional[File] = None,
     ) -> Invite:
         """|coro|
 
@@ -1325,14 +1328,38 @@ class GuildChannel:
             Whether the invite is a guest invite.
 
             .. versionadded:: 2.6
+        roles: Optional[Sequence[:class:`~discord.abc.Snowflake`]]
+            A list of roles that should be granted to the users joining via this invite.
+
+            Requires the :attr:`~discord.Permissions.manage_roles` permission and cannot
+            assign roles with higher permissions than the bot.
+
+            .. versionadded:: 2.7
+        target_users: Optional[Sequence[:class:`~discord.abc.Snowflake`]]
+            A list of users that are allowed to join via this invite.
+
+            .. versionadded:: 2.8
+
+            This is mutually exclusive with ``target_users_file``.
+        target_users_file: Optional[:class:`~discord.File`]
+            A CSV file containing a list of user ids that are allowed to join via this invite.
+
+            This must be a CSV file with a single column containing user ids. The first row is assumed to
+            be a header and will be ignored.
+
+            .. versionadded:: 2.8
+
+            This is mutually exclusive with ``target_users``.
 
         Raises
         -------
         ~discord.HTTPException
             Invite creation failed.
-
         ~discord.NotFound
             The channel that was passed is a category or an invalid channel.
+        :exc:`ValueError`
+            The ``target_type`` parameter was :attr:`.InviteTarget.unknown` or the
+            ``target_users`` and ``target_users_file`` parameters were both provided.
 
         Returns
         --------
@@ -1342,23 +1369,34 @@ class GuildChannel:
         if target_type is InviteTarget.unknown:
             raise ValueError('Cannot create invite with an unknown target type')
 
+        if target_users is not None and target_users_file is not None:
+            raise ValueError('Cannot provide both target_users and target_users_file parameters')
+
         flags: Optional[InviteFlags] = None
         if guest:
             flags = InviteFlags._from_value(0)
             flags.guest = True
 
-        data = await self._state.http.create_invite(
-            self.id,
-            reason=reason,
-            max_age=max_age,
-            max_uses=max_uses,
-            temporary=temporary,
-            unique=unique,
-            target_type=target_type.value if target_type else None,
-            target_user_id=target_user.id if target_user else None,
-            target_application_id=target_application_id,
-            flags=flags.value if flags else None,
-        )
+        try:
+            data = await self._state.http.create_invite(
+                self.id,
+                reason=reason,
+                max_age=max_age,
+                max_uses=max_uses,
+                temporary=temporary,
+                unique=unique,
+                target_type=target_type.value if target_type else None,
+                target_user_id=target_user.id if target_user else None,
+                target_application_id=target_application_id,
+                flags=flags.value if flags else None,
+                role_ids=[role.id for role in roles or []],
+                target_user_ids=[user.id for user in target_users or []],
+                target_users_file=target_users_file,
+            )
+        finally:
+            if target_users_file is not None:
+                target_users_file.close()
+
         return Invite.from_incomplete(data=data, state=self._state)
 
     async def invites(self) -> List[Invite]:

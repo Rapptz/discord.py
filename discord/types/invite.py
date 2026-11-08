@@ -33,6 +33,7 @@ from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
 from .user import PartialUser
 from .appinfo import PartialAppInfo
+from .role import InviteRole
 
 InviteTargetType = Literal[1, 2]
 InviteType = Literal[0, 1, 2]
@@ -66,6 +67,7 @@ class Invite(IncompleteInvite, total=False):
     type: InviteType
     flags: NotRequired[int]
     expires_at: Optional[str]
+    roles: NotRequired[list[InviteRole]]
 
 
 class InviteWithCounts(Invite, _GuildPreviewUnique): ...
@@ -86,6 +88,7 @@ class GatewayInviteCreate(TypedDict):
     target_user: NotRequired[PartialUser]
     target_application: NotRequired[PartialAppInfo]
     flags: NotRequired[int]
+    role_ids: NotRequired[list[Snowflake]]
 
 
 class GatewayInviteDelete(TypedDict):
@@ -95,3 +98,12 @@ class GatewayInviteDelete(TypedDict):
 
 
 GatewayInvite = Union[GatewayInviteCreate, GatewayInviteDelete]
+
+
+class InviteTargetUsersJobStatus(TypedDict):
+    status: int
+    total_users: int
+    processed_users: int
+    created_at: NotRequired[Optional[str]]
+    error_message: NotRequired[Optional[str]]
+    completed_at: NotRequired[Optional[str]]
