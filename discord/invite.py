@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence, Union, TYPE_CHECKING
 from .asset import Asset
-from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING
+from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
 from .enums import (

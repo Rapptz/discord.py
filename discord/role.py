@@ -42,7 +42,6 @@ if TYPE_CHECKING:
     from .types.role import (
         Role as RolePayload,
         RoleTags as RoleTagPayload,
-        InviteRole as InviteRolePayload,
     )
     from .types.guild import RolePositionUpdate
     from .guild import Guild
