@@ -81,6 +81,7 @@ __all__ = (
     'ForumChannel',
     'GroupChannel',
     'PartialMessageable',
+    'UnknownChannel',
     'VoiceChannelEffect',
     'VoiceChannelSoundEffect',
 )
@@ -109,6 +110,7 @@ if TYPE_CHECKING:
         StageChannel as StageChannelPayload,
         DMChannel as DMChannelPayload,
         CategoryChannel as CategoryChannelPayload,
+        GuildChannel as GuildChannelPayload,
         GroupDMChannel as GroupChannelPayload,
         ForumChannel as ForumChannelPayload,
         MediaChannel as MediaChannelPayload,
@@ -3635,6 +3637,77 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         return PartialMessage(channel=self, id=message_id)
 
 
+class UnknownChannel(discord.abc.GuildChannel, Hashable):
+    """Represents a guild channel whose type is not recognised by the library.
+
+    This acts as a fallback for channel types that Discord has introduced but
+    that this version of the library does not have explicit support for yet. It
+    exposes the attributes that are common to every guild channel so that
+    enumerating a guild's channels (for example with :meth:`Guild.fetch_channels`)
+    does not fail when an unknown type is encountered.
+
+    .. versionadded:: 2.8
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the channel's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The channel name. This may be an empty string if Discord did not provide one.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    id: :class:`int`
+        The channel ID.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if any.
+    """
+
+    __slots__ = ('name', 'id', 'guild', '_state', 'position', '_type', '_overwrites', 'category_id')
+
+    def __init__(self, *, state: ConnectionState, guild: Guild, data: GuildChannelPayload) -> None:
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self._update(guild, data)
+
+    def __repr__(self) -> str:
+        return f'<{type(self).__name__} id={self.id} name={self.name!r} type={self.type!r} position={self.position}>'
+
+    def _update(self, guild: Guild, data: GuildChannelPayload) -> None:
+        self.guild: Guild = guild
+        self._type: ChannelType = try_enum(ChannelType, data['type'])
+        self.name: str = data.get('name') or ''
+        self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
+        self.position: int = data.get('position', 0)
+        self._fill_overwrites(data)
+
+    @property
+    def _sorting_bucket(self) -> int:
+        return self._type.value
+
+    @property
+    def type(self) -> ChannelType:
+        """:class:`ChannelType`: The channel's Discord type."""
+        return self._type
+
+
 def _guild_channel_factory(channel_type: int):
     value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
@@ -3652,7 +3725,8 @@ def _guild_channel_factory(channel_type: int):
     elif value is ChannelType.media:
         return ForumChannel, value
     else:
-        return None, value
+        # Fall back to a generic channel so that unknown/undocumented channel type
+        return UnknownChannel, value
 
 
 def _channel_factory(channel_type: int):
