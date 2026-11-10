@@ -189,8 +189,8 @@ class KeepAliveHandler(threading.Thread):
                             msg = self.block_msg
                         else:
                             stack = ''.join(traceback.format_stack(frame))
-                            msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
-                        _log.warning(msg, self.shard_id, total)
+                            msg = f'{self.block_msg % (self.shard_id, total)}\nLoop thread traceback (most recent call last):\n{stack}'
+                        _log.warning('%s', msg)
 
             except Exception:
                 self.stop()
