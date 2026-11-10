@@ -146,6 +146,7 @@ class KeepAliveHandler(threading.Thread):
         self.shard_id: Optional[int] = shard_id
         self.msg: str = 'Keeping shard ID %s websocket alive with sequence %s.'
         self.block_msg: str = 'Shard ID %s heartbeat blocked for more than %s seconds.'
+        self.block_msg_with_stack: str = self.block_msg + '\nLoop thread traceback (most recent call last):\n%s'
         self.behind_msg: str = "Can't keep up, shard ID %s websocket is %.1fs behind."
         self._stop_ev: threading.Event = threading.Event()
         self._last_ack: float = time.perf_counter()
@@ -186,11 +187,10 @@ class KeepAliveHandler(threading.Thread):
                         try:
                             frame = sys._current_frames()[self._main_thread_id]
                         except KeyError:
-                            msg = self.block_msg
+                            _log.warning(self.block_msg, self.shard_id, total)
                         else:
                             stack = ''.join(traceback.format_stack(frame))
-                            msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
-                        _log.warning(msg, self.shard_id, total)
+                            _log.warning(self.block_msg_with_stack, self.shard_id, total, stack)
 
             except Exception:
                 self.stop()
