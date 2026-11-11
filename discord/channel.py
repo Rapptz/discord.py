@@ -81,6 +81,7 @@ __all__ = (
     'ForumChannel',
     'GroupChannel',
     'PartialMessageable',
+    'ServerHome',
     'PartialChannel',
     'VoiceChannelEffect',
     'VoiceChannelSoundEffect',
@@ -3707,6 +3708,25 @@ class PartialChannel(discord.abc.GuildChannel, Hashable):
         """:class:`ChannelType`: The channel's Discord type."""
         return self._type
 
+
+class ServerHome(PartialChannel):
+    """Represents a "Server Home" guild channel (channel type ``20``).
+
+    This channel type is currently undocumented and being rolled out by Discord.
+    It is represented using the attributes common to all guild channels. See
+    :class:`PartialChannel` for the available attributes.
+
+    .. versionadded:: 2.8
+    """
+
+    __slots__ = ()
+
+    @property
+    def type(self) -> Literal[ChannelType.server_home]:
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.server_home
+
+
 def _guild_channel_factory(channel_type: int):
     value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
@@ -3723,6 +3743,8 @@ def _guild_channel_factory(channel_type: int):
         return ForumChannel, value
     elif value is ChannelType.media:
         return ForumChannel, value
+    elif value is ChannelType.server_home:
+        return ServerHome, value
     else:
         # Fall back to a generic channel so that unknown/undocumented channel
         # types coming from Discord do not break channel enumeration.

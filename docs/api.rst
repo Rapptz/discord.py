@@ -1718,6 +1718,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.4
 
+    .. attribute:: server_home
+
+        A server home channel.
+
+        .. versionadded:: 2.8
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
@@ -5480,6 +5486,15 @@ GroupChannel
 
     .. automethod:: typing
         :async-with:
+
+ServerHome
+~~~~~~~~~~
+
+.. attributetable:: ServerHome
+
+.. autoclass:: ServerHome()
+    :members:
+    :inherited-members:
 
 PartialChannel
 ~~~~~~~~~~~~~~
