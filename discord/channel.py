@@ -81,7 +81,7 @@ __all__ = (
     'ForumChannel',
     'GroupChannel',
     'PartialMessageable',
-    'UnknownChannel',
+    'PartialChannel',
     'VoiceChannelEffect',
     'VoiceChannelSoundEffect',
 )
@@ -3637,7 +3637,7 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         return PartialMessage(channel=self, id=message_id)
 
 
-class UnknownChannel(discord.abc.GuildChannel, Hashable):
+class PartialChannel(discord.abc.GuildChannel, Hashable):
     """Represents a guild channel whose type is not recognised by the library.
 
     This acts as a fallback for channel types that Discord has introduced but
@@ -3707,7 +3707,6 @@ class UnknownChannel(discord.abc.GuildChannel, Hashable):
         """:class:`ChannelType`: The channel's Discord type."""
         return self._type
 
-
 def _guild_channel_factory(channel_type: int):
     value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
@@ -3725,8 +3724,9 @@ def _guild_channel_factory(channel_type: int):
     elif value is ChannelType.media:
         return ForumChannel, value
     else:
-        # Fall back to a generic channel so that unknown/undocumented channel type
-        return UnknownChannel, value
+        # Fall back to a generic channel so that unknown/undocumented channel
+        # types coming from Discord do not break channel enumeration.
+        return PartialChannel, value
 
 
 def _channel_factory(channel_type: int):
