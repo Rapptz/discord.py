@@ -2390,7 +2390,7 @@ class Guild(Hashable):
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
 
-    async def fetch_channels(self) -> Sequence[GuildChannel]:
+    async def fetch_channels(self, *, ignore_unhandled_types: bool = False) -> Sequence[GuildChannel]:
         """|coro|
 
         Retrieves all :class:`abc.GuildChannel` that the guild has.
@@ -2401,10 +2401,20 @@ class Guild(Hashable):
 
         .. versionadded:: 1.2
 
+        .. versionchanged:: 2.8
+            Added the ``ignore_unhandled_types`` keyword-only parameter.
+
+        Parameters
+        -----------
+        ignore_unhandled_types: :class:`bool`
+            Whether to skip channels of a type the library does not handle
+            instead of raising :exc:`InvalidData`. Defaults to ``False``.
+
         Raises
         -------
         InvalidData
-            An unknown channel type was received from Discord.
+            An unknown channel type was received from Discord and
+            ``ignore_unhandled_types`` is ``False``.
         HTTPException
             Retrieving the channels failed.
 
@@ -2415,15 +2425,16 @@ class Guild(Hashable):
         """
         data = await self._state.http.get_all_guild_channels(self.id)
 
-        def convert(d):
-            factory, ch_type = _guild_channel_factory(d['type'])
+        channels = []
+        for d in data:
+            factory, _ = _guild_channel_factory(d['type'])
             if factory is None:
+                if ignore_unhandled_types:
+                    continue
                 raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(d))
+            channels.append(factory(guild=self, state=self._state, data=d))  # type: ignore
 
-            channel = factory(guild=self, state=self._state, data=d)
-            return channel
-
-        return [convert(d) for d in data]
+        return channels
 
     async def active_threads(self) -> List[Thread]:
         """|coro|
