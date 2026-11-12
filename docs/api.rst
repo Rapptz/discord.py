@@ -5481,6 +5481,15 @@ GroupChannel
     .. automethod:: typing
         :async-with:
 
+PartialChannel
+~~~~~~~~~~~~~~
+
+.. attributetable:: PartialChannel
+
+.. autoclass:: PartialChannel()
+    :members:
+    :inherited-members:
+
 PartialInviteGuild
 ~~~~~~~~~~~~~~~~~~~
 
