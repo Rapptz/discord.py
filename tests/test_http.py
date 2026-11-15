@@ -24,12 +24,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import asyncio
 from io import BytesIO
+from typing import Any
+from unittest.mock import patch
 
+import aiohttp
 import discord
 import pytest
 
-from discord.http import handle_message_parameters
+from discord.http import HTTPClient, Route, handle_message_parameters
 from discord.webhook.async_ import interaction_message_response_params
 
 
@@ -51,3 +55,40 @@ def test_interaction_message_response_params_rejects_too_many_files():
         interaction_message_response_params(type=4, content='test', files=files)
 
 
+class FakeResponse:
+    def __init__(self, status: int, body: str) -> None:
+        self.status = status
+        self.headers = {'Via': '1.1 google', 'content-type': 'application/json'}
+        self.body = body
+
+    async def text(self, encoding: str) -> str:
+        return self.body
+
+    async def __aenter__(self) -> FakeResponse:
+        return self
+
+    async def __aexit__(self, *args: Any) -> None:
+        pass
+
+
+def fake_request(session: aiohttp.ClientSession, method: str, url: str, **kwargs: Any) -> FakeResponse:
+    if url.endswith('/gateway'):
+        return FakeResponse(429, '{"message": "You are being rate limited.", "retry_after": 60.0, "global": true}')
+    return FakeResponse(200, '{}')
+
+
+@pytest.mark.asyncio
+async def test_global_rate_limit_is_released_when_request_is_cancelled():
+    http = HTTPClient(asyncio.get_running_loop())
+
+    with patch.object(aiohttp.ClientSession, 'request', fake_request):
+        await http.static_login('token')
+        try:
+            # the request is cancelled while sleeping on the global rate limit
+            with pytest.raises(asyncio.TimeoutError):
+                await asyncio.wait_for(http.request(Route('GET', '/gateway')), timeout=0.1)
+
+            # later requests would wait forever if the global rate limit was never released
+            await asyncio.wait_for(http.request(Route('GET', '/users/@me')), timeout=1)
+        finally:
+            await http.close()
