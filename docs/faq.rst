@@ -376,7 +376,7 @@ than ``None``, so check it before using its data: ::
 
     channel = guild.get_channel(channel_id)
     if channel is None or channel.is_obfuscated():
-        return  # the bot can't view it
+        return  # the channel doesn't exist or the bot can't view it
 
 Calling :meth:`abc.GuildChannel.permissions_for` on an obfuscated channel for your own bot always returns
 :meth:`Permissions.none`, since the bot can't do anything in a channel it can't view.
