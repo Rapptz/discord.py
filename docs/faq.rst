@@ -350,17 +350,33 @@ This event is now available in the library and Discord as of version 2.2. It can
 What is obfuscation?
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Starting October 12, 2026, Discord may tell your bot that a channel exists without letting it see what's inside.
-Rather than omitting the channel entirely, Discord sends it with most of its information stripped out and marks
-it as *obfuscated*. This happens whenever your bot lacks the ``view_channel`` permission for that channel.
-Only ``id``, ``type``, and ``parent_id`` keep their real values; every other field is obfuscated, including
-``permission_overwrites``, which is replaced with a single entry for your bot with every permission denied.
+As of November 16, 2026, Discord tells your bot that a channel exists, but without its data, whenever the bot
+can't view that channel. Rather than omitting the channel entirely, Discord sends it with most of its
+information stripped out and marks it as *obfuscated*.
+
+Your bot can view a channel if it has the :attr:`~Permissions.view_channel` permission in it, or if it is
+connected to it in the case of a voice channel. A category is viewable if at least one of the channels
+inside it is viewable.
+
+Only :attr:`id <TextChannel.id>`, :attr:`type <TextChannel.type>`,
+:attr:`position <TextChannel.position>`, and :attr:`category_id <TextChannel.category_id>`
+keep their real values on an obfuscated channel. Every
+other field should not be relied on: the name is replaced with ``___hidden___``, and the permission overwrites
+are replaced with a single entry denying :attr:`~Permissions.view_channel` for the ``@everyone`` role.
 
 Obfuscated channels still show up in :attr:`Guild.channels` and :attr:`CategoryChannel.channels`, so you may
 encounter them without expecting to. To filter out channels your bot can't actually see, use
 :meth:`abc.GuildChannel.is_obfuscated`: ::
 
     channels = [channel for channel in guild.channels if not channel.is_obfuscated()]
+
+The same applies to anything else that reads from the cache, such as :meth:`Guild.get_channel`,
+:meth:`Client.get_channel`, and :meth:`Client.get_all_channels`. These return the obfuscated channel rather
+than ``None``, so check it before using its data: ::
+
+    channel = guild.get_channel(channel_id)
+    if channel is None or channel.is_obfuscated():
+        return  # the bot can't view it
 
 Calling :meth:`abc.GuildChannel.permissions_for` on an obfuscated channel for your own bot always returns
 :meth:`Permissions.none`, since the bot can't do anything in a channel it can't view.
@@ -369,9 +385,24 @@ Obfuscated channels only ever come from the gateway, meaning your cache and even
 :func:`on_guild_channel_create`, :func:`on_guild_channel_update`, and :func:`on_guild_channel_delete` may
 contain them. You still receive these events as normal when an obfuscated channel is created, updated, or
 deleted, just with its data obfuscated.
-The API never returns them: :meth:`Guild.fetch_channels` silently omits any channel your bot can't view,
-and fetching one directly with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises
+
+When your bot gains access to an obfuscated channel, for example through a change to the channel's permission
+overwrites, the bot's roles, or a role's permissions, or by the bot joining a voice channel it previously
+couldn't see, Discord sends the full data and :func:`on_guild_channel_update` is called with the unobfuscated
+channel. If the channel's category was obfuscated as well, the same happens for the category.
+
+You can detect this by comparing both channels in the event: ::
+
+    @client.event
+    async def on_guild_channel_update(before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
+        if before.is_obfuscated() and not after.is_obfuscated():
+            print(f'I can now see #{after.name} ({after.id})')
+
+The API never returns obfuscated channels: :meth:`Guild.fetch_channels` silently omits any channel your bot
+can't view, and fetching one directly with :meth:`Guild.fetch_channel` (or :meth:`Client.fetch_channel`) raises
 :exc:`Forbidden`.
+
+Channels received through an :class:`Interaction` (such as app commands) are never obfuscated.
 
 
 Commands Extension
