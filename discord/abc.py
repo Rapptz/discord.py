@@ -62,7 +62,7 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
-from .flags import InviteFlags
+from .flags import InviteFlags, ChannelFlags
 import warnings
 
 __all__ = (
@@ -423,12 +423,16 @@ class GuildChannel:
     category_id: Optional[int]
     _state: ConnectionState
     _overwrites: List[_Overwrites]
+    _flags: int
 
     if TYPE_CHECKING:
 
         def __init__(self, *, state: ConnectionState, guild: Guild, data: GuildChannelPayload): ...
 
     def __str__(self) -> str:
+        if self.is_obfuscated():
+            return f'Obfuscated Channel ({self.id})'
+
         return self.name
 
     @property
@@ -736,6 +740,7 @@ class GuildChannel:
 
         This function takes into consideration the following cases:
 
+        - Obfuscated channels
         - Guild owner
         - Guild roles
         - Channel overrides
@@ -764,6 +769,10 @@ class GuildChannel:
             permissions Discord returns in :attr:`~discord.Interaction.app_permissions`,
             though it is recommended to use that attribute instead.
 
+        .. versionchanged:: 2.8
+            Obfuscated channels are now taken into account. If a channel is obfuscated, then all permissions are
+            denied. See :ref:`obfuscation_faq` for more information.
+
         Parameters
         ----------
         obj: Union[:class:`~discord.Member`, :class:`~discord.Role`]
@@ -778,6 +787,7 @@ class GuildChannel:
         """
 
         # The current cases can be explained as:
+        # All permissions are denied for bots if .is_obfuscated() is True, else:
         # Guild owner get all permissions -- no questions asked. Otherwise...
         # The @everyone role gets the first application.
         # After that, the applied roles that the user has in the channel
@@ -790,6 +800,9 @@ class GuildChannel:
 
         # The operation first takes into consideration the denied
         # and then the allowed.
+
+        if obj.id == self._state.self_id and self.is_obfuscated():
+            return Permissions.none()
 
         if self.guild.owner_id == obj.id:
             return Permissions.all()
@@ -1385,6 +1398,25 @@ class GuildChannel:
         data = await state.http.invites_from_channel(self.id)
         guild = self.guild
         return [Invite(state=state, data=invite, channel=self, guild=guild) for invite in data]
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`~discord.ChannelFlags`: The channel's flags."""
+        return ChannelFlags._from_value(self._flags)
+
+    def is_obfuscated(self) -> bool:
+        """Returns whether the channel is obfuscated.
+
+        See :ref:`obfuscation_faq` for more information.
+
+        .. versionadded:: 2.8
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the channel is obfuscated.
+        """
+        return self.flags.obfuscated
 
 
 class Messageable:
