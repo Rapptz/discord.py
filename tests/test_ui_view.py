@@ -180,3 +180,47 @@ async def test_container_dynamic_item_swap_preserves_parent_checks():
     assert base.view is None
     assert base.parent is None
     assert calls == ['container']
+
+@pytest.mark.asyncio
+async def test_view_store_remove_view_preserves_dynamic_items():
+    from discord.ui.view import ViewStore
+
+    store = ViewStore(None)  # type: ignore
+    store.add_dynamic_items(DynamicButton)
+
+    view = discord.ui.View(timeout=60)
+    view.add_item(DynamicButton(discord.ui.Button(label='Dynamic', custom_id='dynamic:1')))
+    view.add_item(discord.ui.Button(label='Static', custom_id='static:1'))
+    store.add_view(view, message_id=100)
+
+    view.stop()
+
+    assert DynamicButton.__discord_ui_compiled_template__ in store._dynamic_items
+    assert 100 not in store._views
+    assert not store.is_message_tracked(100)
+
+
+@pytest.mark.asyncio
+async def test_view_store_update_view_preserves_dynamic_items():
+    from discord.ui.view import ViewStore
+
+    store = ViewStore(None)  # type: ignore
+    store.add_dynamic_items(DynamicButton)
+
+    dyn = DynamicButton(discord.ui.Button(label='Dynamic', custom_id='dynamic:1'))
+    static_a = discord.ui.Button(label='A', custom_id='static:a')
+    static_b = discord.ui.Button(label='B', custom_id='static:b')
+
+    view = discord.ui.View(timeout=60)
+    view.add_item(dyn)
+    view.add_item(static_a)
+    view.add_item(static_b)
+    store.add_view(view, message_id=200)
+
+    view.remove_item(dyn)
+    view.remove_item(static_a)
+    store.add_view(view, message_id=200)
+
+    assert DynamicButton.__discord_ui_compiled_template__ in store._dynamic_items
+    assert (static_a.type.value, 'static:a') not in store._views[200]
+    assert (static_b.type.value, 'static:b') in store._views[200]

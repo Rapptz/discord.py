@@ -208,21 +208,19 @@ class _ViewWeights:
 
 
 class _ViewCacheSnapshot:
-    __slots__ = ('items', 'dynamic_items')
+    __slots__ = ('items',)
 
     def __init__(self) -> None:
         self.items: Set[Tuple[int, str]] = set()
-        self.dynamic_items: Set[re.Pattern[str]] = set()
 
     @classmethod
     def diff(cls, older: _ViewCacheSnapshot, newer: _ViewCacheSnapshot) -> Self:
         self = cls()
         self.items = older.items - newer.items
-        self.dynamic_items = older.dynamic_items - newer.dynamic_items
         return self
 
     def __repr__(self) -> str:
-        return f'<_ViewCacheSnapshot items={self.items!r} dynamic_items={self.dynamic_items!r}>'
+        return f'<_ViewCacheSnapshot items={self.items!r}>'
 
 
 class BaseView:
@@ -363,9 +361,7 @@ class BaseView:
     def _get_snapshot(self) -> _ViewCacheSnapshot:
         snapshot = _ViewCacheSnapshot()
         for item in self.walk_children():
-            if isinstance(item, DynamicItem):
-                snapshot.dynamic_items.add(item.__discord_ui_compiled_template__)
-            elif item.is_dispatchable():
+            if not isinstance(item, DynamicItem) and item.is_dispatchable():
                 custom_id = item.custom_id  # type: ignore
                 snapshot.items.add((item.type.value, custom_id))
         return snapshot
@@ -955,8 +951,6 @@ class ViewStore:
         if snapshot is not None:
             for key in snapshot.items:
                 dispatch_info.pop(key, None)
-            for key in snapshot.dynamic_items:
-                self._dynamic_items.pop(key, None)
 
         view._cache_key = message_id
         if dispatch_info:
@@ -975,8 +969,6 @@ class ViewStore:
         if dispatch_info and snapshot:
             for key in snapshot.items:
                 dispatch_info.pop(key, None)
-            for key in snapshot.dynamic_items:
-                self._dynamic_items.pop(key, None)
 
         if dispatch_info is not None and len(dispatch_info) == 0:
             self._views.pop(view._cache_key, None)
