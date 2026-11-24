@@ -334,11 +334,24 @@ class UserConverter(IDConverter[discord.User]):
             discriminator, username = username, discriminator
 
         if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
-            predicate = lambda u: u.name == username and u.discriminator == discriminator
+            result = discord.utils.find(
+                lambda u: u.name == username and u.discriminator == discriminator,
+                state._users.values(),
+            )
         else:
-            predicate = lambda u: u.name == argument or u.global_name == argument
+            global_name_match = None
 
-        result = discord.utils.find(predicate, state._users.values())
+            for user in state._users.values():
+                if user.name == argument:
+                    result = user
+                    break
+
+                if global_name_match is None and user.global_name == argument:
+                    global_name_match = user
+
+            if result is None:
+                result = global_name_match
+
         if result is None:
             raise UserNotFound(argument)
 
